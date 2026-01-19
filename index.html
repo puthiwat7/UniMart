@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Marketplace - Buy & Sell on Campus</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>🏫 Campus Marketplace</h1>
+            </div>
+            <div class="nav-links">
+                <a href="#" onclick="showHome()">Home</a>
+                <a href="#" onclick="showCreateListing()" id="createLink" style="display:none;">Sell</a>
+                <a href="#" onclick="showMyListings()" id="myListingsLink" style="display:none;">My Listings</a>
+                <div id="authButtons">
+                    <button onclick="showLogin()" class="btn btn-outline">Login</button>
+                    <button onclick="showRegister()" class="btn btn-primary">Sign Up</button>
+                </div>
+                <div id="userMenu" style="display:none;">
+                    <span id="userName"></span>
+                    <button onclick="logout()" class="btn btn-outline">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Login Modal -->
+        <div id="loginModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('loginModal')">&times;</span>
+                <h2>Login</h2>
+                <form onsubmit="handleLogin(event)">
+                    <input type="email" id="loginEmail" placeholder="Email" required>
+                    <input type="password" id="loginPassword" placeholder="Password" required>
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Register Modal -->
+        <div id="registerModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('registerModal')">&times;</span>
+                <h2>Create Account</h2>
+                <form onsubmit="handleRegister(event)">
+                    <input type="text" id="registerName" placeholder="Full Name" required>
+                    <input type="text" id="registerStudentId" placeholder="Student ID" required>
+                    <input type="email" id="registerEmail" placeholder="Email" required>
+                    <input type="password" id="registerPassword" placeholder="Password" required>
+                    <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Home Page -->
+        <div id="homePage">
+            <div class="hero">
+                <h2>Welcome to Campus Marketplace</h2>
+                <p>Buy and sell textbooks, furniture, electronics, and more with fellow students</p>
+            </div>
+
+            <div class="search-section">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search for items...">
+                    <select id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <option value="Textbooks">Textbooks</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Furniture">Furniture</option>
+                        <option value="Clothing">Clothing</option>
+                        <option value="Services">Services</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <button onclick="performSearch()" class="btn btn-primary">Search</button>
+                </div>
+            </div>
+
+            <div class="categories">
+                <h3>Browse by Category</h3>
+                <div class="category-grid">
+                    <div class="category-card" onclick="filterByCategory('Textbooks')">
+                        <h4>📚 Textbooks</h4>
+                    </div>
+                    <div class="category-card" onclick="filterByCategory('Electronics')">
+                        <h4>💻 Electronics</h4>
+                    </div>
+                    <div class="category-card" onclick="filterByCategory('Furniture')">
+                        <h4>🪑 Furniture</h4>
+                    </div>
+                    <div class="category-card" onclick="filterByCategory('Clothing')">
+                        <h4>👕 Clothing</h4>
+                    </div>
+                    <div class="category-card" onclick="filterByCategory('Services')">
+                        <h4>🔧 Services</h4>
+                    </div>
+                    <div class="category-card" onclick="filterByCategory('Other')">
+                        <h4>📦 Other</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div id="listingsContainer" class="listings-grid">
+                <!-- Listings will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Create Listing Page -->
+        <div id="createListingPage" style="display:none;">
+            <h2>Create New Listing</h2>
+            <form onsubmit="handleCreateListing(event)" class="listing-form">
+                <input type="text" id="listingTitle" placeholder="Title" required>
+                <textarea id="listingDescription" placeholder="Description" rows="5" required></textarea>
+                <div class="form-row">
+                    <input type="number" id="listingPrice" placeholder="Price ($)" step="0.01" required>
+                    <select id="listingCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="Textbooks">Textbooks</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Furniture">Furniture</option>
+                        <option value="Clothing">Clothing</option>
+                        <option value="Services">Services</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <select id="listingCondition">
+                        <option value="New">New</option>
+                        <option value="Like New">Like New</option>
+                        <option value="Good">Good</option>
+                        <option value="Fair">Fair</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Listing</button>
+            </form>
+        </div>
+
+        <!-- My Listings Page -->
+        <div id="myListingsPage" style="display:none;">
+            <h2>My Listings</h2>
+            <div id="myListingsContainer" class="listings-grid">
+                <!-- User's listings will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Listing Detail Modal -->
+        <div id="listingModal" class="modal">
+            <div class="modal-content modal-large">
+                <span class="close" onclick="closeModal('listingModal')">&times;</span>
+                <div id="listingDetailContent">
+                    <!-- Listing details will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Campus Marketplace. For campus use only.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
