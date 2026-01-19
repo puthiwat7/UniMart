@@ -22,7 +22,7 @@ function checkAuth() {
         updateUIForAuth();
     }
 }
-
+//hh
 // Update UI based on authentication status
 function updateUIForAuth() {
     const authButtons = document.getElementById('authButtons');
