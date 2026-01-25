@@ -4,11 +4,18 @@ const API_URL = 'http://localhost:3000/api';
 // State
 let currentUser = null;
 let currentToken = null;
+let allListings = [];
+let currentCategory = '';
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     loadListings();
+    
+    // Add event listeners for search and filters
+    document.getElementById('searchInput').addEventListener('input', debounce(performSearch, 300));
+    document.getElementById('sortFilter').addEventListener('change', performSearch);
+    document.getElementById('collegeFilter').addEventListener('change', performSearch);
 });
 
 // Check if user is authenticated
@@ -152,6 +159,17 @@ function showHome() {
     document.getElementById('homePage').style.display = 'block';
     document.getElementById('createListingPage').style.display = 'none';
     document.getElementById('myListingsPage').style.display = 'none';
+    // Reset filters
+    currentCategory = '';
+    document.getElementById('searchInput').value = '';
+    document.getElementById('sortFilter').value = 'newest';
+    document.getElementById('collegeFilter').value = '';
+    document.querySelectorAll('.category-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.category === '') {
+            btn.classList.add('active');
+        }
+    });
     loadListings();
 }
 
@@ -184,13 +202,47 @@ async function showMyListings() {
 async function loadListings() {
     try {
         const response = await fetch(`${API_URL}/listings`);
-        const listings = await response.json();
-        displayListings(listings, 'listingsContainer');
+        allListings = await response.json();
+        updateCategoryCounts(allListings);
+        performSearch();
     } catch (error) {
         console.error('Error loading listings:', error);
         document.getElementById('listingsContainer').innerHTML = 
             '<div class="empty-state"><h3>Error loading listings</h3></div>';
     }
+}
+
+// Refresh listings
+function refreshListings() {
+    loadListings();
+}
+
+// Update category counts
+function updateCategoryCounts(listings) {
+    const categories = ['', 'Textbooks', 'Electronics', 'Furniture', 'Clothing', 'Sports', 'Stationery', 'Kitchen', 'Vehicles', 'Other'];
+    
+    categories.forEach(category => {
+        const count = category === '' 
+            ? listings.length 
+            : listings.filter(l => l.category === category).length;
+        const countElement = document.getElementById(`count-${category || 'all'}`);
+        if (countElement) {
+            countElement.textContent = count;
+        }
+    });
+}
+
+// Debounce function
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 }
 
 // Load my listings
@@ -217,23 +269,61 @@ function displayListings(listings, containerId, showDelete = false) {
         return;
     }
 
-    container.innerHTML = listings.map(listing => `
+    container.innerHTML = listings.map(listing => {
+        const condition = listing.condition || 'New';
+        const quantity = listing.quantity || 1;
+        const sellerName = listing.sellerName || 'Unknown';
+        const sellerRating = listing.sellerRating || '100%';
+        const imageUrl = listing.imageUrl || '';
+        
+        return `
         <div class="listing-card">
-            <div class="listing-image">${getCategoryEmoji(listing.category)}</div>
+            <div class="listing-image-wrapper">
+                ${imageUrl 
+                    ? `<img src="${imageUrl}" alt="${listing.title}" class="listing-image">`
+                    : `<div class="listing-image-placeholder">${getCategoryEmoji(listing.category)}</div>`
+                }
+                ${condition === 'New' || condition === 'Brand New' ? '<div class="listing-badge">Brand New</div>' : ''}
+                ${quantity > 1 ? `<div class="listing-quantity">${quantity} left</div>` : ''}
+                <div class="listing-favorite" onclick="toggleFavorite(event, '${listing.id}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                </div>
+            </div>
             <div class="listing-content">
-                <div class="listing-category">${listing.category}</div>
                 <div class="listing-title">${listing.title}</div>
-                <div class="listing-description">${listing.description}</div>
-                <div class="listing-footer">
-                    <div class="listing-price">$${listing.price.toFixed(2)}</div>
+                <div class="listing-seller">
+                    <div class="seller-icon"></div>
+                    <span>${sellerName}</span>
+                    <span class="seller-rating">${sellerRating}</span>
+                </div>
+                <div class="listing-price-section">
+                    <div class="listing-price">¥${listing.price.toFixed(0)}</div>
+                    <div class="listing-price-unit">per item</div>
                     <div class="listing-actions">
-                        ${showDelete ? `<button onclick="deleteListing('${listing.id}')" class="btn btn-danger">Delete</button>` : ''}
-                        <button onclick="showListingDetail('${listing.id}')" class="btn btn-primary">View</button>
+                        ${showDelete ? `<button onclick="deleteListing('${listing.id}')" class="btn btn-danger" style="margin-right: 0.5rem;">Delete</button>` : ''}
+                        <button onclick="showListingDetail('${listing.id}')" class="btn-view">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            View
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
+}
+
+// Toggle favorite
+function toggleFavorite(event, listingId) {
+    event.stopPropagation();
+    const favoriteBtn = event.currentTarget;
+    favoriteBtn.classList.toggle('active');
+    // TODO: Implement favorite functionality with API
 }
 
 // Get category emoji
@@ -243,6 +333,10 @@ function getCategoryEmoji(category) {
         'Electronics': '💻',
         'Furniture': '🪑',
         'Clothing': '👕',
+        'Sports': '🎾',
+        'Stationery': '✏️',
+        'Kitchen': '🍳',
+        'Vehicles': '🚗',
         'Services': '🔧',
         'Other': '📦'
     };
@@ -350,26 +444,62 @@ async function handleCreateListing(event) {
 
 // Perform search
 async function performSearch() {
-    const query = document.getElementById('searchInput').value;
-    const category = document.getElementById('categoryFilter').value;
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const sortBy = document.getElementById('sortFilter').value;
+    const college = document.getElementById('collegeFilter').value;
     
-    try {
-        let url = `${API_URL}/search?`;
-        if (query) url += `q=${encodeURIComponent(query)}&`;
-        if (category) url += `category=${encodeURIComponent(category)}&`;
-        
-        const response = await fetch(url);
-        const listings = await response.json();
-        displayListings(listings, 'listingsContainer');
-    } catch (error) {
-        console.error('Error searching:', error);
+    let filteredListings = [...allListings];
+    
+    // Filter by search query
+    if (query) {
+        filteredListings = filteredListings.filter(listing => 
+            listing.title.toLowerCase().includes(query) ||
+            listing.description.toLowerCase().includes(query) ||
+            listing.category.toLowerCase().includes(query)
+        );
     }
+    
+    // Filter by category
+    if (currentCategory) {
+        filteredListings = filteredListings.filter(listing => listing.category === currentCategory);
+    }
+    
+    // Filter by college (if college field exists)
+    if (college) {
+        filteredListings = filteredListings.filter(listing => listing.college === college);
+    }
+    
+    // Sort listings
+    filteredListings.sort((a, b) => {
+        switch(sortBy) {
+            case 'newest':
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            case 'oldest':
+                return new Date(a.createdAt) - new Date(b.createdAt);
+            case 'price-low':
+                return a.price - b.price;
+            case 'price-high':
+                return b.price - a.price;
+            default:
+                return 0;
+        }
+    });
+    
+    displayListings(filteredListings, 'listingsContainer');
 }
 
 // Filter by category
 function filterByCategory(category) {
-    document.getElementById('categoryFilter').value = category;
-    document.getElementById('searchInput').value = '';
+    currentCategory = category;
+    
+    // Update active state of category buttons
+    document.querySelectorAll('.category-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.category === category) {
+            btn.classList.add('active');
+        }
+    });
+    
     performSearch();
 }
 
