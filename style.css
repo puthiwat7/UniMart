@@ -1529,7 +1529,312 @@ body {
     background: var(--dark-blue);
 }
 
-/* Responsive - My Orders Page */
+/* ======================== Product Detail Modal ======================== */
+.product-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+}
+
+.product-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+}
+
+.modal-content {
+    position: relative;
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    background: #e5e7eb;
+    border: none;
+    border-radius: 50%;
+    color: #6b7280;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    background: #d1d5db;
+    color: #1f2937;
+}
+
+.modal-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    padding: 40px;
+}
+
+/* Image Carousel */
+.modal-image-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.image-carousel {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    background: var(--light-gray);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.carousel-image {
+    font-size: 120px;
+    transition: all 0.3s ease;
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    color: var(--dark-gray);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 5;
+}
+
+.carousel-btn:hover {
+    background: white;
+    color: var(--primary-blue);
+}
+
+.carousel-btn.prev-btn {
+    left: 16px;
+}
+
+.carousel-btn.next-btn {
+    right: 16px;
+}
+
+.badge-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background: var(--primary-blue);
+    color: white;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Details Section */
+.modal-details-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-details-section h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.modal-price {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--primary-blue);
+}
+
+.seller-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    background: var(--light-gray);
+    border-radius: 8px;
+}
+
+.seller-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--dark-gray);
+    font-size: 14px;
+}
+
+.seller-item i {
+    font-size: 18px;
+    color: var(--primary-blue);
+}
+
+.modal-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.modal-section h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.modal-section p {
+    font-size: 14px;
+    color: var(--dark-gray);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.btn-order {
+    flex: 1;
+    padding: 14px 20px;
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-order:hover {
+    background: var(--dark-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 95, 193, 0.3);
+}
+
+.btn-save {
+    flex: 1;
+    padding: 14px 20px;
+    background: white;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-save:hover {
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+    background: var(--light-gray);
+}
+
+.btn-save.favorited {
+    background: #fef2f2;
+    color: #ef4444;
+    border-color: #ef4444;
+}
+
+.btn-save.favorited i {
+    color: #ef4444;
+    fill: #ef4444;
+}
+
+/* Responsive Modal */
+@media (max-width: 768px) {
+    .modal-body {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        padding: 20px;
+    }
+
+    .modal-content {
+        width: 95%;
+    }
+
+    .modal-details-section h2 {
+        font-size: 24px;
+    }
+
+    .modal-price {
+        font-size: 28px;
+    }
+
+    .carousel-image {
+        font-size: 80px;
+    }
+}
+
+/* Responsive My Orders Page */
 @media (max-width: 768px) {
     .orders-header {
         padding: 32px 24px 24px 24px;

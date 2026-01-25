@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSearch();
     setupRefresh();
     setupScrollToTop();
+    setupProductModal(); // Setup product detail modal
 });
 
 // Render products in the grid
@@ -93,9 +94,9 @@ function createProductCard(product) {
     const favBtnColor = isFavorited ? '#ef4444' : '#9ca3af';
     
     card.innerHTML = `
-        <div class="product-image" style="position: relative;">
+        <div class="product-image" style="position: relative; cursor: pointer;" onclick="handleViewDetails(${product.id})">
             ${product.image}
-            <button class="favorite-btn" onclick="toggleFavorite(${product.id}, ${JSON.stringify(product).replace(/"/g, '&quot;')})" style="position: absolute; top: 8px; right: 8px; background-color: transparent; border: none; color: ${favBtnColor}; font-size: 20px; cursor: pointer; z-index: 10;">
+            <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite(${product.id}, ${JSON.stringify(product).replace(/"/g, '&quot;')})" style="position: absolute; top: 8px; right: 8px; background-color: transparent; border: none; color: ${favBtnColor}; font-size: 20px; cursor: pointer; z-index: 10;">
                 <i class="fas fa-heart"></i>
             </button>
         </div>
@@ -202,10 +203,108 @@ function setupRefresh() {
     });
 }
 
-// Handle view details button
+// Handle view details button - Open product modal
 function handleViewDetails(productId) {
     const product = products.find(p => p.id === productId);
-    alert(`Viewing details for: ${product.title}\n\nPrice: ${product.price}\nSeller: ${product.seller}\n\nThis would open a detailed view of the product.`);
+    if (product) {
+        openProductModal(product);
+    }
+}
+
+// Product Modal Functions
+let currentProduct = null;
+let currentImageIndex = 0;
+
+function openProductModal(product) {
+    currentProduct = product;
+    currentImageIndex = 0;
+
+    // Update modal content
+    document.getElementById('modalProductTitle').textContent = product.title;
+    document.getElementById('modalProductPrice').textContent = product.price;
+    document.getElementById('modalSeller').textContent = product.seller;
+    document.getElementById('modalBadge').textContent = product.badge;
+    document.getElementById('carouselImage').textContent = product.image;
+    document.getElementById('modalDescription').textContent = `A ${product.badge.toLowerCase()} ${product.category.toLowerCase()} item in excellent condition.`;
+
+    // Update favorite button state
+    const saveBtn = document.getElementById('modalSaveBtn');
+    if (checkIfFavorited(product.id)) {
+        saveBtn.classList.add('favorited');
+        saveBtn.innerHTML = '<i class="fas fa-heart"></i>Saved';
+    } else {
+        saveBtn.classList.remove('favorited');
+        saveBtn.innerHTML = '<i class="fas fa-heart"></i>Save';
+    }
+
+    // Show modal
+    document.getElementById('productModal').classList.add('active');
+}
+
+function closeProductModal() {
+    document.getElementById('productModal').classList.remove('active');
+    currentProduct = null;
+}
+
+// Setup modal event listeners
+function setupProductModal() {
+    // Modal close button
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+    if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeProductModal);
+
+    // Modal overlay click to close
+    const modalOverlay = document.getElementById('modalOverlay');
+    if (modalOverlay) modalOverlay.addEventListener('click', closeProductModal);
+
+    // Carousel navigation
+    const prevBtn = document.getElementById('prevBtn');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (currentProduct) {
+                currentImageIndex = (currentImageIndex - 1 + 1) % 1; // Simple carousel with 1 image per product
+                document.getElementById('carouselImage').textContent = currentProduct.image;
+            }
+        });
+    }
+
+    const nextBtn = document.getElementById('nextBtn');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            if (currentProduct) {
+                currentImageIndex = (currentImageIndex + 1) % 1; // Simple carousel with 1 image per product
+                document.getElementById('carouselImage').textContent = currentProduct.image;
+            }
+        });
+    }
+
+    // Save/Favorite button
+    const modalSaveBtn = document.getElementById('modalSaveBtn');
+    if (modalSaveBtn) {
+        modalSaveBtn.addEventListener('click', () => {
+            if (currentProduct) {
+                toggleFavorite(currentProduct.id, currentProduct);
+                const saveBtn = document.getElementById('modalSaveBtn');
+                if (checkIfFavorited(currentProduct.id)) {
+                    saveBtn.classList.add('favorited');
+                    saveBtn.innerHTML = '<i class="fas fa-heart"></i>Saved';
+                } else {
+                    saveBtn.classList.remove('favorited');
+                    saveBtn.innerHTML = '<i class="fas fa-heart"></i>Save';
+                }
+            }
+        });
+    }
+
+    // Order button
+    const modalOrderBtn = document.getElementById('modalOrderBtn');
+    if (modalOrderBtn) {
+        modalOrderBtn.addEventListener('click', () => {
+            if (currentProduct) {
+                alert(`Added "${currentProduct.title}" to your cart!`);
+                closeProductModal();
+            }
+        });
+    }
 }
 
 // Handle add to cart button

@@ -226,6 +226,70 @@
                 <i class="fas fa-arrow-up"></i>
             </button>
         </main>
+
+        <!-- Product Detail Modal -->
+        <div class="product-modal" id="productModal">
+            <div class="modal-overlay" id="modalOverlay"></div>
+            <div class="modal-content">
+                <button class="modal-close" id="modalCloseBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+
+                <div class="modal-body">
+                    <!-- Image Carousel -->
+                    <div class="modal-image-section">
+                        <div class="image-carousel">
+                            <button class="carousel-btn prev-btn" id="prevBtn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div class="carousel-image" id="carouselImage">📱</div>
+                            <button class="carousel-btn next-btn" id="nextBtn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="badge-group">
+                            <span class="badge" id="modalBadge">Brand New</span>
+                        </div>
+                    </div>
+
+                    <!-- Product Details -->
+                    <div class="modal-details-section">
+                        <h2 id="modalProductTitle">Product Title</h2>
+                        <div class="modal-price" id="modalProductPrice">$0.00</div>
+
+                        <!-- Seller Info -->
+                        <div class="seller-info">
+                            <div class="seller-item">
+                                <i class="fas fa-user-circle"></i>
+                                <span id="modalSeller">Seller Name</span>
+                            </div>
+                            <div class="seller-item">
+                                <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                                <span>Verified</span>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="modal-section">
+                            <h4>Description</h4>
+                            <p id="modalDescription">No description available</p>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="modal-actions">
+                            <button class="btn-order" id="modalOrderBtn">
+                                <i class="fas fa-shopping-cart"></i>
+                                Order Now
+                            </button>
+                            <button class="btn-save" id="modalSaveBtn">
+                                <i class="fas fa-heart"></i>
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
