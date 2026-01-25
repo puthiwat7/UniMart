@@ -12,11 +12,83 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     loadListings();
     
+    // Initialize sidebar - open on desktop by default
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && window.innerWidth > 768) {
+        sidebar.classList.add('open');
+        sidebar.style.transform = 'translateX(0)';
+    }
+    
     // Add event listeners for search and filters
-    document.getElementById('searchInput').addEventListener('input', debounce(performSearch, 300));
-    document.getElementById('sortFilter').addEventListener('change', performSearch);
-    document.getElementById('collegeFilter').addEventListener('change', performSearch);
+    const searchInput = document.getElementById('searchInput');
+    const sortFilter = document.getElementById('sortFilter');
+    const collegeFilter = document.getElementById('collegeFilter');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(performSearch, 300));
+    }
+    if (sortFilter) {
+        sortFilter.addEventListener('change', performSearch);
+    }
+    if (collegeFilter) {
+        collegeFilter.addEventListener('change', performSearch);
+    }
+
+    // Handle window resize for responsive behavior
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(handleResize, 250);
+    });
+    handleResize();
+
+    // Close sidebar when clicking on nav items on mobile
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+        });
+    });
 });
+
+// Toggle sidebar for mobile
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (sidebar && overlay) {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+        document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+    }
+}
+
+// Handle window resize
+function handleResize() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (window.innerWidth > 768) {
+        // Desktop: always show sidebar, remove overlay
+        if (sidebar) {
+            sidebar.classList.add('open');
+            sidebar.style.transform = 'translateX(0)';
+        }
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    } else {
+        // Mobile: close sidebar by default unless it was manually opened
+        if (sidebar && !sidebar.classList.contains('open')) {
+            sidebar.style.transform = 'translateX(-100%)';
+        }
+        if (overlay && !sidebar.classList.contains('open')) {
+            overlay.classList.remove('active');
+        }
+        document.body.style.overflow = '';
+    }
+}
 
 // Check if user is authenticated
 function checkAuth() {
@@ -37,17 +109,73 @@ function updateUIForAuth() {
     const createLink = document.getElementById('createLink');
     const myListingsLink = document.getElementById('myListingsLink');
     
+    // Sidebar elements
+    const sidebarUser = document.getElementById('sidebarUser');
+    const sidebarUserName = document.getElementById('sidebarUserName');
+    const sidebarUserEmail = document.getElementById('sidebarUserEmail');
+    const createNavLink = document.getElementById('createNavLink');
+    const ordersNavLink = document.getElementById('ordersNavLink');
+    const salesNavLink = document.getElementById('salesNavLink');
+    const favoritesNavLink = document.getElementById('favoritesNavLink');
+    const profileNavLink = document.getElementById('profileNavLink');
+    const notificationBell = document.getElementById('notificationBell');
+    
     if (currentUser) {
         authButtons.style.display = 'none';
         userMenu.style.display = 'flex';
         createLink.style.display = 'inline';
         myListingsLink.style.display = 'inline';
         document.getElementById('userName').textContent = currentUser.name;
+        
+        // Update sidebar
+        if (sidebarUser) {
+            sidebarUser.style.display = 'flex';
+            if (sidebarUserName) {
+                sidebarUserName.textContent = currentUser.name;
+            }
+            if (sidebarUserEmail) {
+                sidebarUserEmail.textContent = currentUser.email || 'user@cuhksz.edu.cn';
+            }
+            // Update avatar with initials
+            const userAvatar = sidebarUser.querySelector('.user-avatar');
+            if (userAvatar) {
+                const nameParts = currentUser.name.split(' ');
+                const initials = nameParts.length >= 2 
+                    ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
+                    : currentUser.name.substring(0, 2).toUpperCase();
+                userAvatar.innerHTML = `<span style="color: white; font-weight: 600; font-size: 1rem;">${initials}</span>`;
+            }
+        }
+        if (createNavLink) createNavLink.style.display = 'block';
+        if (ordersNavLink) ordersNavLink.style.display = 'block';
+        if (salesNavLink) salesNavLink.style.display = 'block';
+        if (favoritesNavLink) favoritesNavLink.style.display = 'block';
+        if (profileNavLink) profileNavLink.style.display = 'block';
+        if (notificationBell) notificationBell.style.display = 'block';
     } else {
         authButtons.style.display = 'flex';
         userMenu.style.display = 'none';
         createLink.style.display = 'none';
         myListingsLink.style.display = 'none';
+        
+        // Hide sidebar user elements
+        if (sidebarUser) sidebarUser.style.display = 'none';
+        if (createNavLink) createNavLink.style.display = 'none';
+        if (ordersNavLink) ordersNavLink.style.display = 'none';
+        if (salesNavLink) salesNavLink.style.display = 'none';
+        if (favoritesNavLink) favoritesNavLink.style.display = 'none';
+        if (profileNavLink) profileNavLink.style.display = 'none';
+        if (notificationBell) notificationBell.style.display = 'none';
+    }
+}
+
+// Set active navigation item
+function setActiveNav(element) {
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    if (element) {
+        element.classList.add('active');
     }
 }
 
@@ -159,6 +287,8 @@ function showHome() {
     document.getElementById('homePage').style.display = 'block';
     document.getElementById('createListingPage').style.display = 'none';
     document.getElementById('myListingsPage').style.display = 'none';
+    const profilePage = document.getElementById('profilePage');
+    if (profilePage) profilePage.style.display = 'none';
     // Reset filters
     currentCategory = '';
     document.getElementById('searchInput').value = '';
@@ -171,6 +301,9 @@ function showHome() {
         }
     });
     loadListings();
+    // Set active nav
+    const marketplaceNav = document.querySelector('.nav-item[onclick*="showHome"]');
+    if (marketplaceNav) setActiveNav(marketplaceNav);
 }
 
 // Show create listing
@@ -195,7 +328,99 @@ async function showMyListings() {
     document.getElementById('homePage').style.display = 'none';
     document.getElementById('createListingPage').style.display = 'none';
     document.getElementById('myListingsPage').style.display = 'block';
+    const profilePage = document.getElementById('profilePage');
+    if (profilePage) profilePage.style.display = 'none';
     await loadMyListings();
+    // Set active nav
+    const salesNav = document.querySelector('.nav-item[onclick*="showMyListings"]');
+    if (salesNav) setActiveNav(salesNav);
+}
+
+// Placeholder functions for other navigation items
+function showMyOrders() {
+    alert('My Orders feature coming soon!');
+    const ordersNav = document.querySelector('.nav-item[onclick*="showMyOrders"]');
+    if (ordersNav) setActiveNav(ordersNav);
+}
+
+function showMyFavorites() {
+    alert('My Favorites feature coming soon!');
+    const favoritesNav = document.querySelector('.nav-item[onclick*="showMyFavorites"]');
+    if (favoritesNav) setActiveNav(favoritesNav);
+}
+
+function showUserGuide() {
+    alert('User Guide coming soon!');
+    const guideNav = document.querySelector('.nav-item[onclick*="showUserGuide"]');
+    if (guideNav) setActiveNav(guideNav);
+}
+
+function showFeedback() {
+    alert('Feedback feature coming soon!');
+    const feedbackNav = document.querySelector('.nav-item[onclick*="showFeedback"]');
+    if (feedbackNav) setActiveNav(feedbackNav);
+}
+
+function showProfile() {
+    if (!currentUser) {
+        alert('Please login to view your profile');
+        showLogin();
+        return;
+    }
+    document.getElementById('homePage').style.display = 'none';
+    document.getElementById('createListingPage').style.display = 'none';
+    document.getElementById('myListingsPage').style.display = 'none';
+    const profilePage = document.getElementById('profilePage');
+    if (profilePage) {
+        profilePage.style.display = 'block';
+        loadProfileData();
+    }
+    // Set active nav
+    const profileNav = document.querySelector('.nav-item[onclick*="showProfile"]');
+    if (profileNav) setActiveNav(profileNav);
+}
+
+// Load profile data
+async function loadProfileData() {
+    if (!currentUser) return;
+    
+    const profileName = document.getElementById('profileName');
+    const profileStudentId = document.getElementById('profileStudentId');
+    const profileEmail = document.getElementById('profileEmail');
+    const profileCollege = document.getElementById('profileCollege');
+    const profilePhone = document.getElementById('profilePhone');
+    const profileUserName = document.getElementById('profileUserName');
+    const profileUserEmail = document.getElementById('profileUserEmail');
+    const profileAvatarInitials = document.getElementById('profileAvatarInitials');
+    
+    if (profileName) profileName.value = currentUser.name || '';
+    if (profileStudentId) profileStudentId.value = currentUser.studentId || '';
+    if (profileEmail) profileEmail.value = currentUser.email || '';
+    if (profileCollege) profileCollege.value = currentUser.college || '';
+    if (profilePhone) profilePhone.value = currentUser.phone || '';
+    
+    if (profileUserName) profileUserName.textContent = currentUser.name || 'User Name';
+    if (profileUserEmail) profileUserEmail.textContent = currentUser.email || 'user@cuhksz.edu.cn';
+    
+    if (profileAvatarInitials) {
+        const nameParts = (currentUser.name || '').split(' ');
+        const initials = nameParts.length >= 2 
+            ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
+            : (currentUser.name || 'U').substring(0, 2).toUpperCase();
+        profileAvatarInitials.textContent = initials;
+    }
+    
+    // Load statistics
+    try {
+        const response = await fetch(`${API_URL}/my-listings`, {
+            headers: { 'Authorization': `Bearer ${currentToken}` }
+        });
+        const listings = await response.json();
+        const statListings = document.getElementById('statListings');
+        if (statListings) statListings.textContent = listings.length || 0;
+    } catch (error) {
+        console.error('Error loading profile stats:', error);
+    }
 }
 
 // Load all listings
@@ -501,6 +726,91 @@ function filterByCategory(category) {
     });
     
     performSearch();
+}
+
+// Handle update profile
+async function handleUpdateProfile(event) {
+    event.preventDefault();
+    
+    if (!currentUser) {
+        alert('Please login to update your profile');
+        return;
+    }
+    
+    const name = document.getElementById('profileName').value;
+    const studentId = document.getElementById('profileStudentId').value;
+    const email = document.getElementById('profileEmail').value;
+    const college = document.getElementById('profileCollege').value;
+    const phone = document.getElementById('profilePhone').value;
+    
+    try {
+        const response = await fetch(`${API_URL}/profile`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify({ name, studentId, email, college, phone })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Update current user
+            currentUser = { ...currentUser, name, studentId, email, college, phone };
+            localStorage.setItem('user', JSON.stringify(currentUser));
+            updateUIForAuth();
+            loadProfileData();
+            alert('Profile updated successfully!');
+        } else {
+            alert(data.error || 'Failed to update profile');
+        }
+    } catch (error) {
+        alert('Error updating profile');
+    }
+}
+
+// Handle change password
+async function handleChangePassword(event) {
+    event.preventDefault();
+    
+    if (!currentUser) {
+        alert('Please login to change your password');
+        return;
+    }
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (newPassword !== confirmPassword) {
+        alert('New passwords do not match');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/change-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert('Password changed successfully!');
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        } else {
+            alert(data.error || 'Failed to change password');
+        }
+    } catch (error) {
+        alert('Error changing password');
+    }
 }
 
 // Close modals when clicking outside
