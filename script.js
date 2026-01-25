@@ -174,12 +174,17 @@ function handleAddToCart(productId) {
     // Here you could add actual cart functionality
 }
 
-// Handle navigation items
+// Handle navigation items - Allow actual navigation for pages with href
 document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
-        e.preventDefault();
-        const text = item.querySelector('span').textContent;
-        alert(`Navigating to ${text}...`);
+        const href = item.getAttribute('href');
+        // Only prevent default if there's no href (placeholder links)
+        if (!href || href === '#') {
+            e.preventDefault();
+            const text = item.querySelector('span').textContent;
+            alert(`Navigating to ${text}...`);
+        }
+        // If href exists, allow normal navigation
     });
 });
 

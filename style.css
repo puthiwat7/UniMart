@@ -599,3 +599,453 @@ body {
         gap: 12px;
     }
 }
+/* ======================== Sell Item Page ======================== */
+.sell-header {
+    background: linear-gradient(135deg, #4a5fc1 0%, #2d3a8f 100%);
+    color: white;
+    padding: 64px 48px;
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.sell-header h1 {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.sell-header p {
+    font-size: 18px;
+    font-weight: 300;
+    opacity: 0.9;
+}
+
+.sell-form-container {
+    max-width: 700px;
+    margin: 0 auto 48px;
+    padding: 0 48px;
+}
+
+.sell-form {
+    background: white;
+}
+
+.form-section {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.section-header i {
+    font-size: 24px;
+    color: var(--primary-blue);
+}
+
+.section-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 8px;
+}
+
+.form-group label i {
+    color: var(--primary-blue);
+    font-size: 16px;
+}
+
+.required {
+    color: #ef4444;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(74, 95, 193, 0.1);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #999;
+}
+
+.form-group textarea {
+    resize: vertical;
+    font-size: 14px;
+}
+
+.form-group select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 20px;
+    padding-right: 40px;
+}
+
+/* Condition Display */
+.condition-display {
+    background: #f0f4ff;
+    border: 1px solid #dde7ff;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.condition-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    margin-bottom: 8px;
+}
+
+.condition-label {
+    background: #fbbf24;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.condition-info {
+    font-size: 14px;
+    color: var(--dark-gray);
+    line-height: 1.5;
+}
+
+/* Condition Slider */
+.condition-slider {
+    margin-bottom: 24px;
+}
+
+.slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #ef4444, #f97316, #eab308, #84cc16, #22c55e, #0ea5e9);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    margin-bottom: 16px;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--primary-blue);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(74, 95, 193, 0.3);
+}
+
+.slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--primary-blue);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(74, 95, 193, 0.3);
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--dark-gray);
+    text-align: center;
+}
+
+.slider-labels span {
+    flex: 1;
+}
+
+.slider-labels small {
+    display: block;
+    font-size: 11px;
+    color: #999;
+    margin-top: 4px;
+}
+
+/* Form Help Text */
+.form-help {
+    background: #f0f9ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--dark-gray);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.form-help i {
+    color: #0ea5e9;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.form-help small {
+    display: block;
+    color: #666;
+    margin-top: 4px;
+}
+
+/* Image Upload */
+.image-upload {
+    margin-top: 12px;
+}
+
+.upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #fafafa;
+}
+
+.upload-area:hover {
+    border-color: var(--primary-blue);
+    background: #f0f4ff;
+}
+
+.upload-area i {
+    font-size: 40px;
+    color: var(--primary-blue);
+    margin-bottom: 8px;
+    display: block;
+}
+
+.upload-area p {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin: 0;
+}
+
+.image-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.image-preview img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.image-requirements {
+    margin-top: 12px;
+    padding: 12px;
+    background: #fffbeb;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--dark-gray);
+}
+
+.image-requirements small {
+    color: #b45309;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+    margin-top: 32px;
+}
+
+.btn-cancel,
+.btn-submit {
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel {
+    background: white;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.btn-cancel:hover {
+    background: var(--light-gray);
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, #4a5fc1 0%, #2d3a8f 100%);
+    color: white;
+    min-width: 200px;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 95, 193, 0.3);
+}
+
+.btn-submit:active {
+    transform: translateY(0);
+}
+
+/* Active Navigation */
+.nav-item.active {
+    background-color: var(--light-gray);
+    color: var(--primary-blue);
+}
+
+/* Responsive - Sell Item Page */
+@media (max-width: 768px) {
+    .sell-header {
+        padding: 40px 24px;
+    }
+
+    .sell-header h1 {
+        font-size: 32px;
+    }
+
+    .sell-form-container {
+        padding: 0 24px;
+    }
+
+    .form-section {
+        padding: 24px;
+    }
+
+    .slider-labels {
+        font-size: 11px;
+    }
+
+    .slider-labels span {
+        flex: 0.8;
+    }
+}
+
+@media (max-width: 480px) {
+    .sell-header {
+        padding: 32px 16px;
+        margin-bottom: 16px;
+    }
+
+    .sell-header h1 {
+        font-size: 24px;
+    }
+
+    .sell-header p {
+        font-size: 14px;
+    }
+
+    .sell-form-container {
+        padding: 0 16px;
+        margin-bottom: 24px;
+    }
+
+    .form-section {
+        padding: 16px;
+        margin-bottom: 16px;
+        border-radius: 8px;
+    }
+
+    .section-header {
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+    }
+
+    .section-header h2 {
+        font-size: 18px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .btn-cancel,
+    .btn-submit {
+        width: 100%;
+    }
+
+    .btn-submit {
+        min-width: unset;
+    }
+
+    .slider-labels {
+        display: none;
+    }
+
+    .upload-area {
+        padding: 30px 16px;
+    }
+
+    .upload-area i {
+        font-size: 32px;
+    }
+
+    .image-preview {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    }
+
+    .image-preview img {
+        height: 80px;
+    }
+}
