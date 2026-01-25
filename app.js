@@ -1,7 +1,7 @@
 // API Configuration
 const API_URL = 'http://localhost:3000/api';
 
-// State hel;lo
+// State
 let currentUser = null;
 let currentToken = null;
 
