@@ -195,9 +195,8 @@ body {
     color: white;
     padding: 60px 48px;
     text-align: center;
-    margin-bottom: 32px;
     border-radius: 20px;
-    margin: 24px 48px 32px 48px;
+    margin: 32px 48px 40px 64px;
 }
 
 .header-banner h1 {
@@ -214,7 +213,8 @@ body {
 
 /* ======================== Search & Filter ======================== */
 .search-filter-section {
-    padding: 0 48px 32px 48px;
+    padding: 24px 48px 32px 48px;
+    margin-left: 16px;
     display: flex;
     gap: 16px;
     align-items: flex-end;
@@ -300,7 +300,8 @@ body {
 
 /* ======================== Categories ======================== */
 .categories-section {
-    padding: 0 48px 40px 48px;
+    padding: 12px 48px 40px 48px;
+    margin-left: 16px;
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
@@ -369,9 +370,47 @@ body {
     color: white;
 }
 
-/* ======================== Products Section ======================== */
+/* ======================== Scroll to Top Button ======================== */
+.scroll-to-top {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    width: 48px;
+    height: 48px;
+    background-color: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(74, 95, 193, 0.3);
+    z-index: 98;
+}
+
+.scroll-to-top.visible {
+    display: flex;
+    opacity: 1;
+}
+
+.scroll-to-top:hover {
+    background-color: var(--dark-blue);
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(74, 95, 193, 0.4);
+}
+
+.scroll-to-top:active {
+    transform: translateY(-2px);
+}
+
+
 .products-section {
-    padding: 0 48px 48px 48px;
+    padding: 24px 48px 48px 48px;
+    margin-left: 16px;
 }
 
 .products-section h2 {

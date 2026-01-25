@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCategoryFilters();
     setupSearch();
     setupRefresh();
+    setupScrollToTop();
 });
 
 // Render products in the grid
@@ -142,6 +143,37 @@ function filterProducts() {
     });
 
     renderProducts(filteredProducts);
+    updateCategoryCounts();
+}
+
+// Update category counts based on filtered products
+function updateCategoryCounts() {
+    const categoryCards = document.querySelectorAll('.category-card');
+    const searchInput = document.querySelector('.search-box input').value.toLowerCase();
+    
+    categoryCards.forEach(card => {
+        const categoryName = card.querySelector('span').textContent;
+        let count = 0;
+        
+        if (categoryName === 'All Items') {
+            count = products.filter(p => 
+                p.title.toLowerCase().includes(searchInput) || 
+                p.seller.toLowerCase().includes(searchInput)
+            ).length;
+        } else {
+            count = products.filter(p => 
+                p.category === categoryName && (
+                    p.title.toLowerCase().includes(searchInput) || 
+                    p.seller.toLowerCase().includes(searchInput)
+                )
+            ).length;
+        }
+        
+        const countSpan = card.querySelector('.count');
+        if (countSpan) {
+            countSpan.textContent = count;
+        }
+    });
 }
 
 // Setup search functionality
@@ -233,8 +265,30 @@ document.querySelectorAll('.filter-select').forEach((select, index) => {
     });
 });
 
+// ======================== Scroll to Top Button ========================
+function setupScrollToTop() {
+    const scrollBtn = document.getElementById('scrollToTopBtn');
+    const mainContent = document.querySelector('.main-content');
+    
+    // Show/hide button based on scroll position
+    mainContent.addEventListener('scroll', () => {
+        if (mainContent.scrollTop > 300) {
+            scrollBtn.classList.add('visible');
+        } else {
+            scrollBtn.classList.remove('visible');
+        }
+    });
+    
+    // Scroll to top when clicked
+    scrollBtn.addEventListener('click', () => {
+        mainContent.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+}
+
 // ======================== Favorites Management ========================
-// Get favorites from localStorage
 function getFavorites() {
     const favorites = localStorage.getItem('favorites');
     return favorites ? JSON.parse(favorites) : [];
