@@ -186,10 +186,19 @@ function handleAddToCart(productId) {
 document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
         const href = item.getAttribute('href');
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        
+        // If navigating to Marketplace and already on index.html, don't show alert
+        if ((href === '#' || href === '') && currentPage === 'index.html' && item.querySelector('span').textContent === 'Marketplace') {
+            e.preventDefault();
+            return;
+        }
+        
         // If an explicit href is present and not a placeholder, allow normal navigation
         if (href && href !== '#' && href !== '') {
             return;
         }
+        
         // Otherwise treat as placeholder and show a navigation alert
         e.preventDefault();
         const text = item.querySelector('span').textContent;

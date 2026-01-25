@@ -191,23 +191,25 @@ body {
 }
 
 .header-banner {
-    background: linear-gradient(135deg, #4a5fc1 0%, #2d3a8f 100%);
+    background-color: #4a5fc1;
     color: white;
-    padding: 64px 48px;
+    padding: 60px 48px;
     text-align: center;
     margin-bottom: 32px;
+    border-radius: 20px;
+    margin: 24px 48px 32px 48px;
 }
 
 .header-banner h1 {
-    font-size: 48px;
+    font-size: 44px;
     font-weight: 700;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .header-banner p {
-    font-size: 18px;
-    font-weight: 300;
-    opacity: 0.9;
+    font-size: 16px;
+    font-weight: 400;
+    opacity: 0.95;
 }
 
 /* ======================== Search & Filter ======================== */
@@ -298,47 +300,51 @@ body {
 
 /* ======================== Categories ======================== */
 .categories-section {
-    padding: 0 48px 48px 48px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 16px;
-    max-width: 1400px;
+    padding: 0 48px 40px 48px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .category-card {
-    padding: 16px;
+    padding: 10px 16px;
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: 25px;
     cursor: pointer;
     transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
     text-align: center;
     gap: 8px;
-    font-size: 14px;
+    font-size: 13px;
     background-color: white;
+    white-space: nowrap;
+    height: 40px;
 }
 
 .category-card:hover {
     border-color: var(--primary-blue);
     background-color: var(--light-gray);
-    transform: translateY(-4px);
-    box-shadow: 0 4px 12px rgba(74, 95, 193, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(74, 95, 193, 0.15);
 }
 
 .category-card.active {
-    background: linear-gradient(135deg, #4a5fc1 0%, #5a6fd1 100%);
+    background: var(--primary-blue);
     color: white;
     border-color: var(--primary-blue);
     font-weight: 600;
 }
 
 .category-icon {
-    font-size: 28px;
+    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .category-card.active .category-icon {
@@ -350,11 +356,12 @@ body {
 }
 
 .count {
-    font-size: 12px;
-    background-color: rgba(74, 95, 193, 0.2);
+    font-size: 11px;
+    background-color: rgba(74, 95, 193, 0.15);
     color: var(--primary-blue);
-    padding: 2px 8px;
-    border-radius: 12px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 600;
 }
 
 .category-card.active .count {
