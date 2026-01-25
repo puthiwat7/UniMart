@@ -72,14 +72,24 @@
                 </ul>
             </nav>
 
-            <div class="user-profile">
-                <div class="user-avatar">
-                    <i class="fas fa-user-circle"></i>
+            <!-- User Profile / Login Section -->
+            <div id="userSection">
+                <!-- User Profile (shown when logged in) -->
+                <div class="user-profile" id="userProfile" style="display: none;">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="user-info">
+                        <h4 id="userName">User Name</h4>
+                        <p id="userEmail">user@email.com</p>
+                    </div>
                 </div>
-                <div class="user-info">
-                    <h4>Punnathorn Khunhon</h4>
-                    <p>knpunnathorn@gmail.com</p>
-                </div>
+
+                <!-- Login Button (shown when not logged in) -->
+                <button class="btn-login" id="loginBtn">
+                    <i class="fab fa-google"></i>
+                    <span>Sign in with Google</span>
+                </button>
             </div>
         </aside>
 

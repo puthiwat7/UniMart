@@ -209,3 +209,52 @@ document.querySelectorAll('.filter-select').forEach((select, index) => {
         // College filter (index === 1) can be expanded for college-specific filtering
     });
 });
+
+// ======================== Authentication Management ========================
+// Check if user is logged in (from localStorage)
+function checkAuthStatus() {
+    const userProfile = localStorage.getItem('userProfile');
+    if (userProfile) {
+        showUserProfile(JSON.parse(userProfile));
+    } else {
+        showLoginButton();
+    }
+}
+
+// Display user profile
+function showUserProfile(user) {
+    const userProfile = document.getElementById('userProfile');
+    const loginBtn = document.getElementById('loginBtn');
+    
+    userProfile.style.display = 'flex';
+    loginBtn.style.display = 'none';
+    
+    document.getElementById('userName').textContent = user.name || 'User';
+    document.getElementById('userEmail').textContent = user.email || '';
+}
+
+// Display login button
+function showLoginButton() {
+    const userProfile = document.getElementById('userProfile');
+    const loginBtn = document.getElementById('loginBtn');
+    
+    userProfile.style.display = 'none';
+    loginBtn.style.display = 'flex';
+}
+
+// Handle login button click
+document.getElementById('loginBtn').addEventListener('click', () => {
+    alert('Login button clicked! (Placeholder for future Google Sign-In integration)');
+});
+
+// Handle logout (optional - can be triggered from profile menu)
+function logout() {
+    localStorage.removeItem('userProfile');
+    showLoginButton();
+    alert('Signed out successfully!');
+}
+
+// Initialize auth status on page load
+window.addEventListener('DOMContentLoaded', () => {
+    checkAuthStatus();
+});
