@@ -87,8 +87,16 @@ function renderProducts(productsToRender) {
 function createProductCard(product) {
     const card = document.createElement('div');
     card.className = 'product-card';
+    const isFavorited = checkIfFavorited(product.id);
+    const favBtnColor = isFavorited ? '#ef4444' : '#9ca3af';
+    
     card.innerHTML = `
-        <div class="product-image">${product.image}</div>
+        <div class="product-image" style="position: relative;">
+            ${product.image}
+            <button class="favorite-btn" onclick="toggleFavorite(${product.id}, ${JSON.stringify(product).replace(/"/g, '&quot;')})" style="position: absolute; top: 8px; right: 8px; background-color: transparent; border: none; color: ${favBtnColor}; font-size: 20px; cursor: pointer; z-index: 10;">
+                <i class="fas fa-heart"></i>
+            </button>
+        </div>
         <div class="product-info">
             <span class="product-badge">${product.badge}</span>
             <h3 class="product-title">${product.title}</h3>
@@ -215,6 +223,39 @@ document.querySelectorAll('.filter-select').forEach((select, index) => {
         // College filter (index === 1) can be expanded for college-specific filtering
     });
 });
+
+// ======================== Favorites Management ========================
+// Get favorites from localStorage
+function getFavorites() {
+    const favorites = localStorage.getItem('favorites');
+    return favorites ? JSON.parse(favorites) : [];
+}
+
+// Save favorites to localStorage
+function saveFavorites(favorites) {
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+}
+
+// Check if item is favorited
+function checkIfFavorited(productId) {
+    const favorites = getFavorites();
+    return favorites.some(fav => fav.id === productId);
+}
+
+// Toggle favorite
+function toggleFavorite(productId, product) {
+    let favorites = getFavorites();
+    const isFavorited = favorites.some(fav => fav.id === productId);
+    
+    if (isFavorited) {
+        favorites = favorites.filter(fav => fav.id !== productId);
+    } else {
+        favorites.push(product);
+    }
+    
+    saveFavorites(favorites);
+    renderProducts(filteredProducts); // Re-render to update heart colors
+}
 
 // ======================== Authentication Management ========================
 // Check if user is logged in (from localStorage)
