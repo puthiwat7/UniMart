@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - UniMart</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-placeholder">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <h1>UNIMART</h1>
+            </div>
+
+            <nav class="navigation">
+                <h3>NAVIGATION</h3>
+                <ul>
+                    <li>
+                        <a href="index.html" class="nav-item">
+                            <i class="fas fa-store"></i>
+                            <span>Marketplace</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="sell-item.html" class="nav-item">
+                            <i class="fas fa-plus"></i>
+                            <span>Sell Item</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="my-orders.html" class="nav-item active">
+                            <i class="fas fa-boxes"></i>
+                            <span>My Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>My Sales</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-heart"></i>
+                            <span>My Favorites</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-question-circle"></i>
+                            <span>User Guide</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-comment"></i>
+                            <span>Feedback</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- User Profile / Login Section -->
+            <div id="userSection">
+                <!-- User Profile (shown when logged in) -->
+                <div class="user-profile" id="userProfile" style="display: none;">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="user-info">
+                        <h4 id="userName">User Name</h4>
+                        <p id="userEmail">user@email.com</p>
+                    </div>
+                </div>
+
+                <!-- Login Button (shown when not logged in) -->
+                <button class="btn-login" id="loginBtn">
+                    <i class="fab fa-google"></i>
+                    <span>Sign in with Google</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="orders-header">
+                <div class="orders-header-content">
+                    <h1>My Orders <i class="fas fa-sync-alt"></i></h1>
+                    <p>Track and manage your purchases</p>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="orders-tabs">
+                <button class="tab-button active" data-tab="active-orders">
+                    <i class="fas fa-clock"></i>
+                    <span>Active Orders</span>
+                    <span class="tab-count">0</span>
+                </button>
+                <button class="tab-button" data-tab="completed-orders">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Completed</span>
+                    <span class="tab-count">1</span>
+                </button>
+                <div class="sort-icon">
+                    <i class="fas fa-sliders-h"></i>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="orders-container">
+                <!-- Active Orders Tab -->
+                <div class="tab-content active" id="active-orders">
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                        <h2>No active orders</h2>
+                        <p>Your active orders will appear here</p>
+                    </div>
+                </div>
+
+                <!-- Completed Orders Tab -->
+                <div class="tab-content" id="completed-orders">
+                    <div class="orders-list">
+                        <div class="order-card">
+                            <div class="order-header">
+                                <div class="order-info">
+                                    <h3>Order #12345</h3>
+                                    <p class="order-date">Completed on Jan 20, 2026</p>
+                                </div>
+                                <div class="order-status">
+                                    <span class="status-badge completed">Completed</span>
+                                </div>
+                            </div>
+
+                            <div class="order-items">
+                                <div class="order-item">
+                                    <div class="item-image">📚</div>
+                                    <div class="item-details">
+                                        <h4>Introduction to Algorithms</h4>
+                                        <p>by John Doe</p>
+                                        <p class="item-price">$25.00</p>
+                                    </div>
+                                    <div class="item-quantity">
+                                        <span>Qty: 1</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="order-footer">
+                                <div class="order-total">
+                                    <span>Total:</span>
+                                    <span class="total-price">$25.00</span>
+                                </div>
+                                <div class="order-actions">
+                                    <button class="btn-secondary">View Details</button>
+                                    <button class="btn-primary">Buy Again</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const tabName = button.getAttribute('data-tab');
+
+                // Remove active class from all buttons and contents
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+
+                // Add active class to clicked button and corresponding content
+                button.classList.add('active');
+                document.getElementById(tabName).classList.add('active');
+            });
+        });
+
+        // Auth check
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuthStatus();
+        });
+    </script>
+</body>
+</html>
