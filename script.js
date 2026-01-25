@@ -177,6 +177,13 @@ function handleAddToCart(productId) {
 // Handle navigation items
 document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
+        // Allow default navigation for links with href
+        const href = item.getAttribute('href');
+        if (href && href !== '#' && href !== '') {
+            // Let the browser handle the navigation
+            return;
+        }
+        // Prevent default and show alert for placeholder links
         e.preventDefault();
         const text = item.querySelector('span').textContent;
         alert(`Navigating to ${text}...`);

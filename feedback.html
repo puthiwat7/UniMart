@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback & Support - UniMart</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="feedback.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-placeholder">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <h1>UNIMART</h1>
+            </div>
+
+            <nav class="navigation">
+                <h3>NAVIGATION</h3>
+                <ul>
+                    <li>
+                        <a href="index.html" class="nav-item">
+                            <i class="fas fa-store"></i>
+                            <span>Marketplace</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-plus"></i>
+                            <span>Sell Item</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-boxes"></i>
+                            <span>My Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>My Sales</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-heart"></i>
+                            <span>My Favorites</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-question-circle"></i>
+                            <span>User Guide</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="feedback.html" class="nav-item active">
+                            <i class="fas fa-comment"></i>
+                            <span>Feedback</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- User Profile / Login Section -->
+            <div id="userSection">
+                <!-- User Profile (shown when logged in) -->
+                <div class="user-profile" id="userProfile" style="display: none;">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="user-info">
+                        <h4 id="userName">User Name</h4>
+                        <p id="userEmail">user@email.com</p>
+                    </div>
+                </div>
+
+                <!-- Login Button (shown when not logged in) -->
+                <button class="btn-login" id="loginBtn">
+                    <i class="fab fa-google"></i>
+                    <span>Sign in with Google</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content feedback-content">
+            <div class="feedback-container">
+                <div class="feedback-header">
+                    <div class="feedback-title-section">
+                        <i class="fas fa-comment-dots"></i>
+                        <h1>Submit Feedback</h1>
+                    </div>
+                    <button class="btn-contact-admin" id="contactAdminBtn">
+                        <i class="fas fa-comment"></i>
+                        Contact Admin
+                    </button>
+                </div>
+
+                <div class="feedback-form-card">
+                    <form id="feedbackForm">
+                        <div class="form-group">
+                            <label for="feedbackType">Feedback Type *</label>
+                            <select id="feedbackType" name="feedbackType" required>
+                                <option value="">Select feedback type</option>
+                                <option value="bug">Bug Report</option>
+                                <option value="feature">Feature Request</option>
+                                <option value="improvement">Improvement Suggestion</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subject">Subject *</label>
+                            <input type="text" id="subject" name="subject" placeholder="Brief summary of your feedback" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">Message *</label>
+                            <textarea id="message" name="message" rows="6" placeholder="Please provide details about your feedback, including steps to reproduce if reporting a bug..." required></textarea>
+                        </div>
+
+                        <div class="submit-info">
+                            <i class="fas fa-info-circle"></i>
+                            <span id="submitInfo">Submitting as: Guest User (guest@example.com)</span>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-clear" id="clearBtn">Clear Form</button>
+                            <button type="submit" class="btn-submit">
+                                <i class="fas fa-paper-plane"></i>
+                                Submit Feedback
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="info-box">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Need immediate help? Use the "Contact Admin" button above for urgent issues or disputes that require immediate admin attention.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Contact Admin Modal -->
+    <div class="modal-overlay" id="contactAdminModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-section">
+                    <i class="fas fa-comment-dots"></i>
+                    <h2>Contact Admin Directly</h2>
+                </div>
+                <button class="modal-close" id="closeModalBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <p class="modal-description">Send a direct message to the admin team for urgent matters</p>
+
+            <div class="contact-info">
+                <i class="fas fa-user"></i>
+                <span id="contactInfo">Contacting as: Guest User</span>
+            </div>
+
+            <form id="contactAdminForm">
+                <div class="form-group">
+                    <label for="adminMessage">Your Message *</label>
+                    <textarea id="adminMessage" name="adminMessage" rows="6" placeholder="Describe your urgent issue or question..." required></textarea>
+                </div>
+
+                <div class="warning-box">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>This is for urgent matters only. For general feedback, please use the main feedback form instead.</p>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="cancelModalBtn">Cancel</button>
+                    <button type="submit" class="btn-send-admin">
+                        <i class="fas fa-paper-plane"></i>
+                        Send to Admin
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="feedback.js"></script>
+</body>
+</html>
