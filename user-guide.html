@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Guide - UniMart</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-placeholder">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <h1>UNIMART</h1>
+            </div>
+
+            <nav class="navigation">
+                <h3>NAVIGATION</h3>
+                <ul>
+                    <li>
+                        <a href="index.html" class="nav-item">
+                            <i class="fas fa-store"></i>
+                            <span>Marketplace</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="sell-item.html" class="nav-item">
+                            <i class="fas fa-plus"></i>
+                            <span>Sell Item</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="my-orders.html" class="nav-item">
+                            <i class="fas fa-boxes"></i>
+                            <span>My Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>My Sales</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-heart"></i>
+                            <span>My Favorites</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="user-guide.html" class="nav-item active">
+                            <i class="fas fa-question-circle"></i>
+                            <span>User Guide</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="feedback.html" class="nav-item">
+                            <i class="fas fa-comment"></i>
+                            <span>Feedback</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- User Profile / Login Section -->
+            <div id="userSection">
+                <!-- User Profile (shown when logged in) -->
+                <div class="user-profile" id="userProfile" style="display: none;">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="user-info">
+                        <h4 id="userName">User Name</h4>
+                        <p id="userEmail">user@email.com</p>
+                    </div>
+                </div>
+
+                <!-- Login Button (shown when not logged in) -->
+                <button class="btn-login" id="loginBtn">
+                    <i class="fab fa-google"></i>
+                    <span>Sign in with Google</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="guide-header">
+                <h1>User Guide</h1>
+                <p>Your comprehensive guide to using the UniMart Marketplace.</p>
+                <p class="guide-subtitle">Click on any section below to expand and read the details.</p>
+            </div>
+
+            <!-- Guide Content -->
+            <div class="guide-container">
+                <!-- How to Buy Section -->
+                <div class="guide-section">
+                    <div class="section-title" data-section="how-to-buy">
+                        <div class="section-icon" style="color: #4a5fc1;">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <h2>How to Buy</h2>
+                        <i class="fas fa-chevron-right section-toggle"></i>
+                    </div>
+                    <div class="section-content" id="how-to-buy">
+                        <div class="step">
+                            <div class="step-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="step-content">
+                                <h3>Step 1: Complete Your Profile</h3>
+                                <p>Before you can buy, make sure your profile is updated with your <strong>College and Payment QR Code</strong>. This is essential for delivery and potential refunds.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-icon">
+                                <i class="fas fa-cube"></i>
+                            </div>
+                            <div class="step-content">
+                                <h3>Step 2: Find & Order an Item</h3>
+                                <p>Browse the Marketplace, find an item you like, and click "Order Now". Fill in your delivery details and click "Proceed to Payment".</p>
+                            </div>
+                        </div>
+
+                        <div class="step highlight">
+                            <div class="step-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="step-content">
+                                <h3>Step 3: Pay the Platform</h3>
+                                <p><strong>Pay the exact amount to the platform QR code shown in the payment window, NOT the seller.</strong></p>
+                                <p>The platform holds your money securely until the transaction is complete. After paying, click "I have completed the payment".</p>
+                            </div>
+                        </div>
+
+                        <div class="step highlight">
+                            <div class="step-icon">
+                                <i class="fas fa-map-pin"></i>
+                            </div>
+                            <div class="step-content">
+                                <h3>Step 4: Wait for Delivery to Designated Spot</h3>
+                                <p>An admin will verify your payment within <strong>24 hours</strong>. Once confirmed, the seller has <strong>48 hours</strong> to deliver the item to <strong>the platform designated spot at your college</strong>.</p>
+                                <p><strong>IMPORTANT: You do NOT need to meet the seller. The item will be placed at a specific location provided by the platform at your dorm.</strong></p>
+                                <p>If the seller does not deliver within 48 hours, you will automatically receive a refund.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-icon">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <div class="step-content">
+                                <h3>Step 5: Pick Up Your Item</h3>
+                                <p><strong>When the seller marks the item as delivered, you must go to the designated spot at your college to collect your item.</strong></p>
+                                <p>Check the item thoroughly to make sure it matches the description and photos.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="step-content">
+                                <h3>Step 6: Confirm Receipt or Request Refund</h3>
+                                <p>Once you have the item, go to <strong>My Orders</strong> and choose one of two options:</p>
+                                <ul>
+                                    <li><strong>Option 1: Click "Accept Item"</strong> if you are satisfied. This releases payment to the seller.</li>
+                                    <li><strong>Option 2: Click "Request Refund"</strong> if there's an issue. Provide evidence (photos/description) and an admin will review within 24 hours.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- How to Sell Section -->
+                <div class="guide-section">
+                    <div class="section-title" data-section="how-to-sell">
+                        <div class="section-icon" style="color: #10b981;">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                        <h2>How to Sell</h2>
+                        <i class="fas fa-chevron-right section-toggle"></i>
+                    </div>
+                    <div class="section-content" id="how-to-sell">
+                        <div class="step">
+                            <div class="step-icon">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div class="step-content">
+                                <h3>Step 1: Create a Listing</h3>
+                                <p>Go to "Sell Item" and fill in all the details: item name, price, description, category, condition, and upload 4-8 high-quality photos.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-icon">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="step-content">
+                                <h3>Step 2: Wait for Orders</h3>
+                                <p>Your listing goes live and appears on the marketplace. Buyers can browse and place orders.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <div class="step-content">
+                                <h3>Step 3: Receive Order Notifications</h3>
+                                <p>You'll get a notification when a buyer orders your item. Check "My Sales" to see order details and the delivery location.</p>
+                            </div>
+                        </div>
+
+                        <div class="step highlight">
+                            <div class="step-icon">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <div class="step-content">
+                                <h3>Step 4: Deliver Within 48 Hours</h3>
+                                <p><strong>You have 48 hours to deliver the item to the platform-designated spot at the buyer's college. Do NOT meet the buyer directly.</strong></p>
+                                <p>Follow the exact location provided in the order details.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-icon">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <div class="step-content">
+                                <h3>Step 5: Mark as Delivered with Photo Proof</h3>
+                                <p>Take a photo of the item at the delivery location and upload it as proof. Mark the item as "Delivered" in your "My Sales" section.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-icon">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div class="step-content">
+                                <h3>Step 6: Receive Payment</h3>
+                                <p>Once the buyer confirms receipt, the payment is released to you. If they request a refund, an admin reviews it first.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Refund Process Section -->
+                <div class="guide-section">
+                    <div class="section-title" data-section="refund-process">
+                        <div class="section-icon" style="color: #f97316;">
+                            <i class="fas fa-undo"></i>
+                        </div>
+                        <h2>Refund Process</h2>
+                        <i class="fas fa-chevron-right section-toggle"></i>
+                    </div>
+                    <div class="section-content" id="refund-process">
+                        <div class="step">
+                            <div class="step-icon">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div class="step-content">
+                                <h3>When Can You Request a Refund?</h3>
+                                <ul>
+                                    <li>Item not delivered within 48 hours (automatic refund)</li>
+                                    <li>Item doesn't match description or photos</li>
+                                    <li>Item is damaged or defective</li>
+                                    <li>Item is significantly different from listing</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="step-content">
+                                <h3>How to Request a Refund</h3>
+                                <p>Go to "My Orders" → Click on the order → Click "Request Refund" and provide:</p>
+                                <ul>
+                                    <li>Reason for refund</li>
+                                    <li>Clear photos of the item</li>
+                                    <li>Description of the issue</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="step highlight">
+                            <div class="step-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="step-content">
+                                <h3>Admin Review Timeline</h3>
+                                <p><strong>An admin will review your refund request within 24 hours.</strong></p>
+                                <p>Our team will examine the evidence and make a fair decision based on marketplace policies.</p>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <div class="step-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="step-content">
+                                <h3>Return Item to Pickup Spot</h3>
+                                <p>If a refund is approved, you must return the item to the platform-designated pickup spot at your college within 24 hours.</p>
+                                <p>The seller will inspect the item there and process the refund.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Marketplace Policies Section -->
+                <div class="guide-section">
+                    <div class="section-title" data-section="marketplace-policies">
+                        <div class="section-icon" style="color: #a855f7;">
+                            <i class="fas fa-gavel"></i>
+                        </div>
+                        <h2>Marketplace Policies</h2>
+                        <i class="fas fa-chevron-right section-toggle"></i>
+                    </div>
+                    <div class="section-content" id="marketplace-policies">
+                        <h3>Prohibited Items</h3>
+                        <p>The following items cannot be sold on UniMart:</p>
+                        <ul>
+                            <li>Illegal or counterfeit products</li>
+                            <li>Weapons or dangerous items</li>
+                            <li>Stolen goods</li>
+                            <li>Adult content</li>
+                            <li>Hazardous materials</li>
+                        </ul>
+
+                        <h3>Code of Conduct</h3>
+                        <ul>
+                            <li><strong>Be Honest:</strong> Accurate descriptions and photos are required</li>
+                            <li><strong>Be Respectful:</strong> Treat all users with courtesy</li>
+                            <li><strong>Be Punctual:</strong> Meet delivery deadlines</li>
+                            <li><strong>No Direct Meetings:</strong> All transactions happen through the platform</li>
+                            <li><strong>Photo Evidence:</strong> Always provide proof of delivery</li>
+                        </ul>
+
+                        <h3>Consequences for Violations</h3>
+                        <ul>
+                            <li>Warning (first offense)</li>
+                            <li>Account suspension (repeated violations)</li>
+                            <li>Permanent ban (serious violations)</li>
+                            <li>Forfeiture of funds in dispute</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- About UniMart Section -->
+                <div class="guide-section">
+                    <div class="section-title" data-section="about-unimart">
+                        <div class="section-icon" style="color: #4a5fc1;">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <h2>About UniMart</h2>
+                        <i class="fas fa-chevron-right section-toggle"></i>
+                    </div>
+                    <div class="section-content" id="about-unimart">
+                        <h3>What is UniMart?</h3>
+                        <p>UniMart is an official campus marketplace for the CUHK-SZ community, providing a safe and secure platform for students to buy and sell items within campus.</p>
+
+                        <h3>Why UniMart?</h3>
+                        <ul>
+                            <li><strong>Safety:</strong> All transactions go through the platform</li>
+                            <li><strong>Security:</strong> Escrow system protects both buyers and sellers</li>
+                            <li><strong>Convenience:</strong> Campus-based delivery locations</li>
+                            <li><strong>Community:</strong> Trade with fellow students you know</li>
+                            <li><strong>Trust:</strong> Admin-backed verification and dispute resolution</li>
+                        </ul>
+
+                        <h3>Our Mission</h3>
+                        <p>To create a trustworthy, convenient, and community-driven marketplace where CUHK-SZ students can confidently buy and sell items on campus.</p>
+                    </div>
+                </div>
+
+                <!-- Notifications & Updates Section -->
+                <div class="guide-section">
+                    <div class="section-title" data-section="notifications">
+                        <div class="section-icon" style="color: #a855f7;">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h2>Notifications & Updates</h2>
+                        <i class="fas fa-chevron-right section-toggle"></i>
+                    </div>
+                    <div class="section-content" id="notifications">
+                        <h3>Stay Informed</h3>
+                        <ul>
+                            <li>You'll receive <strong>in-app notifications</strong> for all order updates, payment confirmations, and delivery status changes</li>
+                            <li>Check the <strong>bell icon in the sidebar</strong> regularly to stay updated on your transactions</li>
+                            <li><strong>Admin will verify payments within 24 hours</strong> of submission</li>
+                        </ul>
+
+                        <div class="info-box">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <h4>Email Notifications</h4>
+                                <p>Important email notifications (payment confirmations, delivery updates, refund decisions) will be sent to your registered email address. Make sure to check both your inbox and in-app notifications regularly!</p>
+                            </div>
+                        </div>
+
+                        <h3>Quick Tips for Success</h3>
+                        <ul>
+                            <li><strong>Buyers:</strong> Upload your Payment QR code to your profile before making any purchases</li>
+                            <li><strong>Sellers:</strong> You have only 48 hours to deliver - plan accordingly and risk automatic refunds</li>
+                            <li><strong>Physical Locations:</strong> All deliveries happen at platform-designated spots at colleges - no direct buyer-seller meetings</li>
+                            <li><strong>Photo Evidence:</strong> Always take clear photos for listings, delivery proof, and refund disputes</li>
+                            <li><strong>Refund Process:</strong> Buyers return items to the pickup spot, sellers inspect them there</li>
+                            <li><strong>Security:</strong> All payments go through the platform - never pay sellers directly</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Accordion functionality
+        document.querySelectorAll('.section-title').forEach(title => {
+            title.addEventListener('click', () => {
+                const section = title.getAttribute('data-section');
+                const content = document.getElementById(section);
+                const toggle = title.querySelector('.section-toggle');
+                
+                // Close all other sections
+                document.querySelectorAll('.section-content').forEach(sec => {
+                    if (sec.id !== section) {
+                        sec.classList.remove('active');
+                    }
+                });
+                document.querySelectorAll('.section-toggle').forEach(tog => {
+                    if (tog !== toggle) {
+                        tog.classList.remove('rotate');
+                    }
+                });
+
+                // Toggle current section
+                content.classList.toggle('active');
+                toggle.classList.toggle('rotate');
+            });
+        });
+
+        // Auth check
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuthStatus();
+        });
+    </script>
+</body>
+</html>

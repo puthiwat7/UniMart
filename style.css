@@ -1524,3 +1524,356 @@ body {
         font-size: 12px;
     }
 }
+
+/* ======================== User Guide Page ======================== */
+.guide-header {
+    background: linear-gradient(135deg, #4a5fc1 0%, #2d3a8f 100%);
+    color: white;
+    padding: 64px 48px;
+    text-align: center;
+}
+
+.guide-header h1 {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.guide-header p {
+    font-size: 16px;
+    font-weight: 300;
+    opacity: 0.9;
+    margin: 8px 0;
+}
+
+.guide-subtitle {
+    font-size: 14px;
+    opacity: 0.85;
+    margin-top: 16px;
+}
+
+.guide-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 48px;
+}
+
+.guide-section {
+    margin-bottom: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.guide-section:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.section-title:hover {
+    background: var(--light-gray);
+}
+
+.section-icon {
+    font-size: 24px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: rgba(74, 95, 193, 0.1);
+}
+
+.section-title h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+    flex: 1;
+}
+
+.section-toggle {
+    font-size: 16px;
+    color: var(--dark-gray);
+    transition: transform 0.3s ease;
+}
+
+.section-toggle.rotate {
+    transform: rotate(90deg);
+}
+
+.section-content {
+    max-height: 0;
+    overflow: hidden;
+    background: white;
+    transition: max-height 0.3s ease;
+    border-top: 1px solid var(--border-color);
+}
+
+.section-content.active {
+    max-height: 5000px;
+}
+
+.section-content > * {
+    padding: 0 20px;
+    margin-bottom: 20px;
+}
+
+.section-content > *:first-child {
+    padding-top: 20px;
+}
+
+.section-content > *:last-child {
+    margin-bottom: 0;
+    padding-bottom: 20px;
+}
+
+.section-content h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0 0 12px 0;
+}
+
+.section-content p {
+    font-size: 14px;
+    color: var(--dark-gray);
+    line-height: 1.6;
+    margin: 0 0 16px 0;
+}
+
+.section-content ul {
+    font-size: 14px;
+    color: var(--dark-gray);
+    line-height: 1.8;
+    margin: 0 0 16px 0;
+    padding-left: 20px;
+}
+
+.section-content li {
+    margin-bottom: 8px;
+}
+
+.section-content strong {
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+.step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding: 16px;
+    border-radius: 8px;
+    background: white;
+}
+
+.step.highlight {
+    background: #f0f4ff;
+    border-left: 4px solid var(--primary-blue);
+}
+
+.step-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    background: var(--light-gray);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--primary-blue);
+}
+
+.step.highlight .step-icon {
+    background: rgba(74, 95, 193, 0.2);
+    color: var(--primary-blue);
+}
+
+.step-content {
+    flex: 1;
+}
+
+.step-content h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0 0 8px 0;
+}
+
+.step-content p {
+    font-size: 13px;
+    color: var(--dark-gray);
+    line-height: 1.6;
+    margin: 0 0 8px 0;
+}
+
+.step-content ul {
+    font-size: 13px;
+    color: var(--dark-gray);
+    margin: 8px 0 0 0;
+    padding-left: 20px;
+    line-height: 1.6;
+}
+
+.step-content li {
+    margin-bottom: 6px;
+}
+
+.info-box {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    background: #f0f9ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    margin: 16px 0;
+}
+
+.info-box i {
+    font-size: 24px;
+    color: #0ea5e9;
+    flex-shrink: 0;
+}
+
+.info-box h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0 0 6px 0;
+}
+
+.info-box p {
+    font-size: 13px;
+    color: var(--dark-gray);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Responsive - User Guide Page */
+@media (max-width: 768px) {
+    .guide-header {
+        padding: 40px 24px;
+    }
+
+    .guide-header h1 {
+        font-size: 32px;
+    }
+
+    .guide-container {
+        padding: 24px 24px;
+    }
+
+    .section-title {
+        gap: 12px;
+        padding: 16px;
+    }
+
+    .section-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 18px;
+    }
+
+    .section-title h2 {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .guide-header {
+        padding: 32px 16px;
+    }
+
+    .guide-header h1 {
+        font-size: 24px;
+    }
+
+    .guide-header p {
+        font-size: 14px;
+    }
+
+    .guide-container {
+        padding: 16px;
+    }
+
+    .section-title {
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .section-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 16px;
+    }
+
+    .section-title h2 {
+        font-size: 14px;
+    }
+
+    .section-content > * {
+        padding: 0 12px;
+        margin-bottom: 12px;
+    }
+
+    .section-content > *:first-child {
+        padding-top: 12px;
+    }
+
+    .section-content > *:last-child {
+        padding-bottom: 12px;
+    }
+
+    .step {
+        gap: 12px;
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+
+    .step-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+
+    .step-content h3 {
+        font-size: 13px;
+    }
+
+    .step-content p,
+    .step-content ul {
+        font-size: 12px;
+    }
+
+    .info-box {
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .info-box i {
+        font-size: 20px;
+    }
+
+    .info-box h4 {
+        font-size: 12px;
+    }
+
+    .info-box p {
+        font-size: 11px;
+    }
+}
+
