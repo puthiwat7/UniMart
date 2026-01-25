@@ -61,6 +61,7 @@ let filteredProducts = products;
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', () => {
+    updateCategoryCounts(); // Update counts on initial load
     renderProducts(products);
     setupCategoryFilters();
     setupSearch();
