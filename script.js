@@ -174,16 +174,15 @@ function handleAddToCart(productId) {
     // Here you could add actual cart functionality
 }
 
-// Handle navigation items
+// Handle navigation items - Allow actual navigation for pages with href
 document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
-        // Allow default navigation for links with href
         const href = item.getAttribute('href');
+        // If an explicit href is present and not a placeholder, allow normal navigation
         if (href && href !== '#' && href !== '') {
-            // Let the browser handle the navigation
             return;
         }
-        // Prevent default and show alert for placeholder links
+        // Otherwise treat as placeholder and show a navigation alert
         e.preventDefault();
         const text = item.querySelector('span').textContent;
         alert(`Navigating to ${text}...`);

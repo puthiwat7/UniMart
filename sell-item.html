@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell Item - UniMart</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-placeholder">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <h1>UNIMART</h1>
+            </div>
+
+            <nav class="navigation">
+                <h3>NAVIGATION</h3>
+                <ul>
+                    <li>
+                        <a href="index.html" class="nav-item">
+                            <i class="fas fa-store"></i>
+                            <span>Marketplace</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="sell-item.html" class="nav-item active">
+                            <i class="fas fa-plus"></i>
+                            <span>Sell Item</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-boxes"></i>
+                            <span>My Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>My Sales</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-heart"></i>
+                            <span>My Favorites</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-question-circle"></i>
+                            <span>User Guide</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-comment"></i>
+                            <span>Feedback</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- User Profile / Login Section -->
+            <div id="userSection">
+                <!-- User Profile (shown when logged in) -->
+                <div class="user-profile" id="userProfile" style="display: none;">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="user-info">
+                        <h4 id="userName">User Name</h4>
+                        <p id="userEmail">user@email.com</p>
+                    </div>
+                </div>
+
+                <!-- Login Button (shown when not logged in) -->
+                <button class="btn-login" id="loginBtn">
+                    <i class="fab fa-google"></i>
+                    <span>Sign in with Google</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="sell-header">
+                <h1>List Your Item</h1>
+                <p>Share what you don't need with the CUHK-SZ community</p>
+            </div>
+
+            <!-- Form Container -->
+            <div class="sell-form-container">
+                <form class="sell-form" id="sellForm">
+                    <!-- Product Details Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-box"></i>
+                            <h2>Product Details</h2>
+                        </div>
+
+                        <!-- Product Title -->
+                        <div class="form-group">
+                            <label for="productTitle">
+                                <i class="fas fa-heart"></i>
+                                Product Title <span class="required">*</span>
+                            </label>
+                            <input type="text" id="productTitle" name="productTitle" placeholder="e.g., Introduction to Economics Textbook" required>
+                        </div>
+
+                        <!-- Listing Price -->
+                        <div class="form-group">
+                            <label for="price">
+                                <i class="fas fa-dollar-sign"></i>
+                                Listing Price ($) <span class="required">*</span>
+                            </label>
+                            <input type="number" id="price" name="price" placeholder="e.g., 100" step="0.01" required>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="form-group">
+                            <label for="description">
+                                <i class="fas fa-file"></i>
+                                Description <span class="required">*</span>
+                            </label>
+                            <textarea id="description" name="description" placeholder="Describe your item in detail..." rows="5" required></textarea>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="form-group">
+                            <label for="category">
+                                <i class="fas fa-tag"></i>
+                                Category <span class="required">*</span>
+                            </label>
+                            <select id="category" name="category" required>
+                                <option value="">Select a category</option>
+                                <option value="textbooks">Textbooks</option>
+                                <option value="electronics">Electronics</option>
+                                <option value="furniture">Furniture</option>
+                                <option value="clothing">Clothing</option>
+                                <option value="sports">Sports</option>
+                                <option value="stationery">Stationery</option>
+                                <option value="kitchen">Kitchen</option>
+                                <option value="vehicles">Vehicles</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Item Condition -->
+                        <div class="form-group">
+                            <label for="condition">
+                                <i class="fas fa-info-circle"></i>
+                                Item Condition <span class="required">*</span>
+                            </label>
+                            <div class="condition-display">
+                                <div class="condition-value">
+                                    <span id="conditionPercentage">75</span>%
+                                    <span id="conditionLabel" class="condition-label">Good</span>
+                                </div>
+                                <div class="condition-info">Item shows minor signs of wear but functions perfectly. Great value.</div>
+                            </div>
+                            <div class="condition-slider">
+                                <input type="range" id="condition" name="condition" min="0" max="100" value="75" class="slider">
+                                <div class="slider-labels">
+                                    <span>Very Poor<br><small>0%</small></span>
+                                    <span>Poor<br><small>20%</small></span>
+                                    <span>Fair<br><small>40%</small></span>
+                                    <span>Good<br><small>60%</small></span>
+                                    <span>Like New<br><small>80%</small></span>
+                                    <span>Brand New<br><small>100%</small></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quantity Available -->
+                        <div class="form-group">
+                            <label for="quantity">
+                                <i class="fas fa-boxes"></i>
+                                Quantity Available <span class="required">*</span>
+                            </label>
+                            <input type="number" id="quantity" name="quantity" placeholder="1" min="1" value="1" required>
+                            <div class="form-help">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Multiple Items Listing</span><br>
+                                <small>Specify the number of identical items you have to sell. Each unit will be sold separately.</small>
+                            </div>
+                        </div>
+
+                        <!-- Product Images -->
+                        <div class="form-group">
+                            <label for="images">
+                                <i class="fas fa-image"></i>
+                                Product Images <span class="required">*</span>
+                            </label>
+                            <div class="image-upload">
+                                <input type="file" id="images" name="images" multiple accept="image/*" style="display: none;">
+                                <div class="upload-area" id="uploadArea">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Add Photo</p>
+                                </div>
+                                <div id="imagePreview" class="image-preview"></div>
+                            </div>
+                            <div class="image-requirements">
+                                <small>Upload 4-8 high-quality photos (minimum 4 required)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel">Cancel</button>
+                        <button type="submit" class="btn-submit">Create Listing</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Condition slider functionality
+        const conditionSlider = document.getElementById('condition');
+        const conditionPercentage = document.getElementById('conditionPercentage');
+        const conditionLabel = document.getElementById('conditionLabel');
+        const conditionInfo = document.querySelector('.condition-info');
+
+        const conditionLevels = {
+            0: { label: 'Very Poor', info: 'Item has significant damage and may not function properly.' },
+            20: { label: 'Poor', info: 'Item has major wear and tear. Limited functionality.' },
+            40: { label: 'Fair', info: 'Item has moderate wear. Functions with some limitations.' },
+            60: { label: 'Good', info: 'Item shows minor signs of wear but functions perfectly. Great value.' },
+            80: { label: 'Like New', info: 'Item is in excellent condition with minimal wear. Rarely used.' },
+            100: { label: 'Brand New', info: 'Item is new, unopened, and in original packaging.' }
+        };
+
+        function updateCondition() {
+            const value = parseInt(conditionSlider.value);
+            let level;
+            
+            if (value <= 10) level = 0;
+            else if (value <= 30) level = 20;
+            else if (value <= 50) level = 40;
+            else if (value <= 70) level = 60;
+            else if (value <= 90) level = 80;
+            else level = 100;
+
+            conditionPercentage.textContent = value;
+            conditionLabel.textContent = conditionLevels[level].label;
+            conditionInfo.textContent = conditionLevels[level].info;
+        }
+
+        conditionSlider.addEventListener('input', updateCondition);
+
+        // Image upload functionality
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('images');
+        const imagePreview = document.getElementById('imagePreview');
+
+        uploadArea.addEventListener('click', () => imageInput.click());
+
+        imageInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            imagePreview.innerHTML = '';
+            
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    imagePreview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            if (files.length > 0) {
+                uploadArea.style.display = 'none';
+            }
+        });
+
+        // Form submission
+        document.getElementById('sellForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Listing created successfully!');
+            // Here you would typically send the data to a server
+        });
+
+        // Cancel button
+        document.querySelector('.btn-cancel').addEventListener('click', () => {
+            if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+</html>
