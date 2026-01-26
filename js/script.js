@@ -6,7 +6,7 @@ const products = [
         price: "$25.00",
         category: "Textbooks",
         seller: "John Doe",
-        image: "📚",
+        image: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=400&fit=crop",
         badge: "Brand New"
     },
     {
@@ -15,7 +15,7 @@ const products = [
         price: "$45.00",
         category: "Electronics",
         seller: "Sarah Lee",
-        image: "🎧",
+        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
         badge: "Like New"
     },
     {
@@ -24,7 +24,7 @@ const products = [
         price: "$15.00",
         category: "Furniture",
         seller: "Mike Chen",
-        image: "💡",
+        image: "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=400&h=400&fit=crop",
         badge: "Used"
     },
     {
@@ -33,7 +33,7 @@ const products = [
         price: "$35.00",
         category: "Clothing",
         seller: "Emma Wilson",
-        image: "🧥",
+        image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop",
         badge: "Like New"
     },
     {
@@ -42,7 +42,7 @@ const products = [
         price: "$20.00",
         category: "Sports",
         seller: "Alex Johnson",
-        image: "🏀",
+        image: "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&h=400&fit=crop",
         badge: "Used"
     },
     {
@@ -51,7 +51,7 @@ const products = [
         price: "$8.00",
         category: "Stationery",
         seller: "Lisa Park",
-        image: "📓",
+        image: "https://images.unsplash.com/photo-1517842645767-c639042777db?w=400&h=400&fit=crop",
         badge: "Brand New"
     }
 ];
@@ -96,7 +96,7 @@ function createProductCard(product) {
     
     card.innerHTML = `
         <div class="product-image" style="position: relative; cursor: pointer;" onclick="handleViewDetails(${product.id})">
-            ${product.image}
+            <img src="${product.image}" alt="${product.title}" onerror="this.src='https://via.placeholder.com/400x400?text=No+Image'">
             <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite(${product.id}, ${JSON.stringify(product).replace(/"/g, '&quot;')})" style="position: absolute; top: 8px; right: 8px; background-color: transparent; border: none; color: ${favBtnColor}; font-size: 20px; cursor: pointer; z-index: 10;">
                 <i class="fas fa-heart"></i>
             </button>
@@ -240,7 +240,11 @@ function openProductModal(product) {
     document.getElementById('modalProductPrice').textContent = product.price;
     document.getElementById('modalSeller').textContent = product.seller;
     document.getElementById('modalBadge').textContent = product.badge;
-    document.getElementById('carouselImage').textContent = product.image;
+    
+    // Update carousel image
+    const carouselImage = document.getElementById('carouselImage');
+    carouselImage.innerHTML = `<img src="${product.image}" alt="${product.title}" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.parentElement.textContent='📦'">`;
+    
     document.getElementById('modalDescription').textContent = `A ${product.badge.toLowerCase()} ${product.category.toLowerCase()} item in excellent condition.`;
 
     // Update favorite button state
