@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - UniMart</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-placeholder">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <h1>UNIMART</h1>
+            </div>
+
+            <nav class="navigation">
+                <h3>NAVIGATION</h3>
+                <ul>
+                    <li>
+                        <a href="../index.html" class="nav-item">
+                            <i class="fas fa-store"></i>
+                            <span>Marketplace</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="sell-item.html" class="nav-item">
+                            <i class="fas fa-plus"></i>
+                            <span>Sell Item</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="my-orders.html" class="nav-item">
+                            <i class="fas fa-boxes"></i>
+                            <span>My Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="my-sales.html" class="nav-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>My Sales</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="my-favorites.html" class="nav-item">
+                            <i class="fas fa-heart"></i>
+                            <span>My Favorites</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="user-guide.html" class="nav-item">
+                            <i class="fas fa-question-circle"></i>
+                            <span>User Guide</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="feedback.html" class="nav-item">
+                            <i class="fas fa-comment"></i>
+                            <span>Feedback</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="profile.html" class="nav-item active">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- User Profile / Login Section -->
+            <div id="userSection">
+                <!-- User Profile (shown when logged in) -->
+                <div class="user-profile" id="userSection" style="display: none;">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="user-info">
+                        <h4 id="userName">User Name</h4>
+                        <p id="userEmail">user@email.com</p>
+                    </div>
+                </div>
+
+                <!-- Login Button (shown when not logged in) -->
+                <button class="btn-login" id="loginBtn">
+                    <i class="fab fa-google"></i>
+                    <span>Sign in with Google</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="profile-header">
+                <h1>My Profile</h1>
+                <p>Manage your marketplace profile and settings</p>
+            </div>
+
+            <div class="profile-container">
+                <!-- Left Sidebar - User Card -->
+                <div class="profile-sidebar">
+                    <div class="user-card">
+                        <div class="user-avatar-large">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <h3 id="profileName">John Doe</h3>
+                        <p id="profileEmail">john.doe@student.cuhk.edu.hk</p>
+                    </div>
+                </div>
+
+                <!-- Right Content - Profile Details -->
+                <div class="profile-content">
+                    <!-- Profile Information Section -->
+                    <div class="profile-section">
+                        <div class="section-header">
+                            <h2><i class="fas fa-user"></i> Profile Information</h2>
+                            <button class="btn-edit-profile" id="editProfileBtn">Edit Profile</button>
+                        </div>
+
+                        <!-- Action Required Alert -->
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div>
+                                <strong>Action Required</strong>
+                                <p>Please review and agree to the marketplace policies to enable buying and selling. <a href="#" id="reviewPoliciesLink">Click here to review.</a></p>
+                            </div>
+                        </div>
+
+                        <!-- Display Mode -->
+                        <div class="profile-view" id="profileView">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>College *</label>
+                                    <p id="displayCollege" class="display-value">Not set</p>
+                                </div>
+                                <div class="form-group">
+                                    <label>Student ID</label>
+                                    <p id="displayStudentID" class="display-value">Not set</p>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label><i class="fas fa-phone"></i> Phone Number</label>
+                                    <p id="displayPhone" class="display-value">Not set</p>
+                                </div>
+                                <div class="form-group">
+                                    <label><i class="fas fa-comments"></i> WeChat ID</label>
+                                    <p id="displayWechat" class="display-value">Not set</p>
+                                </div>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label>Bio</label>
+                                <p id="displayBio" class="display-value">No bio added</p>
+                            </div>
+                        </div>
+
+                        <!-- Edit Mode -->
+                        <form class="profile-edit" id="profileForm" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="college">College *</label>
+                                    <select id="college" name="college" required>
+                                        <option value="">Select your college</option>
+                                        <option value="Minerva">Minerva</option>
+                                        <option value="Muse">Muse</option>
+                                        <option value="Diligentia">Diligentia</option>
+                                        <option value="Ling">Ling</option>
+                                        <option value="Harmonia">Harmonia</option>
+                                        <option value="Shaw">Shaw</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="studentId">Student ID</label>
+                                    <input type="text" id="studentId" name="studentId" placeholder="Your student ID">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="phone"><i class="fas fa-phone"></i> Phone Number</label>
+                                    <input type="tel" id="phone" name="phone" placeholder="Your phone number">
+                                </div>
+                                <div class="form-group">
+                                    <label for="wechat"><i class="fas fa-comments"></i> WeChat ID</label>
+                                    <input type="text" id="wechat" name="wechat" placeholder="Your WeChat ID">
+                                </div>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="bio">Bio</label>
+                                <textarea id="bio" name="bio" placeholder="Tell other students about yourself..." rows="4"></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn-cancel" id="cancelEditBtn">Cancel</button>
+                                <button type="submit" class="btn-save">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Payment QR Code Section -->
+                    <div class="profile-section">
+                        <h2><i class="fas fa-qrcode"></i> Payment QR Code (for receiving money)</h2>
+                        <div class="qr-upload-container">
+                            <div class="qr-display" id="qrDisplay">
+                                <i class="fas fa-qrcode"></i>
+                                <p>Click to upload your Payment QR code</p>
+                            </div>
+                            <input type="file" id="qrFileInput" accept="image/*" style="display: none;">
+                        </div>
+                        <small class="form-helper">This QR code will be used for receiving payments when you sell items and receiving refunds when you buy items.</small>
+                    </div>
+
+                    <!-- Marketplace Policies Section -->
+                    <div class="profile-section">
+                        <h2><i class="fas fa-file-contract"></i> Marketplace Policies Agreement</h2>
+                        <div class="policy-agreement">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="policyCheckbox">
+                                <span class="checkmark"></span>
+                                <span>I have read and agree to the terms</span>
+                            </label>
+                            <p class="policy-text">You must agree to our <a href="#" id="policiesLink" class="policy-link">Marketplace Policies</a> before you can buy or sell items on UniMart. Please review them carefully.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Marketplace Policies Modal -->
+    <div class="modal" id="policiesModal">
+        <div class="modal-content policy-modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-file-contract"></i> Marketplace Policies</h2>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-subtitle">Please read and understand these policies before using UniMart</p>
+
+                <div class="policy-section">
+                    <h3>General Terms</h3>
+                    <ul>
+                        <li>This platform acts as a neutral facilitator for transactions between CUHK-SZ community members.</li>
+                        <li>All users must conduct themselves respectfully. Harassment or fraudulent activity will result in a permanent ban.</li>
+                        <li>All payments are final and securely held by the platform until the transaction is successfully completed. Do not pay sellers directly.</li>
+                        <li>The platform is not responsible for the quality, safety, or legality of items listed. Buyers purchase at their own discretion.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>Seller Responsibilities</h3>
+                    <ul>
+                        <li>You must provide accurate product descriptions and clear, recent photos of your items. Misrepresentation is grounds for a refund claim.</li>
+                        <li>You must upload a valid payment QR code to your profile to receive payouts.</li>
+                        <li>Once a payment is confirmed by an admin, you are obligated to deliver the item within <strong>48 hours</strong>.</li>
+                        <li><strong>CRITICAL:</strong> If you fail to deliver within 48 hours, the buyer will automatically receive a full refund and you will not be paid.</li>
+                        <li>You must confirm the delivery on the "My Sales" page, including uploading proof (e.g., a photo of the item at the delivery location).</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>Buyer Responsibilities</h3>
+                    <ul>
+                        <li>You are responsible for reading the item description and viewing all photos before purchasing.</li>
+                        <li>You must upload your personal payment QR code to your profile. This is <strong>mandatory</strong> for processing any potential refunds.</li>
+                        <li>Upon receiving your item, you have <strong>48 hours</strong> to either "Confirm Receipt" or "Request Refund" from your "My Orders" page.</li>
+                        <li>If no action is taken within 48 hours of the seller marking the item as delivered, the order will be automatically completed, and payment will be released to the seller.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>Refunds & Disputes</h3>
+                    <ul>
+                        <li>Refunds can only be requested for items that are not as described, broken (if not disclosed), or not delivered.</li>
+                        <li>Automatic refunds are issued if sellers fail to deliver within the 48-hour deadline.</li>
+                        <li>To request a refund, you must provide a clear reason and strong photo/video evidence. <strong>Failure to provide sufficient evidence will result in your refund request being denied.</strong></li>
+                        <li>If a refund is requested, the seller will be notified to review the claim and retrieve the item. The seller can approve or deny the request.</li>
+                        <li>If the seller denies the refund request, an admin will mediate. The admin's decision, based on the evidence provided by both parties, is <strong>final</strong>.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>Platform Fees</h3>
+                    <ul>
+                        <li>The platform charges a 1% service fee plus ¥1 fixed fee on each transaction.</li>
+                        <li>This fee covers payment processing, dispute resolution, and platform maintenance.</li>
+                        <li>Sellers see their expected payout amount before listing an item.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>Delivery Process</h3>
+                    <ul>
+                        <li>All items must be delivered to platform-designated spots at the buyer's college.</li>
+                        <li>There is no direct meeting between buyers and sellers.</li>
+                        <li>Sellers must upload photo proof of delivery showing the item at the designated location.</li>
+                        <li>Buyers must pick up their items from the designated spot within 48 hours of delivery notification.</li>
+                    </ul>
+                </div>
+
+                <p class="policy-footer">By agreeing to these policies, you acknowledge that you have read, understood, and will comply with all the terms outlined above. Violation of these policies may result in account suspension or termination.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="closeModalBtn">Close</button>
+                <button class="btn-primary" id="agreeModalBtn">I Agree to These Terms</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div class="modal-overlay" id="modalOverlay"></div>
+
+    <script src="../js/profile.js"></script>
+</body>
+</html>

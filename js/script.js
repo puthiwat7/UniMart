@@ -433,29 +433,34 @@ function checkAuthStatus() {
 
 // Display user profile
 function showUserProfile(user) {
-    const userProfile = document.getElementById('userProfile');
+    const userProfile = document.getElementById('userProfileCard');
     const loginBtn = document.getElementById('loginBtn');
     
-    userProfile.style.display = 'flex';
-    loginBtn.style.display = 'none';
+    if (userProfile) userProfile.style.display = 'flex';
+    if (loginBtn) loginBtn.style.display = 'none';
     
-    document.getElementById('userName').textContent = user.name || 'User';
-    document.getElementById('userEmail').textContent = user.email || '';
+    const nameEl = document.getElementById('userName');
+    const emailEl = document.getElementById('userEmail');
+    if (nameEl) nameEl.textContent = user.name || 'User';
+    if (emailEl) emailEl.textContent = user.email || '';
 }
 
 // Display login button
 function showLoginButton() {
-    const userProfile = document.getElementById('userProfile');
+    const userProfile = document.getElementById('userProfileCard');
     const loginBtn = document.getElementById('loginBtn');
     
-    userProfile.style.display = 'none';
-    loginBtn.style.display = 'flex';
+    if (userProfile) userProfile.style.display = 'none';
+    if (loginBtn) loginBtn.style.display = 'flex';
 }
 
 // Handle login button click
-document.getElementById('loginBtn').addEventListener('click', () => {
-    alert('Login button clicked! (Placeholder for future Google Sign-In integration)');
-});
+const loginBtn = document.getElementById('loginBtn');
+if (loginBtn) {
+    loginBtn.addEventListener('click', () => {
+        alert('Login button clicked! (Placeholder for future Google Sign-In integration)');
+    });
+}
 
 // Handle logout (optional - can be triggered from profile menu)
 function logout() {

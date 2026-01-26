@@ -4,8 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UniMart - Campus Marketplace</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs (Compat version for script tag compatibility) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- Firebase Config & Auth -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/firebase-auth.js"></script>
+    
+    <!-- Auth Guard -->
+    <script>
+        // Handle Chrome extension message passing to prevent async listener errors
+        if (window.chrome && chrome.runtime) {
+            chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+                sendResponse({});
+                return false;
+            });
+        }
+        
+        // Wait for Firebase to be ready, then check authentication
+        setTimeout(() => {
+            try {
+                firebase.auth().onAuthStateChanged((user) => {
+                    if (!user) {
+                        // User not logged in, redirect to login page
+                        window.location.href = 'pages/login.html';
+                    }
+                });
+            } catch (error) {
+                console.error('Firebase not initialized:', error);
+                // Fallback redirect
+                window.location.href = 'pages/login.html';
+            }
+        }, 100);
+    </script>
 </head>
 <body>
     <div class="container">
@@ -22,49 +57,49 @@
                 <h3>NAVIGATION</h3>
                 <ul>
                     <li>
-                        <a href="#" class="nav-item">
+                        <a href="index.html" class="nav-item">
                             <i class="fas fa-store"></i>
                             <span>Marketplace</span>
                         </a>
                     </li>
                     <li>
-                        <a href="sell-item.html" class="nav-item">
+                        <a href="pages/sell-item.html" class="nav-item">
                             <i class="fas fa-plus"></i>
                             <span>Sell Item</span>
                         </a>
                     </li>
                     <li>
-                        <a href="my-orders.html" class="nav-item">
+                        <a href="pages/my-orders.html" class="nav-item">
                             <i class="fas fa-boxes"></i>
                             <span>My Orders</span>
                         </a>
                     </li>
                     <li>
-                        <a href="my-sales.html" class="nav-item">
+                        <a href="pages/my-sales.html" class="nav-item">
                             <i class="fas fa-chart-line"></i>
                             <span>My Sales</span>
                         </a>
                     </li>
                     <li>
-                        <a href="my-favorites.html" class="nav-item">
+                        <a href="pages/my-favorites.html" class="nav-item">
                             <i class="fas fa-heart"></i>
                             <span>My Favorites</span>
                         </a>
                     </li>
                     <li>
-                        <a href="user-guide.html" class="nav-item">
+                        <a href="pages/user-guide.html" class="nav-item">
                             <i class="fas fa-question-circle"></i>
                             <span>User Guide</span>
                         </a>
                     </li>
                     <li>
-                        <a href="feedback.html" class="nav-item">
+                        <a href="pages/feedback.html" class="nav-item">
                             <i class="fas fa-comment"></i>
                             <span>Feedback</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="nav-item">
+                        <a href="pages/profile.html" class="nav-item">
                             <i class="fas fa-user"></i>
                             <span>Profile</span>
                         </a>
@@ -75,18 +110,23 @@
             <!-- User Profile / Login Section -->
             <div id="userSection">
                 <!-- User Profile (shown when logged in) -->
-                <div class="user-profile" id="userProfile" style="display: none;">
-                    <div class="user-avatar">
-                        <i class="fas fa-user-circle"></i>
+                <div class="user-profile-card" id="userProfileCard" style="display: none;">
+                    <div class="user-avatar-large">
+                        <img id="userProfileImage" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: none;">
+                        <i class="fas fa-user-circle" id="userAvatarIcon" style="font-size: 48px; color: white;"></i>
                     </div>
                     <div class="user-info">
                         <h4 id="userName">User Name</h4>
                         <p id="userEmail">user@email.com</p>
                     </div>
+                    <button class="btn-logout" id="logoutBtn" onclick="handleSignOut()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Sign Out</span>
+                    </button>
                 </div>
 
                 <!-- Login Button (shown when not logged in) -->
-                <button class="btn-login" id="loginBtn">
+                <button class="btn-login" id="loginBtn" onclick="window.location.href='pages/login.html'" style="display: none;">
                     <i class="fab fa-google"></i>
                     <span>Sign in with Google</span>
                 </button>
@@ -292,6 +332,53 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="js/script.js"></script>
+
+    <!-- Firebase User Display Script -->
+    <script>
+        // Display user info in sidebar
+        firebaseAuthManager.onAuthStateChanged((user) => {
+            const userProfileCard = document.getElementById('userProfileCard');
+            const loginBtn = document.getElementById('loginBtn');
+            
+            if (user) {
+                if (userProfileCard) userProfileCard.style.display = 'flex';
+                if (loginBtn) loginBtn.style.display = 'none';
+                
+                // Update user info
+                const userNameEl = document.getElementById('userName');
+                const userEmailEl = document.getElementById('userEmail');
+                if (userNameEl) userNameEl.textContent = user.displayName || 'User';
+                if (userEmailEl) userEmailEl.textContent = user.email;
+                
+                // Set profile image
+                const profileImage = document.getElementById('userProfileImage');
+                const avatarIcon = document.getElementById('userAvatarIcon');
+                
+                if (user.photoURL && profileImage && avatarIcon) {
+                    profileImage.src = user.photoURL;
+                    profileImage.style.display = 'block';
+                    avatarIcon.style.display = 'none';
+                } else if (profileImage && avatarIcon) {
+                    profileImage.style.display = 'none';
+                    avatarIcon.style.display = 'block';
+                }
+            } else {
+                if (userProfileCard) userProfileCard.style.display = 'none';
+                if (loginBtn) loginBtn.style.display = 'flex';
+            }
+        });
+
+        // Sign out function
+        async function handleSignOut() {
+            try {
+                await firebaseAuthManager.signOut();
+                window.location.href = 'pages/login.html';
+            } catch (error) {
+                console.error('Error signing out:', error);
+                alert('Error signing out. Please try again.');
+            }
+        }
+    </script>
 </body>
 </html>

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Sales - UniMart</title>
-    <link rel="stylesheet" href="style.css">
+    <title>My Favorites - UniMart</title>
+    <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -22,7 +22,7 @@
                 <h3>NAVIGATION</h3>
                 <ul>
                     <li>
-                        <a href="index.html" class="nav-item">
+                        <a href="../index.html" class="nav-item">
                             <i class="fas fa-store"></i>
                             <span>Marketplace</span>
                         </a>
@@ -40,13 +40,13 @@
                         </a>
                     </li>
                     <li>
-                        <a href="my-sales.html" class="nav-item active">
+                        <a href="my-sales.html" class="nav-item">
                             <i class="fas fa-chart-line"></i>
                             <span>My Sales</span>
                         </a>
                     </li>
                     <li>
-                        <a href="my-favorites.html" class="nav-item">
+                        <a href="my-favorites.html" class="nav-item active">
                             <i class="fas fa-heart"></i>
                             <span>My Favorites</span>
                         </a>
@@ -95,42 +95,27 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Header with Stats and Filter -->
+            <!-- Header -->
             <div class="orders-header">
                 <div class="orders-header-content">
-                    <h1>My Sales</h1>
-                    <p>Items you're selling</p>
+                    <h1>My Favorites</h1>
+                    <p>Your saved items</p>
                 </div>
-                <div class="sales-stats">
-                    <div class="stat-box">
-                        <div class="stat-number" id="totalSales">0</div>
-                        <div class="stat-label">Total Sales</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-number" id="activeListing">0</div>
-                        <div class="stat-label">Active Listings</div>
-                    </div>
-                </div>
+                <button class="btn-clear-favorites" id="clearFavoritesBtn">
+                    <i class="fas fa-trash"></i>
+                    <span>Clear All</span>
+                </button>
             </div>
 
-            <!-- Sales Filter -->
-            <div class="sales-filter-bar">
-                <div class="filter-group">
-                    <button class="filter-btn active" data-filter="all">All</button>
-                    <button class="filter-btn" data-filter="active">Active</button>
-                    <button class="filter-btn" data-filter="sold">Sold</button>
-                </div>
-            </div>
-
-            <!-- Sales Grid -->
-            <div class="sales-section">
-                <div class="sales-grid" id="salesGrid">
-                    <!-- Sales items will be rendered here by JavaScript -->
+            <!-- Favorites Grid -->
+            <div class="favorites-section">
+                <div class="favorites-grid" id="favoritesGrid">
+                    <!-- Favorites will be rendered here by JavaScript -->
                 </div>
             </div>
         </main>
     </div>
 
-    <script src="my-sales.js"></script>
+    <script src="../js/my-favorites.js"></script>
 </body>
 </html>
