@@ -94,6 +94,11 @@ function initializeProfile() {
     document.getElementById('profileName').textContent = user.name;
     document.getElementById('profileEmail').textContent = user.email;
     
+    // Load existing QR code if available
+    if (user.paymentQR) {
+        displayUploadedQR(user.paymentQR);
+    }
+    
     // Update sidebar user info if it exists
     const userNameEl = document.getElementById('userName');
     const userEmailEl = document.getElementById('userEmail');
@@ -158,8 +163,23 @@ function setupEventListeners() {
     // QR Code Upload
     const qrDisplay = document.getElementById('qrDisplay');
     const qrFileInput = document.getElementById('qrFileInput');
+    const changeQrBtn = document.getElementById('changeQrBtn');
     
-    qrDisplay.addEventListener('click', () => qrFileInput.click());
+    qrDisplay.addEventListener('click', (e) => {
+        // Only trigger file input if clicking on placeholder area
+        if (!document.getElementById('qrImage').style.display || 
+            document.getElementById('qrImage').style.display === 'none') {
+            qrFileInput.click();
+        }
+    });
+    
+    if (changeQrBtn) {
+        changeQrBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            qrFileInput.click();
+        });
+    }
+    
     qrFileInput.addEventListener('change', handleQRUpload);
 
     // Policy Checkbox
@@ -232,13 +252,24 @@ function handleQRUpload(e) {
         userManager.setPaymentQR(imageData);
         
         // Update display
-        const qrDisplay = document.getElementById('qrDisplay');
-        qrDisplay.style.backgroundImage = `url('${imageData}')`;
-        qrDisplay.classList.add('has-image');
+        displayUploadedQR(imageData);
         
         showNotification('Payment QR code uploaded successfully!', 'success');
     };
     reader.readAsDataURL(file);
+}
+
+function displayUploadedQR(imageData) {
+    const qrPlaceholder = document.getElementById('qrPlaceholder');
+    const qrImage = document.getElementById('qrImage');
+    const qrOverlay = document.getElementById('qrOverlay');
+    
+    if (qrPlaceholder) qrPlaceholder.style.display = 'none';
+    if (qrImage) {
+        qrImage.src = imageData;
+        qrImage.style.display = 'block';
+    }
+    if (qrOverlay) qrOverlay.style.display = 'flex';
 }
 
 function openPoliciesModal() {

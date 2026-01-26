@@ -311,21 +311,167 @@
 
                         <!-- Description -->
                         <div class="modal-section">
-                            <h4>Description</h4>
+                            <h4><i class="fas fa-info-circle" style="color: var(--primary-blue); margin-right: 6px;"></i>Description</h4>
                             <p id="modalDescription">No description available</p>
+                        </div>
+
+                        <!-- Features/Security -->
+                        <div class="modal-features">
+                            <div class="feature-badge">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Secure</span>
+                            </div>
+                            <div class="feature-badge">
+                                <i class="fas fa-shipping-fast"></i>
+                                <span>Fast</span>
+                            </div>
+                            <div class="feature-badge">
+                                <i class="fas fa-clock"></i>
+                                <span>48h</span>
+                            </div>
+                        </div>
+
+                        <!-- Delivery College Selection -->
+                        <div class="modal-section">
+                            <label for="modalCollege"><i class="fas fa-map-marker-alt" style="color: var(--primary-blue); margin-right: 6px;"></i>Delivery College *</label>
+                            <select id="modalCollege" class="modal-select">
+                                <option value="">Select your delivery college</option>
+                                <option value="Shaw">Shaw</option>
+                                <option value="Ling">Ling</option>
+                                <option value="Muse">Muse</option>
+                                <option value="Diligentia">Diligentia</option>
+                                <option value="Harmonia">Harmonia</option>
+                                <option value="Minerva">Minerva</option>
+                            </select>
+                        </div>
+
+                        <!-- Building Selection -->
+                        <div class="modal-section" id="buildingSection" style="display: none;">
+                            <label for="modalBuilding"><i class="fas fa-building" style="color: var(--primary-blue); margin-right: 6px;"></i>Building *</label>
+                            <select id="modalBuilding" class="modal-select">
+                                <option value="">Select building</option>
+                            </select>
+                        </div>
+
+                        <!-- Notes (Optional) -->
+                        <div class="modal-section">
+                            <label for="modalNotes"><i class="fas fa-pencil-alt" style="color: var(--primary-blue); margin-right: 6px;"></i>Notes (Optional)</label>
+                            <textarea id="modalNotes" class="modal-textarea" rows="3" placeholder="Instructions..."></textarea>
+                        </div>
+
+                        <!-- QR Upload Warning -->
+                        <div class="qr-warning" id="qrWarning" style="display: none;">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <div>
+                                <strong>Upload QR first</strong>
+                                <p>Please upload your payment QR code in your <a href="pages/profile.html">profile</a> to complete orders.</p>
+                            </div>
                         </div>
 
                         <!-- Action Buttons -->
                         <div class="modal-actions">
-                            <button class="btn-order" id="modalOrderBtn">
-                                <i class="fas fa-shopping-cart"></i>
-                                Order Now
+                            <button class="btn-order" id="modalOrderBtn" disabled>
+                                <i class="fas fa-check-circle"></i>
+                                Confirm
                             </button>
                             <button class="btn-save" id="modalSaveBtn">
                                 <i class="fas fa-heart"></i>
                                 Save
                             </button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Modal -->
+        <div class="payment-modal" id="paymentModal">
+            <div class="payment-modal-overlay" id="paymentModalOverlay"></div>
+            <div class="payment-modal-content">
+                <button class="payment-modal-close" id="paymentModalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+
+                <div class="payment-header">
+                    <div class="payment-title">
+                        <i class="fas fa-qrcode"></i>
+                        <span>WeChat Pay - UniMart</span>
+                    </div>
+                    <div class="payment-timer" id="paymentTimer">
+                        <i class="fas fa-clock"></i>
+                        <span id="timerDisplay">10:00</span>
+                    </div>
+                </div>
+
+                <div class="payment-body">
+                    <!-- Order Summary -->
+                    <div class="payment-order-summary">
+                        <h3 id="paymentItemName">Product Name</h3>
+                        <div class="payment-delivery">Delivery to: <span id="paymentDeliveryLocation">Muse College</span></div>
+                        <div class="payment-platform">
+                            <i class="fas fa-credit-card"></i>
+                            Pay to UniMart Platform
+                        </div>
+                    </div>
+
+                    <!-- Serial Number Section -->
+                    <div class="payment-serial-section">
+                        <div class="serial-label">IMPORTANT: Order Serial Number</div>
+                        <div class="serial-number" id="serialNumber">CUHK000000X0X</div>
+                        <button class="btn-copy-serial" id="btnCopySerial">
+                            <i class="fas fa-copy"></i>
+                            Copy Serial Number
+                        </button>
+                    </div>
+
+                    <!-- QR Code Display -->
+                    <div class="payment-qr-section">
+                        <div class="qr-code-container">
+                            <div class="qr-code-title">推荐使用微信支付</div>
+                            <div class="qr-code-image" id="paymentQRCode">
+                                <i class="fas fa-qrcode" style="font-size: 120px; color: #ddd;"></i>
+                            </div>
+                            <div class="wechat-pay-logo">
+                                <i class="fab fa-weixin"></i>
+                                <span>微信支付</span>
+                            </div>
+                        </div>
+                        <div class="payment-official-text">Official UniMart WeChat Pay</div>
+                        <button class="btn-save-qr">
+                            <i class="fas fa-download"></i>
+                            Save QR Code to Photos
+                        </button>
+                    </div>
+
+                    <!-- Payment Steps -->
+                    <div class="payment-steps">
+                        <div class="steps-header">
+                            <i class="fas fa-list"></i>
+                            Payment Steps:
+                        </div>
+                        <ol>
+                            <li>Scan the QR code above with WeChat</li>
+                            <li>Enter payment amount: <strong id="paymentAmount">¥100</strong></li>
+                            <li><strong style="color: #dc2626;">MUST INCLUDE</strong> this serial number in payment note: <strong id="serialNumberInSteps">CUHK000000X0X</strong></li>
+                            <li>Complete the payment</li>
+                        </ol>
+                    </div>
+
+                    <!-- After Payment Info -->
+                    <div class="payment-after-info">
+                        <div class="after-payment-title">After Payment:</div>
+                        <ul>
+                            <li>We'll verify your payment within 2-4 hours</li>
+                            <li>Seller will be emailed to confirm and prepare delivery</li>
+                            <li>Item delivered to <span id="deliveryLocationAfter">Muse College</span> within 2 days</li>
+                            <li>Payment released to seller after delivery confirmation</li>
+                        </ul>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="payment-actions">
+                        <button class="btn-cancel-order" id="btnCancelOrder">Cancel Order</button>
+                        <button class="btn-payment-made" id="btnPaymentMade">I've Made Payment</button>
                     </div>
                 </div>
             </div>

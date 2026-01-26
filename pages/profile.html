@@ -211,8 +211,16 @@
                         <h2><i class="fas fa-qrcode"></i> Payment QR Code (for receiving money)</h2>
                         <div class="qr-upload-container">
                             <div class="qr-display" id="qrDisplay">
-                                <i class="fas fa-qrcode"></i>
-                                <p>Click to upload your Payment QR code</p>
+                                <div class="qr-placeholder" id="qrPlaceholder">
+                                    <i class="fas fa-qrcode"></i>
+                                    <p>Click to upload your Payment QR code</p>
+                                </div>
+                                <img id="qrImage" class="qr-image" style="display: none;" alt="Payment QR Code">
+                                <div class="qr-overlay" id="qrOverlay" style="display: none;">
+                                    <button type="button" class="btn-change-qr" id="changeQrBtn">
+                                        <i class="fas fa-edit"></i> Change QR
+                                    </button>
+                                </div>
                             </div>
                             <input type="file" id="qrFileInput" accept="image/*" style="display: none;">
                         </div>

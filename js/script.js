@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupRefresh();
     setupScrollToTop();
     setupProductModal(); // Setup product detail modal
+    setupPaymentModal(); // Setup payment modal
 });
 
 // Render products in the grid
@@ -107,7 +108,6 @@ function createProductCard(product) {
             <div class="product-seller">by ${product.seller}</div>
             <div class="product-actions">
                 <button onclick="handleViewDetails(${product.id})">View Details</button>
-                <button onclick="handleAddToCart(${product.id})">Add to Cart</button>
             </div>
         </div>
     `;
@@ -215,6 +215,22 @@ function handleViewDetails(productId) {
 let currentProduct = null;
 let currentImageIndex = 0;
 
+// Building data for each college
+const buildingsByCollege = {
+    'Shaw': ['A', 'B', 'C', 'D', 'E', 'F'],
+    'Ling': ['A', 'B', 'C'],
+    'Muse': ['A', 'B', 'C'],
+    'Diligentia': ['A', 'B', 'C'],
+    'Harmonia': ['A', 'B', 'C', 'D'],
+    'Minerva': ['A', 'C']
+};
+
+// Payment modal variables
+let paymentTimer = null;
+let paymentTimeLeft = 600; // 10 minutes in seconds
+let currentOrderSerial = '';
+let currentOrderData = null;
+
 function openProductModal(product) {
     currentProduct = product;
     currentImageIndex = 0;
@@ -237,6 +253,10 @@ function openProductModal(product) {
         saveBtn.innerHTML = '<i class="fas fa-heart"></i>Save';
     }
 
+    // Reset form and check order button status
+    resetModalForm();
+    checkOrderButtonStatus();
+
     // Show modal
     document.getElementById('productModal').classList.add('active');
 }
@@ -244,6 +264,67 @@ function openProductModal(product) {
 function closeProductModal() {
     document.getElementById('productModal').classList.remove('active');
     currentProduct = null;
+}
+
+// Check if order button should be enabled
+function checkOrderButtonStatus() {
+    const modalCollege = document.getElementById('modalCollege');
+    const modalBuilding = document.getElementById('modalBuilding');
+    const modalOrderBtn = document.getElementById('modalOrderBtn');
+    const qrWarning = document.getElementById('qrWarning');
+    
+    // Check if user has QR code uploaded
+    let userHasQR = false;
+    try {
+        const userData = localStorage.getItem('unimart_user');
+        if (userData) {
+            const user = JSON.parse(userData);
+            userHasQR = user.paymentQR !== null && user.paymentQR !== undefined;
+        }
+    } catch (error) {
+        console.error('Error checking user QR status:', error);
+    }
+    
+    const collegeSelected = modalCollege && modalCollege.value !== '';
+    const buildingSelected = modalBuilding && modalBuilding.value !== '';
+    
+    // Show/hide QR warning
+    if (qrWarning) {
+        qrWarning.style.display = !userHasQR ? 'flex' : 'none';
+    }
+    
+    if (modalOrderBtn) {
+        if (collegeSelected && buildingSelected && userHasQR) {
+            modalOrderBtn.disabled = false;
+            modalOrderBtn.title = '';
+        } else {
+            modalOrderBtn.disabled = true;
+            
+            // Set helpful tooltip message
+            if (!userHasQR) {
+                modalOrderBtn.title = 'Please upload your payment QR code in your profile first';
+            } else if (!collegeSelected) {
+                modalOrderBtn.title = 'Please select your delivery college';
+            } else if (!buildingSelected) {
+                modalOrderBtn.title = 'Please select your building';
+            }
+        }
+    }
+}
+
+// Reset modal form when closing
+function resetModalForm() {
+    const modalCollege = document.getElementById('modalCollege');
+    const modalBuilding = document.getElementById('modalBuilding');
+    const modalNotes = document.getElementById('modalNotes');
+    const buildingSection = document.getElementById('buildingSection');
+    
+    if (modalCollege) modalCollege.value = '';
+    if (modalBuilding) modalBuilding.value = '';
+    if (modalNotes) modalNotes.value = '';
+    if (buildingSection) buildingSection.style.display = 'none';
+    
+    checkOrderButtonStatus();
 }
 
 // Setup modal event listeners
@@ -255,6 +336,49 @@ function setupProductModal() {
     // Modal overlay click to close
     const modalOverlay = document.getElementById('modalOverlay');
     if (modalOverlay) modalOverlay.addEventListener('click', closeProductModal);
+
+    // College selection change
+    const modalCollege = document.getElementById('modalCollege');
+    if (modalCollege) {
+        modalCollege.addEventListener('change', (e) => {
+            const selectedCollege = e.target.value;
+            const buildingSection = document.getElementById('buildingSection');
+            const modalBuilding = document.getElementById('modalBuilding');
+            
+            if (selectedCollege && buildingsByCollege[selectedCollege]) {
+                // Show building section
+                buildingSection.style.display = 'flex';
+                
+                // Populate buildings
+                const buildings = buildingsByCollege[selectedCollege];
+                modalBuilding.innerHTML = '<option value="">Select building</option>';
+                buildings.forEach(building => {
+                    const option = document.createElement('option');
+                    option.value = building;
+                    option.textContent = `Building ${building}`;
+                    modalBuilding.appendChild(option);
+                });
+                
+                // Reset building selection
+                modalBuilding.value = '';
+            } else {
+                // Hide building section if no college selected
+                buildingSection.style.display = 'none';
+                modalBuilding.value = '';
+            }
+            
+            // Check if order button should be enabled
+            checkOrderButtonStatus();
+        });
+    }
+
+    // Building selection change
+    const modalBuilding = document.getElementById('modalBuilding');
+    if (modalBuilding) {
+        modalBuilding.addEventListener('change', () => {
+            checkOrderButtonStatus();
+        });
+    }
 
     // Carousel navigation
     const prevBtn = document.getElementById('prevBtn');
@@ -299,9 +423,28 @@ function setupProductModal() {
     const modalOrderBtn = document.getElementById('modalOrderBtn');
     if (modalOrderBtn) {
         modalOrderBtn.addEventListener('click', () => {
-            if (currentProduct) {
-                alert(`Added "${currentProduct.title}" to your cart!`);
+            if (currentProduct && !modalOrderBtn.disabled) {
+                const college = document.getElementById('modalCollege').value;
+                const building = document.getElementById('modalBuilding').value;
+                const notes = document.getElementById('modalNotes').value;
+                
+                // Prepare order data
+                const orderData = {
+                    itemName: currentProduct.title,
+                    price: currentProduct.price,
+                    college: college,
+                    building: building,
+                    notes: notes,
+                    seller: currentProduct.seller,
+                    productId: currentProduct.id
+                };
+                
+                // Close product modal and open payment modal
                 closeProductModal();
+                resetModalForm();
+                
+                // Open payment modal
+                openPaymentModal(orderData);
             }
         });
     }
@@ -473,3 +616,207 @@ function logout() {
 window.addEventListener('DOMContentLoaded', () => {
     checkAuthStatus();
 });
+
+// ======================== Payment Modal Functions ========================
+// Generate random serial number in format: CUHK + random 8 chars
+function generateSerialNumber() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let serial = 'CUHK';
+    for (let i = 0; i < 8; i++) {
+        serial += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return serial;
+}
+
+// Format time in MM:SS format
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Open payment modal
+function openPaymentModal(orderData) {
+    currentOrderData = orderData;
+    currentOrderSerial = generateSerialNumber();
+    paymentTimeLeft = 600; // Reset to 10 minutes
+    
+    const paymentModal = document.getElementById('paymentModal');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const paymentTimer = document.getElementById('paymentTimer');
+    
+    // Update modal content
+    document.getElementById('paymentItemName').textContent = orderData.itemName;
+    document.getElementById('paymentDeliveryLocation').textContent = `${orderData.college} - Building ${orderData.building}`;
+    document.getElementById('deliveryLocationAfter').textContent = `${orderData.college} - Building ${orderData.building}`;
+    document.getElementById('paymentAmount').textContent = orderData.price;
+    document.getElementById('serialNumber').textContent = currentOrderSerial;
+    document.getElementById('serialNumberInSteps').textContent = currentOrderSerial;
+    
+    // Load user's payment QR code
+    try {
+        const userData = localStorage.getItem('unimart_user');
+        if (userData) {
+            const user = JSON.parse(userData);
+            if (user.paymentQR) {
+                const qrCodeImage = document.getElementById('paymentQRCode');
+                qrCodeImage.innerHTML = `<img src="${user.paymentQR}" alt="Payment QR Code" style="max-width: 100%; max-height: 240px;">`;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading payment QR:', error);
+    }
+    
+    // Start timer
+    startPaymentTimer();
+    
+    // Show modal
+    paymentModal.classList.add('active');
+}
+
+// Close payment modal
+function closePaymentModal() {
+    const paymentModal = document.getElementById('paymentModal');
+    paymentModal.classList.remove('active');
+    
+    // Clear timer
+    if (paymentTimer) {
+        clearInterval(paymentTimer);
+        paymentTimer = null;
+    }
+    
+    currentOrderData = null;
+    currentOrderSerial = '';
+}
+
+// Start payment timer
+function startPaymentTimer() {
+    const timerDisplay = document.getElementById('timerDisplay');
+    const timerElement = document.getElementById('paymentTimer');
+    
+    // Clear any existing timer
+    if (paymentTimer) {
+        clearInterval(paymentTimer);
+    }
+    
+    paymentTimer = setInterval(() => {
+        paymentTimeLeft--;
+        timerDisplay.textContent = formatTime(paymentTimeLeft);
+        
+        // Update timer color based on time remaining
+        timerElement.classList.remove('warning', 'danger');
+        if (paymentTimeLeft <= 60) {
+            timerElement.classList.add('danger');
+        } else if (paymentTimeLeft <= 180) {
+            timerElement.classList.add('warning');
+        }
+        
+        // Auto-cancel when time runs out
+        if (paymentTimeLeft <= 0) {
+            clearInterval(paymentTimer);
+            alert('Order has expired due to timeout. Please try again.');
+            closePaymentModal();
+        }
+    }, 1000);
+}
+
+// Copy serial number to clipboard
+function copySerialNumber() {
+    const serialNumber = document.getElementById('serialNumber').textContent;
+    
+    // Modern clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(serialNumber).then(() => {
+            showCopyConfirmation();
+        }).catch(err => {
+            // Fallback for older browsers
+            fallbackCopySerial(serialNumber);
+        });
+    } else {
+        fallbackCopySerial(serialNumber);
+    }
+}
+
+// Fallback copy method
+function fallbackCopySerial(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    
+    try {
+        document.execCommand('copy');
+        showCopyConfirmation();
+    } catch (err) {
+        alert('Failed to copy. Please copy manually: ' + text);
+    }
+    
+    document.body.removeChild(textarea);
+}
+
+// Show copy confirmation
+function showCopyConfirmation() {
+    const btn = document.getElementById('btnCopySerial');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    btn.style.background = '#dcfce7';
+    btn.style.color = '#166534';
+    btn.style.borderColor = '#86efac';
+    
+    setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.style.background = 'white';
+        btn.style.color = '#991b1b';
+        btn.style.borderColor = '#dc2626';
+    }, 2000);
+}
+
+// Handle order cancellation
+function handleCancelOrder() {
+    const confirmed = confirm('Are you sure you want to cancel this order?');
+    if (confirmed) {
+        closePaymentModal();
+        alert('Order has been cancelled.');
+    }
+}
+
+// Handle payment made confirmation
+function handlePaymentMade() {
+    const confirmed = confirm('Have you completed the payment and included the serial number in the payment note?');
+    if (confirmed) {
+        alert('Thank you! We will verify your payment within 2-4 hours and notify you once confirmed.');
+        closePaymentModal();
+        // Here you would typically send the order data to your backend
+    }
+}
+
+// Setup payment modal event listeners
+function setupPaymentModal() {
+    const paymentModalClose = document.getElementById('paymentModalClose');
+    const paymentModalOverlay = document.getElementById('paymentModalOverlay');
+    const btnCopySerial = document.getElementById('btnCopySerial');
+    const btnCancelOrder = document.getElementById('btnCancelOrder');
+    const btnPaymentMade = document.getElementById('btnPaymentMade');
+    
+    if (paymentModalClose) {
+        paymentModalClose.addEventListener('click', closePaymentModal);
+    }
+    
+    if (paymentModalOverlay) {
+        paymentModalOverlay.addEventListener('click', closePaymentModal);
+    }
+    
+    if (btnCopySerial) {
+        btnCopySerial.addEventListener('click', copySerialNumber);
+    }
+    
+    if (btnCancelOrder) {
+        btnCancelOrder.addEventListener('click', handleCancelOrder);
+    }
+    
+    if (btnPaymentMade) {
+        btnPaymentMade.addEventListener('click', handlePaymentMade);
+    }
+}
