@@ -479,52 +479,6 @@
     </div>
 
     <script src="js/script.js"></script>
-
-    <!-- Firebase User Display Script -->
-    <script>
-        // Display user info in sidebar
-        firebaseAuthManager.onAuthStateChanged((user) => {
-            const userProfileCard = document.getElementById('userProfileCard');
-            const loginBtn = document.getElementById('loginBtn');
-            
-            if (user) {
-                if (userProfileCard) userProfileCard.style.display = 'flex';
-                if (loginBtn) loginBtn.style.display = 'none';
-                
-                // Update user info
-                const userNameEl = document.getElementById('userName');
-                const userEmailEl = document.getElementById('userEmail');
-                if (userNameEl) userNameEl.textContent = user.displayName || 'User';
-                if (userEmailEl) userEmailEl.textContent = user.email;
-                
-                // Set profile image
-                const profileImage = document.getElementById('userProfileImage');
-                const avatarIcon = document.getElementById('userAvatarIcon');
-                
-                if (user.photoURL && profileImage && avatarIcon) {
-                    profileImage.src = user.photoURL;
-                    profileImage.style.display = 'block';
-                    avatarIcon.style.display = 'none';
-                } else if (profileImage && avatarIcon) {
-                    profileImage.style.display = 'none';
-                    avatarIcon.style.display = 'block';
-                }
-            } else {
-                if (userProfileCard) userProfileCard.style.display = 'none';
-                if (loginBtn) loginBtn.style.display = 'flex';
-            }
-        });
-
-        // Sign out function
-        async function handleSignOut() {
-            try {
-                await firebaseAuthManager.signOut();
-                window.location.href = 'pages/login.html';
-            } catch (error) {
-                console.error('Error signing out:', error);
-                alert('Error signing out. Please try again.');
-            }
-        }
-    </script>
+    <script src="js/user-sidebar.js"></script>
 </body>
 </html>

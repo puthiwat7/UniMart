@@ -44,13 +44,16 @@ function updateEmailFormMode() {
     const submitBtn = document.querySelector('#emailForm button[type="submit"] span');
     const toggleText = document.querySelector('#toggleSignUp');
     const togglePara = document.querySelector('.toggle-auth p');
+    const subtitle = document.querySelector('.subtitle');
 
     if (isSignUpMode) {
-        submitBtn.textContent = 'Sign Up with Email';
+        if (submitBtn) submitBtn.textContent = 'Sign Up with Email';
         togglePara.innerHTML = 'Already have an account? <a href="#" id="toggleSignUp">Sign in</a>';
+        if (subtitle) subtitle.textContent = 'Sign up to continue';
     } else {
-        submitBtn.textContent = 'Sign In with Email';
+        if (submitBtn) submitBtn.textContent = 'Sign In with Email';
         togglePara.innerHTML = 'Don\'t have an account? <a href="#" id="toggleSignUp">Sign up</a>';
+        if (subtitle) subtitle.textContent = 'Sign in to continue';
     }
 
     // Re-attach event listener

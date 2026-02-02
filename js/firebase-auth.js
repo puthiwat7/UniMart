@@ -103,6 +103,22 @@ class FirebaseAuthManager {
     onAuthStateChanged(callback) {
         this.auth.onAuthStateChanged((user) => {
             this.user = user;
+            // Cache basic user info so pages can show it immediately on load
+            try {
+                if (user) {
+                    const cachedUser = {
+                        uid: user.uid,
+                        displayName: user.displayName,
+                        email: user.email,
+                        photoURL: user.photoURL
+                    };
+                    localStorage.setItem('unimart_last_user', JSON.stringify(cachedUser));
+                } else {
+                    localStorage.removeItem('unimart_last_user');
+                }
+            } catch (e) {
+                console.error('Error caching user info:', e);
+            }
             callback(user);
         });
     }
