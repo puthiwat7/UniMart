@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupTabs() {
     const tabs = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
+    const authTabs = document.querySelector('.auth-tabs');
 
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
@@ -59,6 +60,11 @@ function setupTabs() {
             const content = document.getElementById(`${tabName}Tab`);
             if (content) {
                 content.classList.add('active');
+            }
+
+            // Update the sliding indicator
+            if (authTabs) {
+                authTabs.setAttribute('data-active-tab', tabName);
             }
 
             // Hide messages when switching tabs

@@ -14,11 +14,12 @@ body {
     justify-content: center;
     align-items: center;
     padding: 20px;
+    overflow-y: auto; /* Allow scrolling if needed */
 }
 
 .login-container {
     width: 100%;
-    max-width: 420px;
+    max-width: 380px; /* Reduced from 420px */
     animation: fadeIn 0.5s ease;
 }
 
@@ -36,32 +37,34 @@ body {
 .login-card {
     background: white;
     border-radius: 16px;
-    padding: 48px 32px;
+    padding: 32px 24px; /* Reduced from 48px 32px */
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
     text-align: center;
+    max-height: 90vh; /* Prevent card from exceeding viewport height */
+    overflow-y: auto; /* Allow internal scrolling if needed */
 }
 
 /* Logo Section */
 .logo-section {
-    margin-bottom: 40px;
+    margin-bottom: 24px; /* Reduced from 40px */
 }
 
 .logo-circle {
-    width: 100px;
-    height: 100px;
+    width: 80px; /* Reduced from 100px */
+    height: 80px; /* Reduced from 100px */
     background: linear-gradient(135deg, #2d3a8f, #4a5fc1);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 48px;
+    font-size: 36px; /* Reduced from 48px */
     color: white;
-    margin: 0 auto 24px;
+    margin: 0 auto 16px; /* Reduced bottom margin */
     box-shadow: 0 10px 30px rgba(45, 58, 143, 0.3);
 }
 
 .logo-section h1 {
-    font-size: 28px;
+    font-size: 24px; /* Reduced from 28px */
     font-weight: 700;
     color: #1f2937;
     letter-spacing: 1px;
@@ -69,16 +72,16 @@ body {
 
 /* Welcome Text */
 h2 {
-    font-size: 32px;
+    font-size: 28px; /* Reduced from 32px */
     font-weight: 700;
     color: #1f2937;
-    margin-bottom: 8px;
+    margin-bottom: 6px; /* Reduced from 8px */
 }
 
 .subtitle {
-    font-size: 16px;
+    font-size: 14px; /* Reduced from 16px */
     color: #6b7280;
-    margin-bottom: 32px;
+    margin-bottom: 24px; /* Reduced from 32px */
     font-weight: 400;
 }
 
@@ -86,12 +89,31 @@ h2 {
 .auth-tabs {
     display: flex;
     gap: 8px;
-    margin-bottom: 24px;
+    margin-bottom: 20px; /* Reduced from 24px */
     background: #f3f4f6;
     padding: 4px;
     border-radius: 10px;
     position: relative;
     z-index: 10;
+    overflow: hidden;
+}
+
+.auth-tabs::before {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    height: calc(100% - 8px);
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(74, 95, 193, 0.15);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+}
+
+.auth-tabs[data-active-tab="google"]::before {
+    transform: translateX(100%);
 }
 
 .tab-btn {
@@ -104,31 +126,58 @@ h2 {
     font-weight: 600;
     color: #6b7280;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     z-index: 11;
 }
 
 .tab-btn:hover {
     color: #4a5fc1;
+    transform: translateY(-1px);
 }
 
 .tab-btn.active {
-    background: white;
     color: #4a5fc1;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
 }
 
 /* Tab Content */
 .tab-content {
-    display: none;
-    animation: fadeIn 0.3s ease;
+    max-height: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
     position: relative;
     z-index: 1;
 }
 
 .tab-content.active {
-    display: block;
+    max-height: 500px; /* Adjust based on content height */
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+/* Form animations */
+.tab-content.active .auth-form {
+    animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both;
+}
+
+.tab-content.active .btn-google {
+    animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Auth Form */
@@ -192,7 +241,7 @@ h2 {
 
 .toggle-auth {
     text-align: center;
-    margin-top: 16px;
+    margin-top: 12px; /* Reduced from 16px */
 }
 
 .toggle-auth p {
@@ -262,9 +311,9 @@ h2 {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    padding: 24px;
-    margin-bottom: 16px;
+    gap: 12px; /* Reduced from 16px */
+    padding: 20px; /* Reduced from 24px */
+    margin-bottom: 12px; /* Reduced from 16px */
 }
 
 .spinner {
@@ -297,9 +346,9 @@ h2 {
     background: #fee2e2;
     border: 1px solid #fecaca;
     color: #991b1b;
-    padding: 16px;
+    padding: 12px; /* Reduced from 16px */
     border-radius: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 12px; /* Reduced from 16px */
     font-size: 14px;
     display: flex;
     align-items: center;
@@ -321,9 +370,9 @@ h2 {
     background: #d1fae5;
     border: 1px solid #a7f3d0;
     color: #065f46;
-    padding: 16px;
+    padding: 12px; /* Reduced from 16px */
     border-radius: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 12px; /* Reduced from 16px */
     font-size: 14px;
     display: flex;
     align-items: center;
