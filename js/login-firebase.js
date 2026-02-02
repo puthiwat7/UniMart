@@ -14,9 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Initialize tab switching
-    setupTabs();
-
     // Email form
     const emailForm = document.getElementById('emailForm');
     if (emailForm) {
@@ -41,31 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     console.log('Login page initialized');
 });
-
-// Setup tab switching
-function setupTabs() {
-    const tabs = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            // Remove active class from all tabs and contents
-            tabs.forEach(t => t.classList.remove('active'));
-            tabContents.forEach(tc => tc.classList.remove('active'));
-
-            // Add active class to clicked tab and its content
-            tab.classList.add('active');
-            const tabName = tab.getAttribute('data-tab');
-            const content = document.getElementById(`${tabName}Tab`);
-            if (content) {
-                content.classList.add('active');
-            }
-
-            // Hide messages when switching tabs
-            hideMessages();
-        });
-    });
-}
 
 // Update email form mode (sign in vs sign up)
 function updateEmailFormMode() {

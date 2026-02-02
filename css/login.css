@@ -82,53 +82,26 @@ h2 {
     font-weight: 400;
 }
 
-/* Auth Tabs */
-.auth-tabs {
+/* Divider */
+.divider {
     display: flex;
-    gap: 8px;
-    margin-bottom: 24px;
-    background: #f3f4f6;
-    padding: 4px;
-    border-radius: 10px;
-    position: relative;
-    z-index: 10;
+    align-items: center;
+    text-align: center;
+    margin: 24px 0;
 }
 
-.tab-btn {
+.divider::before,
+.divider::after {
+    content: '';
     flex: 1;
-    padding: 10px 16px;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #6b7280;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    z-index: 11;
+    border-bottom: 1px solid #e5e7eb;
 }
 
-.tab-btn:hover {
-    color: #4a5fc1;
-}
-
-.tab-btn.active {
-    background: white;
-    color: #4a5fc1;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-}
-
-/* Tab Content */
-.tab-content {
-    display: none;
-    animation: fadeIn 0.3s ease;
-    position: relative;
-    z-index: 1;
-}
-
-.tab-content.active {
-    display: block;
+.divider span {
+    padding: 0 16px;
+    color: #9ca3af;
+    font-size: 13px;
+    font-weight: 500;
 }
 
 /* Auth Form */
