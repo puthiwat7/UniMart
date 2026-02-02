@@ -37,6 +37,65 @@ class FirebaseAuthManager {
         }
     }
 
+    // Sign in with Email and Password
+    async signInWithEmail(email, password) {
+        try {
+            const result = await this.auth.signInWithEmailAndPassword(email, password);
+            console.log('User signed in with email:', result.user);
+            return result.user;
+        } catch (error) {
+            console.error('Error during email sign in:', error);
+            throw error;
+        }
+    }
+
+    // Sign up with Email and Password
+    async signUpWithEmail(email, password) {
+        try {
+            const result = await this.auth.createUserWithEmailAndPassword(email, password);
+            console.log('User signed up with email:', result.user);
+            return result.user;
+        } catch (error) {
+            console.error('Error during email sign up:', error);
+            throw error;
+        }
+    }
+
+    // Send password reset email
+    async sendPasswordResetEmail(email) {
+        try {
+            await this.auth.sendPasswordResetEmail(email);
+            console.log('Password reset email sent to:', email);
+        } catch (error) {
+            console.error('Error sending password reset email:', error);
+            throw error;
+        }
+    }
+
+    // Sign in with Phone Number
+    async signInWithPhone(phoneNumber, appVerifier) {
+        try {
+            const confirmationResult = await this.auth.signInWithPhoneNumber(phoneNumber, appVerifier);
+            console.log('SMS sent to:', phoneNumber);
+            return confirmationResult;
+        } catch (error) {
+            console.error('Error during phone sign in:', error);
+            throw error;
+        }
+    }
+
+    // Verify phone code
+    async verifyPhoneCode(confirmationResult, code) {
+        try {
+            const result = await confirmationResult.confirm(code);
+            console.log('User signed in with phone:', result.user);
+            return result.user;
+        } catch (error) {
+            console.error('Error verifying phone code:', error);
+            throw error;
+        }
+    }
+
     // Sign out
     async signOut() {
         try {
