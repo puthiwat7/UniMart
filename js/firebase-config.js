@@ -18,6 +18,9 @@ if (typeof firebase !== 'undefined') {
   // Get Firebase Auth instance
   const auth = firebase.auth();
   
+  // Initialize Firebase Analytics
+  const analytics = firebase.analytics();
+  
   // Enable persistence
   firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
       .catch((error) => {
@@ -25,6 +28,7 @@ if (typeof firebase !== 'undefined') {
       });
   
   console.log('Firebase initialized successfully');
+  console.log('Analytics enabled');
 } else {
   console.error('Firebase SDK not loaded. Make sure firebase-app-compat.js is loaded.');
 }

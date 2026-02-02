@@ -5,6 +5,7 @@ class FirebaseAuthManager {
     constructor() {
         this.user = null;
         this.auth = firebase.auth();
+        this.analytics = firebase.analytics();
     }
 
     // Check if user is logged in
@@ -30,6 +31,12 @@ class FirebaseAuthManager {
             
             console.log('User signed in:', result.user);
             
+            // Track login event
+            this.analytics.logEvent('login', {
+                method: 'google',
+                user_id: result.user.uid
+            });
+            
             return result.user;
         } catch (error) {
             console.error('Error during sign in:', error);
@@ -42,6 +49,13 @@ class FirebaseAuthManager {
         try {
             const result = await this.auth.signInWithEmailAndPassword(email, password);
             console.log('User signed in with email:', result.user);
+            
+            // Track login event
+            this.analytics.logEvent('login', {
+                method: 'email',
+                user_id: result.user.uid
+            });
+            
             return result.user;
         } catch (error) {
             console.error('Error during email sign in:', error);
@@ -54,6 +68,13 @@ class FirebaseAuthManager {
         try {
             const result = await this.auth.createUserWithEmailAndPassword(email, password);
             console.log('User signed up with email:', result.user);
+            
+            // Track sign up event
+            this.analytics.logEvent('sign_up', {
+                method: 'email',
+                user_id: result.user.uid
+            });
+            
             return result.user;
         } catch (error) {
             console.error('Error during email sign up:', error);
