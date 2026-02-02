@@ -72,26 +72,17 @@ class FirebaseAuthManager {
         }
     }
 
-    // Sign in with Phone Number
-    async signInWithPhone(phoneNumber, appVerifier) {
+    // Send email verification
+    async sendVerificationEmail() {
         try {
-            const confirmationResult = await this.auth.signInWithPhoneNumber(phoneNumber, appVerifier);
-            console.log('SMS sent to:', phoneNumber);
-            return confirmationResult;
+            if (this.user && !this.user.emailVerified) {
+                await this.user.sendEmailVerification();
+                console.log('Verification email sent to:', this.user.email);
+                return true;
+            }
+            return false;
         } catch (error) {
-            console.error('Error during phone sign in:', error);
-            throw error;
-        }
-    }
-
-    // Verify phone code
-    async verifyPhoneCode(confirmationResult, code) {
-        try {
-            const result = await confirmationResult.confirm(code);
-            console.log('User signed in with phone:', result.user);
-            return result.user;
-        } catch (error) {
-            console.error('Error verifying phone code:', error);
+            console.error('Error sending verification email:', error);
             throw error;
         }
     }

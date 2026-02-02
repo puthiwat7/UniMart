@@ -1,9 +1,6 @@
 // Login Page Logic
 
-let confirmationResult = null; // For phone verification
-let recaptchaVerifier = null; // For reCAPTCHA
 let isSignUpMode = false; // Toggle between sign in and sign up
-let recaptchaInitialized = false; // Track if reCAPTCHA has been set up
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Login page loaded');
@@ -24,17 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailForm = document.getElementById('emailForm');
     if (emailForm) {
         emailForm.addEventListener('submit', handleEmailAuth);
-    }
-
-    // Phone form
-    const sendCodeBtn = document.getElementById('sendCodeBtn');
-    if (sendCodeBtn) {
-        sendCodeBtn.addEventListener('click', handleSendCode);
-    }
-
-    const phoneForm = document.getElementById('phoneForm');
-    if (phoneForm) {
-        phoneForm.addEventListener('submit', handleVerifyCode);
     }
 
     // Google Sign-In Button
@@ -75,46 +61,10 @@ function setupTabs() {
                 content.classList.add('active');
             }
 
-            // Initialize reCAPTCHA when phone tab is activated
-            if (tabName === 'phone' && !recaptchaInitialized) {
-                setTimeout(() => {
-                    setupRecaptcha();
-                }, 100);
-            }
-
             // Hide messages when switching tabs
             hideMessages();
         });
     });
-}
-
-// Setup reCAPTCHA
-function setupRecaptcha() {
-    if (recaptchaInitialized) {
-        console.log('reCAPTCHA already initialized');
-        return;
-    }
-
-    try {
-        recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-            'size': 'normal',
-            'callback': (response) => {
-                console.log('reCAPTCHA solved');
-            },
-            'expired-callback': () => {
-                console.log('reCAPTCHA expired');
-                showError('reCAPTCHA expired. Please try again.');
-            }
-        });
-        
-        recaptchaVerifier.render().then(() => {
-            console.log('reCAPTCHA initialized successfully');
-            recaptchaInitialized = true;
-        });
-    } catch (error) {
-        console.error('Error setting up reCAPTCHA:', error);
-        showError('Failed to initialize reCAPTCHA. Please refresh the page.');
-    }
 }
 
 // Update email form mode (sign in vs sign up)
@@ -166,7 +116,16 @@ async function handleEmailAuth(e) {
         let user;
         if (isSignUpMode) {
             user = await firebaseAuthManager.signUpWithEmail(email, password);
-            showSuccess('Account created successfully! Redirecting...');
+            
+            // Send verification email
+            try {
+                await firebaseAuthManager.sendVerificationEmail();
+                showSuccess('Account created! Please check your email to verify your account.');
+                console.log('Verification email sent to:', user.email);
+            } catch (verifyError) {
+                console.error('Error sending verification email:', verifyError);
+                showSuccess('Account created successfully! Redirecting...');
+            }
         } else {
             user = await firebaseAuthManager.signInWithEmail(email, password);
             showSuccess('Signed in successfully! Redirecting...');
@@ -177,7 +136,7 @@ async function handleEmailAuth(e) {
         // Redirect to home
         setTimeout(() => {
             window.location.href = '../index.html';
-        }, 1500);
+        }, 2000);
 
     } catch (error) {
         hideLoading();
@@ -203,113 +162,6 @@ async function handleEmailAuth(e) {
     }
 }
 
-// Handle Send Verification Code
-async function handleSendCode() {
-    const phoneNumber = document.getElementById('phoneInput').value.trim();
-
-    if (!phoneNumber) {
-        showError('Please enter a phone number.');
-        return;
-    }
-
-    // Ensure reCAPTCHA is initialized
-    if (!recaptchaVerifier || !recaptchaInitialized) {
-        showError('Please wait for reCAPTCHA to load, then try again.');
-        setupRecaptcha();
-        return;
-    }
-
-    showLoading();
-    hideMessages();
-
-    try {
-        confirmationResult = await firebaseAuthManager.signInWithPhone(phoneNumber, recaptchaVerifier);
-        
-        hideLoading();
-        showSuccess('Verification code sent to your phone!');
-        
-        // Show verification input
-        document.getElementById('verificationSection').style.display = 'block';
-        document.getElementById('sendCodeBtn').style.display = 'none';
-        document.getElementById('phoneInput').disabled = true;
-
-    } catch (error) {
-        hideLoading();
-        console.error('Phone sign in error:', error);
-
-        let errorText = 'Failed to send verification code. Please try again.';
-        
-        if (error.code === 'auth/invalid-phone-number') {
-            errorText = 'Invalid phone number format.';
-        } else if (error.code === 'auth/too-many-requests') {
-            errorText = 'Too many requests. Please try again later.';
-        } else if (error.code === 'auth/quota-exceeded') {
-            errorText = 'SMS quota exceeded. Please try again later.';
-        } else if (error.code === 'auth/billing-not-enabled') {
-            errorText = 'Phone authentication is not enabled. Please contact support or use Email/Google sign-in.';
-        } else if (error.code === 'auth/project-not-authorized') {
-            errorText = 'Phone authentication is not configured. Please use Email/Google sign-in.';
-        }
-
-        showError(errorText);
-        
-        // Reset reCAPTCHA
-        if (recaptchaVerifier) {
-            recaptchaVerifier.clear();
-            recaptchaInitialized = false;
-            setTimeout(() => {
-                setupRecaptcha();
-            }, 100);
-        }
-    }
-}
-
-// Handle Verify Code
-async function handleVerifyCode(e) {
-    e.preventDefault();
-    
-    const code = document.getElementById('verificationCode').value.trim();
-
-    if (!code || code.length !== 6) {
-        showError('Please enter the 6-digit verification code.');
-        return;
-    }
-
-    if (!confirmationResult) {
-        showError('Please request a verification code first.');
-        return;
-    }
-
-    showLoading();
-    hideMessages();
-
-    try {
-        const user = await firebaseAuthManager.verifyPhoneCode(confirmationResult, code);
-        
-        showSuccess('Phone verified successfully! Redirecting...');
-        console.log('Phone auth successful:', user.phoneNumber);
-
-        // Redirect to home
-        setTimeout(() => {
-            window.location.href = '../index.html';
-        }, 1500);
-
-    } catch (error) {
-        hideLoading();
-        console.error('Verification error:', error);
-
-        let errorText = 'Invalid verification code. Please try again.';
-        
-        if (error.code === 'auth/invalid-verification-code') {
-            errorText = 'Invalid verification code.';
-        } else if (error.code === 'auth/code-expired') {
-            errorText = 'Verification code expired. Please request a new one.';
-        }
-
-        showError(errorText);
-    }
-}
-
 async function handleGoogleSignIn() {
     console.log('handleGoogleSignIn clicked');
     
@@ -323,12 +175,25 @@ async function handleGoogleSignIn() {
         const user = await firebaseAuthManager.signInWithGoogle();
 
         console.log('Sign in successful:', user.email);
-        showSuccess('Signed in successfully! Redirecting...');
+        
+        // Send verification email if email not verified
+        if (!user.emailVerified) {
+            try {
+                await firebaseAuthManager.sendVerificationEmail();
+                showSuccess('Signed in successfully! Please check your email to verify your account.');
+                console.log('Verification email sent to:', user.email);
+            } catch (verifyError) {
+                console.error('Error sending verification email:', verifyError);
+                showSuccess('Signed in successfully! Redirecting...');
+            }
+        } else {
+            showSuccess('Signed in successfully! Redirecting...');
+        }
 
         // Redirect to home
         setTimeout(() => {
             window.location.href = '../index.html';
-        }, 1500);
+        }, 2000);
 
     } catch (error) {
         hideLoading();
