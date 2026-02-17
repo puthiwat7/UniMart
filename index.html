@@ -27,7 +27,7 @@
             });
         }
         
-        // Wait for Firebase to be ready, then check authentication
+        // Wait for Firebase to be ready, then check authentication. Is there a better way to do this without risking?
         setTimeout(() => {
             try {
                 firebase.auth().onAuthStateChanged((user) => {
