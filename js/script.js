@@ -253,9 +253,8 @@ function openProductModal(product) {
         saveBtn.innerHTML = '<i class="fas fa-heart"></i>Save';
     }
 
-    // Reset form and check order button status
+    // Reset form 
     resetModalForm();
-    checkOrderButtonStatus();
 
     // Show modal
     document.getElementById('productModal').classList.add('active');
@@ -323,8 +322,6 @@ function resetModalForm() {
     if (modalBuilding) modalBuilding.value = '';
     if (modalNotes) modalNotes.value = '';
     if (buildingSection) buildingSection.style.display = 'none';
-    
-    checkOrderButtonStatus();
 }
 
 // Setup modal event listeners
@@ -367,8 +364,7 @@ function setupProductModal() {
                 modalBuilding.value = '';
             }
             
-            // Check if order button should be enabled
-            checkOrderButtonStatus();
+            // College/Building selection no longer needed for chat feature
         });
     }
 
@@ -376,7 +372,7 @@ function setupProductModal() {
     const modalBuilding = document.getElementById('modalBuilding');
     if (modalBuilding) {
         modalBuilding.addEventListener('change', () => {
-            checkOrderButtonStatus();
+            // Building selection no longer needed for chat feature
         });
     }
 
@@ -419,32 +415,22 @@ function setupProductModal() {
         });
     }
 
-    // Order button
+    // Chat with Seller button (formerly Order button)
     const modalOrderBtn = document.getElementById('modalOrderBtn');
     if (modalOrderBtn) {
         modalOrderBtn.addEventListener('click', () => {
-            if (currentProduct && !modalOrderBtn.disabled) {
-                const college = document.getElementById('modalCollege').value;
-                const building = document.getElementById('modalBuilding').value;
-                const notes = document.getElementById('modalNotes').value;
-                
-                // Prepare order data
-                const orderData = {
-                    itemName: currentProduct.title,
-                    price: currentProduct.price,
-                    college: college,
-                    building: building,
-                    notes: notes,
-                    seller: currentProduct.seller,
-                    productId: currentProduct.id
-                };
-                
-                // Close product modal and open payment modal
-                closeProductModal();
-                resetModalForm();
-                
-                // Open payment modal
-                openPaymentModal(orderData);
+            if (currentProduct) {
+                // Create conversation and navigate to messages
+                if (typeof addConversation === 'function') {
+                    addConversation(currentProduct, currentProduct.seller);
+                    // Close product modal
+                    closeProductModal();
+                    resetModalForm();
+                    // Navigate to messages page
+                    window.location.href = 'pages/messages.html';
+                } else {
+                    alert('Please wait for the page to fully load.');
+                }
             }
         });
     }

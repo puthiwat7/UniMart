@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - UniMart</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/messages.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDKs (Compat version for script tag compatibility) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <!-- Firebase Config & Auth -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/firebase-auth.js"></script>
+
+    <!-- Auth Guard -->
+    <script>
+        // Protect this page: redirect to login if not authenticated
+        setTimeout(() => {
+            try {
+                firebase.auth().onAuthStateChanged((user) => {
+                    if (!user) {
+                        window.location.href = 'login.html';
+                    }
+                });
+            } catch (error) {
+                console.error('Firebase not initialized:', error);
+                window.location.href = 'login.html';
+            }
+        }, 100);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-placeholder">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <h1>UNIMART</h1>
+            </div>
+
+            <nav class="navigation">
+                <h3>NAVIGATION</h3>
+                <ul>
+                    <li>
+                        <a href="../index.html" class="nav-item">
+                            <i class="fas fa-store"></i>
+                            <span>Marketplace</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="sell-item.html" class="nav-item">
+                            <i class="fas fa-plus"></i>
+                            <span>Sell Item</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="my-orders.html" class="nav-item">
+                            <i class="fas fa-boxes"></i>
+                            <span>My Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="my-sales.html" class="nav-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>My Sales</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="messages.html" class="nav-item active">
+                            <i class="fas fa-comment-dots"></i>
+                            <span>Messages</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="my-favorites.html" class="nav-item">
+                            <i class="fas fa-heart"></i>
+                            <span>My Favorites</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="user-guide.html" class="nav-item">
+                            <i class="fas fa-question-circle"></i>
+                            <span>User Guide</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="feedback.html" class="nav-item">
+                            <i class="fas fa-comment"></i>
+                            <span>Feedback</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="profile.html" class="nav-item">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- User Profile / Login Section -->
+            <div id="userSection">
+                <!-- User Profile (shown when logged in) -->
+                <div class="user-profile-card" id="userProfileCard" style="display: none;">
+                    <div class="user-avatar-large">
+                        <img id="userProfileImage" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: none;">
+                        <i class="fas fa-user-circle" id="userAvatarIcon" style="font-size: 48px; color: white;"></i>
+                    </div>
+                    <div class="user-info">
+                        <h4 id="userName">User Name</h4>
+                        <p id="userEmail">user@email.com</p>
+                    </div>
+                    <button class="btn-logout" id="logoutBtn" onclick="handleSignOut()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Sign Out</span>
+                    </button>
+                </div>
+
+                <!-- Login Button (shown when not logged in) -->
+                <button class="btn-login" id="loginBtn" onclick="window.location.href='login.html'" style="display: none;">
+                    <i class="fab fa-google"></i>
+                    <span>Sign in with Google</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="messages-header">
+                <h1>Messages</h1>
+                <p>Chat with buyers and sellers about your orders</p>
+            </div>
+
+            <!-- Messages Container -->
+            <div class="messages-container">
+                <!-- Conversations List -->
+                <div class="conversations-panel">
+                    <!-- Search Bar -->
+                    <div class="conversations-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchConversations" placeholder="Search by product name...">
+                    </div>
+
+                    <!-- Conversations List -->
+                    <div class="conversations-list" id="conversationsList">
+                        <!-- Conversations will be loaded here -->
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="conversations-empty" id="conversationsEmpty" style="display: none;">
+                        <i class="fas fa-inbox"></i>
+                        <p>No conversations yet</p>
+                    </div>
+                </div>
+
+                <!-- Chat Area -->
+                <div class="chat-panel">
+                    <!-- Chat Empty State -->
+                    <div class="chat-empty" id="chatEmpty">
+                        <i class="fas fa-comment-dots"></i>
+                        <h2>No messages yet</h2>
+                        <p>Messages will appear here when you buy or sell items</p>
+                    </div>
+
+                    <!-- Active Chat -->
+                    <div class="chat-active" id="chatActive" style="display: none;">
+                        <!-- Chat Header -->
+                        <div class="chat-header">
+                            <div class="chat-header-info">
+                                <h3 id="chatProductTitle">Product Title</h3>
+                                <p id="chatSellerName">Seller Name</p>
+                            </div>
+                            <button class="btn-close-chat" id="btnCloseChat">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <!-- Chat Messages -->
+                        <div class="chat-messages" id="chatMessages">
+                            <!-- Messages will be loaded here -->
+                        </div>
+
+                        <!-- Chat Input -->
+                        <div class="chat-input-area">
+                            <input type="text" id="messageInput" class="message-input" placeholder="Type a message...">
+                            <button id="btnSendMessage" class="btn-send">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/user-sidebar.js"></script>
+    <script src="../js/messages.js"></script>
+</body>
+</html>

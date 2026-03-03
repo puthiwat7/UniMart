@@ -81,6 +81,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="pages/messages.html" class="nav-item">
+                            <i class="fas fa-comment-dots"></i>
+                            <span>Messages</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="pages/my-favorites.html" class="nav-item">
                             <i class="fas fa-heart"></i>
                             <span>My Favorites</span>
@@ -332,7 +338,7 @@
                         </div>
 
                         <!-- Delivery College Selection -->
-                        <div class="modal-section">
+                        <div class="modal-section" style="display: none;">
                             <label for="modalCollege"><i class="fas fa-map-marker-alt" style="color: var(--primary-blue); margin-right: 6px;"></i>Delivery College *</label>
                             <select id="modalCollege" class="modal-select">
                                 <option value="">Select your delivery college</option>
@@ -354,7 +360,7 @@
                         </div>
 
                         <!-- Notes (Optional) -->
-                        <div class="modal-section">
+                        <div class="modal-section" style="display: none;">
                             <label for="modalNotes"><i class="fas fa-pencil-alt" style="color: var(--primary-blue); margin-right: 6px;"></i>Notes (Optional)</label>
                             <textarea id="modalNotes" class="modal-textarea" rows="3" placeholder="Instructions..."></textarea>
                         </div>
@@ -370,9 +376,9 @@
 
                         <!-- Action Buttons -->
                         <div class="modal-actions">
-                            <button class="btn-order" id="modalOrderBtn" disabled>
-                                <i class="fas fa-check-circle"></i>
-                                Confirm
+                            <button class="btn-order" id="modalOrderBtn">
+                                <i class="fas fa-comments"></i>
+                                Chat with Seller
                             </button>
                             <button class="btn-save" id="modalSaveBtn">
                                 <i class="fas fa-heart"></i>
@@ -478,6 +484,7 @@
         </div>
     </div>
 
+    <script src="js/messages.js"></script>
     <script src="js/script.js"></script>
 
     <!-- Firebase User Display Script -->
