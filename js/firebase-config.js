@@ -8,7 +8,8 @@ const firebaseConfig = {
   projectId: "unimart-bccb5",
   storageBucket: "unimart-bccb5.firebasestorage.app",
   messagingSenderId: "395199091096",
-  appId: "1:395199091096:web:439f64e5dec4e83aaddbed"
+  appId: "1:395199091096:web:439f64e5dec4e83aaddbed",
+  measurementId: "G-2QJ09Q5M12"
 };
 
 // Initialize Firebase - wait for SDK to be available

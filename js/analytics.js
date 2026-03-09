@@ -11,13 +11,22 @@ class UniMartAnalytics {
     // Track when an item is listed
     trackItemListed(itemData) {
         this.analytics.logEvent('item_listed', {
+            currency: 'USD',
+            value: itemData.price || 0,
             item_id: itemData.id,
             item_name: itemData.name,
             item_category: itemData.category,
             price: itemData.price,
             condition: itemData.condition,
-            currency: 'USD',
-            timestamp: new Date().toISOString()
+            status: itemData.status || 'active',
+            items: [{
+                item_id: itemData.id,
+                item_name: itemData.name,
+                item_category: itemData.category,
+                price: itemData.price,
+                quantity: 1,
+                item_variant: itemData.condition
+            }]
         });
         console.log('📊 Analytics: Item listed -', itemData.name);
     }
@@ -29,6 +38,7 @@ class UniMartAnalytics {
             item_name: itemName,
             old_status: oldStatus,
             new_status: newStatus,
+            status: newStatus,
             timestamp: new Date().toISOString()
         });
         console.log(`📊 Analytics: Item status changed - ${itemName}: ${oldStatus} → ${newStatus}`);
@@ -37,31 +47,63 @@ class UniMartAnalytics {
     // Track when an item is viewed
     trackItemView(itemData) {
         this.analytics.logEvent('view_item', {
+            currency: 'USD',
+            value: itemData.price || 0,
             item_id: itemData.id,
             item_name: itemData.name,
             item_category: itemData.category,
             price: itemData.price,
-            currency: 'USD'
+            condition: itemData.condition,
+            status: itemData.status || 'active',
+            items: [{
+                item_id: itemData.id,
+                item_name: itemData.name,
+                item_category: itemData.category,
+                price: itemData.price,
+                quantity: 1,
+                item_variant: itemData.condition
+            }]
         });
         console.log('📊 Analytics: Item viewed -', itemData.name);
     }
 
     // Track when an item is added to favorites
     trackAddToFavorites(itemData) {
-        this.analytics.logEvent('add_to_favorites', {
+        this.analytics.logEvent('add_to_wishlist', {
+            currency: 'USD',
+            value: itemData.price || 0,
             item_id: itemData.id,
             item_name: itemData.name,
             item_category: itemData.category,
-            price: itemData.price
+            price: itemData.price,
+            condition: itemData.condition,
+            items: [{
+                item_id: itemData.id,
+                item_name: itemData.name,
+                item_category: itemData.category,
+                price: itemData.price,
+                quantity: 1,
+                item_variant: itemData.condition
+            }]
         });
         console.log('📊 Analytics: Added to favorites -', itemData.name);
     }
 
     // Track when an item is removed from favorites
     trackRemoveFromFavorites(itemData) {
-        this.analytics.logEvent('remove_from_favorites', {
+        this.analytics.logEvent('remove_from_wishlist', {
+            currency: 'USD',
+            value: itemData.price || 0,
             item_id: itemData.id,
-            item_name: itemData.name
+            item_name: itemData.name,
+            item_category: itemData.category,
+            items: [{
+                item_id: itemData.id,
+                item_name: itemData.name,
+                item_category: itemData.category,
+                price: itemData.price || 0,
+                quantity: 1
+            }]
         });
         console.log('📊 Analytics: Removed from favorites -', itemData.name);
     }
@@ -72,14 +114,19 @@ class UniMartAnalytics {
         
         this.analytics.logEvent('purchase', {
             transaction_id: txId,
-            value: itemData.price,
+            value: itemData.price || 0,
             currency: 'USD',
+            item_id: itemData.id,
+            item_name: itemData.name,
+            item_category: itemData.category,
+            price: itemData.price,
             items: [{
                 item_id: itemData.id,
                 item_name: itemData.name,
                 item_category: itemData.category,
                 price: itemData.price,
-                quantity: 1
+                quantity: 1,
+                item_variant: itemData.condition
             }]
         });
         console.log('📊 Analytics: Purchase tracked -', itemData.name);
@@ -88,30 +135,44 @@ class UniMartAnalytics {
     // Track item sale (seller perspective)
     trackItemSold(itemData) {
         this.analytics.logEvent('item_sold', {
+            currency: 'USD',
+            value: itemData.price || 0,
             item_id: itemData.id,
             item_name: itemData.name,
+            item_category: itemData.category,
             price: itemData.price,
-            currency: 'USD',
-            timestamp: new Date().toISOString()
+            condition: itemData.condition,
+            status: 'sold',
+            timestamp: new Date().toISOString(),
+            items: [{
+                item_id: itemData.id,
+                item_name: itemData.name,
+                item_category: itemData.category,
+                price: itemData.price,
+                quantity: 1,
+                item_variant: itemData.condition
+            }]
         });
         console.log('📊 Analytics: Item sold -', itemData.name);
     }
 
     // Track item edit
-    trackItemEdited(itemId, itemName) {
+    trackItemEdited(itemId, itemName, itemCategory = null) {
         this.analytics.logEvent('item_edited', {
             item_id: itemId,
             item_name: itemName,
+            item_category: itemCategory,
             timestamp: new Date().toISOString()
         });
         console.log('📊 Analytics: Item edited -', itemName);
     }
 
     // Track item deletion
-    trackItemDeleted(itemId, itemName) {
+    trackItemDeleted(itemId, itemName, itemCategory = null) {
         this.analytics.logEvent('item_deleted', {
             item_id: itemId,
             item_name: itemName,
+            item_category: itemCategory,
             timestamp: new Date().toISOString()
         });
         console.log('📊 Analytics: Item deleted -', itemName);
@@ -123,7 +184,7 @@ class UniMartAnalytics {
     trackSearch(searchQuery, resultsCount = 0) {
         this.analytics.logEvent('search', {
             search_term: searchQuery,
-            results_count: resultsCount
+            result_count: resultsCount
         });
         console.log(`📊 Analytics: Search - "${searchQuery}" (${resultsCount} results)`);
     }
@@ -134,7 +195,7 @@ class UniMartAnalytics {
     trackPageView(pageName, pageUrl = window.location.pathname) {
         this.analytics.logEvent('page_view', {
             page_title: pageName,
-            page_location: pageUrl,
+            page_location: window.location.href,
             page_path: pageUrl
         });
         console.log('📊 Analytics: Page view -', pageName);
@@ -142,7 +203,9 @@ class UniMartAnalytics {
 
     // Track button clicks
     trackButtonClick(buttonName, buttonLocation) {
-        this.analytics.logEvent('button_click', {
+        this.analytics.logEvent('select_content', {
+            content_type: 'button',
+            item_id: buttonName,
             button_name: buttonName,
             button_location: buttonLocation
         });
@@ -150,10 +213,12 @@ class UniMartAnalytics {
     }
 
     // Track contact seller
-    trackContactSeller(itemId, itemName) {
+    trackContactSeller(itemId, itemName, itemCategory = null) {
         this.analytics.logEvent('contact_seller', {
             item_id: itemId,
-            item_name: itemName
+            item_name: itemName,
+            item_category: itemCategory,
+            content_type: 'contact'
         });
         console.log('📊 Analytics: Contact seller -', itemName);
     }
@@ -163,6 +228,7 @@ class UniMartAnalytics {
         this.analytics.logEvent('feedback_submitted', {
             rating: rating,
             category: category,
+            value: rating,
             timestamp: new Date().toISOString()
         });
         console.log(`📊 Analytics: Feedback submitted - ${rating} stars, ${category}`);
@@ -172,8 +238,13 @@ class UniMartAnalytics {
 
     // Set user properties
     setUserProperties(properties) {
-        this.analytics.setUserProperties(properties);
-        console.log('📊 Analytics: User properties set', properties);
+        // Convert all values to strings for GA4
+        const stringProps = {};
+        for (const [key, value] of Object.entries(properties)) {
+            stringProps[key] = String(value);
+        }
+        this.analytics.setUserProperties(stringProps);
+        console.log('📊 Analytics: User properties set', stringProps);
     }
 
     // Update user item counts
@@ -181,7 +252,8 @@ class UniMartAnalytics {
         this.setUserProperties({
             total_items_listed: totalListed,
             items_sold: itemsSold,
-            items_pending: itemsPending
+            items_pending: itemsPending,
+            user_type: totalListed > 0 ? 'seller' : 'buyer'
         });
     }
 

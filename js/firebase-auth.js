@@ -6,6 +6,12 @@ class FirebaseAuthManager {
         this.user = null;
         this.auth = firebase.auth();
         this.analytics = firebase.analytics();
+        
+        // Send initial page view with custom parameters (helps populate dimensions)
+        this.analytics.logEvent('page_view', {
+            page_title: document.title,
+            page_location: window.location.href
+        });
     }
 
     // Check if user is logged in
@@ -36,6 +42,32 @@ class FirebaseAuthManager {
                 method: 'google',
                 user_id: result.user.uid
             });
+
+            // Send a test item view event to populate dimensions
+            this.analytics.logEvent('view_item', {
+                item_id: 'welcome_item',
+                item_name: 'Welcome to UniMart',
+                item_category: 'System',
+                price: 0,
+                condition: 'New',
+                status: 'active',
+                currency: 'USD',
+                value: 0,
+                items: [{
+                    item_id: 'welcome_item',
+                    item_name: 'Welcome to UniMart',
+                    item_category: 'System',
+                    price: 0,
+                    quantity: 1
+                }]
+            });
+
+            // Set user properties
+            this.analytics.setUserProperties({
+                total_items_listed: '0',
+                items_sold: '0',
+                user_type: 'new_user'
+            });
             
             return result.user;
         } catch (error) {
@@ -55,6 +87,32 @@ class FirebaseAuthManager {
                 method: 'email',
                 user_id: result.user.uid
             });
+
+            // Send a test item view event to populate dimensions
+            this.analytics.logEvent('view_item', {
+                item_id: 'welcome_item',
+                item_name: 'Welcome to UniMart',
+                item_category: 'System',
+                price: 0,
+                condition: 'New',
+                status: 'active',
+                currency: 'USD',
+                value: 0,
+                items: [{
+                    item_id: 'welcome_item',
+                    item_name: 'Welcome to UniMart',
+                    item_category: 'System',
+                    price: 0,
+                    quantity: 1
+                }]
+            });
+
+            // Set user properties
+            this.analytics.setUserProperties({
+                total_items_listed: '0',
+                items_sold: '0',
+                user_type: 'returning_user'
+            });
             
             return result.user;
         } catch (error) {
@@ -73,6 +131,32 @@ class FirebaseAuthManager {
             this.analytics.logEvent('sign_up', {
                 method: 'email',
                 user_id: result.user.uid
+            });
+
+            // Send a test item view event to populate dimensions
+            this.analytics.logEvent('view_item', {
+                item_id: 'welcome_new_user',
+                item_name: 'Welcome New User',
+                item_category: 'System',
+                price: 0,
+                condition: 'New',
+                status: 'active',
+                currency: 'USD',
+                value: 0,
+                items: [{
+                    item_id: 'welcome_new_user',
+                    item_name: 'Welcome New User',
+                    item_category: 'System',
+                    price: 0,
+                    quantity: 1
+                }]
+            });
+
+            // Set user properties
+            this.analytics.setUserProperties({
+                total_items_listed: '0',
+                items_sold: '0',
+                user_type: 'new_user'
             });
             
             return result.user;
