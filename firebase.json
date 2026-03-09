@@ -1,0 +1,27 @@
+{
+  "hosting": {
+    "site": "unimartofficial01",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      ".git/**",
+      ".gitignore",
+      "README.md",
+      "backend-setup.md",
+      "FIREBASE_SETUP.md",
+      "FIREBASE_IMPLEMENTATION.md",
+      "PROFILE_SETUP.md",
+      "PROFILE_TEST_GUIDE.md",
+      "IMPLEMENTATION_SUMMARY.md",
+      "FILE_INDEX.md"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
