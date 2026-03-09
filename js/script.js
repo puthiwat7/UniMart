@@ -1,66 +1,226 @@
-// Sample product data
-const products = [
-    {
-        id: 1,
-        title: "Introduction to Algorithms",
-        price: "$25.00",
-        category: "Textbooks",
-        seller: "John Doe",
-        image: "📚",
-        badge: "Brand New"
-    },
-    {
-        id: 2,
-        title: "Wireless Bluetooth Headphones",
-        price: "$45.00",
-        category: "Electronics",
-        seller: "Sarah Lee",
-        image: "🎧",
-        badge: "Like New"
-    },
-    {
-        id: 3,
-        title: "Wooden Desk Lamp",
-        price: "$15.00",
-        category: "Furniture",
-        seller: "Mike Chen",
-        image: "💡",
-        badge: "Used"
-    },
-    {
-        id: 4,
-        title: "Winter Jacket",
-        price: "$35.00",
-        category: "Clothing",
-        seller: "Emma Wilson",
-        image: "🧥",
-        badge: "Like New"
-    },
-    {
-        id: 5,
-        title: "Basketball",
-        price: "$20.00",
-        category: "Sports",
-        seller: "Alex Johnson",
-        image: "🏀",
-        badge: "Used"
-    },
-    {
-        id: 6,
-        title: "Notebook Set",
-        price: "$8.00",
-        category: "Stationery",
-        seller: "Lisa Park",
-        image: "📓",
-        badge: "Brand New"
-    }
-];
+const DEFAULT_PRODUCTS = [];
+
+const USER_LISTINGS_KEY = 'unimartListings';
+const LEGACY_LISTINGS_KEY = 'listings';
+const SAMPLE_TITLES = new Set([
+    'Introduction to Algorithms',
+    'Wireless Bluetooth Headphones',
+    'Wooden Desk Lamp',
+    'Winter Jacket',
+    'Basketball',
+    'Notebook Set',
+    'Used Calculus Textbook',
+    'Mechanical Keyboard',
+    'Desk Chair',
+    'Vintage Lamp'
+]);
+
+// Run AGGRESSIVE cleanup immediately when script loads to remove ALL sample items
+(function forceRemoveSampleItems() {
+    const sampleTitlesLower = [
+        'introduction to algorithms',
+        'wireless bluetooth headphones',
+        'wooden desk lamp',
+        'winter jacket',
+        'basketball',
+        'notebook set',
+        'used calculus textbook',
+        'mechanical keyboard',
+        'desk chair',
+        'vintage lamp'
+    ];
+    
+    // Check all possible localStorage keys
+    const keysToCheck = ['unimartListings', 'listings', USER_LISTINGS_KEY, LEGACY_LISTINGS_KEY];
+    
+    keysToCheck.forEach((key) => {
+        try {
+            const raw = localStorage.getItem(key);
+            if (!raw) return;
+            
+            let items = JSON.parse(raw);
+            let itemsArray = [];
+            
+            // Handle different storage formats
+            if (Array.isArray(items)) {
+                itemsArray = items;
+            } else if (items && Array.isArray(items.listings)) {
+                itemsArray = items.listings;
+            } else if (items && typeof items === 'object') {
+                itemsArray = [items];
+            }
+            
+            // Filter with case-insensitive comparison
+            const filtered = itemsArray.filter(item => {
+                if (!item || typeof item !== 'object') return false;
+                const title = String(item.title || '').trim().toLowerCase();
+                return !sampleTitlesLower.includes(title);
+            });
+            
+            // Only update if we actually removed items
+            if (filtered.length !== itemsArray.length) {
+                localStorage.setItem(key, JSON.stringify(filtered));
+                console.log(`✓ Removed ${itemsArray.length - filtered.length} sample items from "${key}"`);
+            }
+        } catch (e) {
+            console.warn('Cleanup error for key:', key, e);
+        }
+    });
+})();
+
+let products = [];
 
 let currentCategory = 'All Items';
-let filteredProducts = products;
+let filteredProducts = [];
+
+function getCachedUser() {
+    try {
+        const raw = localStorage.getItem('unimart_last_user');
+        return raw ? JSON.parse(raw) : null;
+    } catch (error) {
+        return null;
+    }
+}
+
+function getCurrentUserUid() {
+    const firebaseUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+    if (firebaseUser && firebaseUser.uid) return firebaseUser.uid;
+    const cachedUser = getCachedUser();
+    return cachedUser && cachedUser.uid ? cachedUser.uid : null;
+}
+
+function getCurrentExtendedProfile() {
+    const uid = getCurrentUserUid();
+    if (!uid) return null;
+    try {
+        const raw = localStorage.getItem(`unimart_profile_${uid}`);
+        return raw ? JSON.parse(raw) : null;
+    } catch (error) {
+        return null;
+    }
+}
+
+function enforceBuyPolicyOrRedirect() {
+    const profile = getCurrentExtendedProfile();
+    if (profile && profile.agreedToPolicies === true) {
+        return true;
+    }
+
+    alert('You must agree to marketplace policies before buying. You will be redirected to your profile.');
+    window.location.href = 'pages/profile.html';
+    return false;
+}
+
+function parseListingsFromKey(key) {
+    const savedListings = localStorage.getItem(key);
+    if (!savedListings) return [];
+
+    try {
+        const parsedListings = JSON.parse(savedListings);
+        if (Array.isArray(parsedListings)) return parsedListings;
+        if (parsedListings && Array.isArray(parsedListings.listings)) return parsedListings.listings;
+        return [];
+    } catch (error) {
+        console.warn(`Failed to parse listings from key: ${key}`, error);
+        return [];
+    }
+}
+
+function normalizeListing(listing, fallbackIndex = 0) {
+    if (!listing || typeof listing !== 'object') {
+        return null;
+    }
+
+    const normalizedCategory = listing.category ? String(listing.category) : 'Other';
+    const normalizedPrice = listing.price ? String(listing.price) : '¥0.00';
+
+    const imageList = Array.isArray(listing.images) ? listing.images.filter(Boolean) : [];
+    const primaryImageUrl = listing.imageUrl || imageList[0] || '';
+
+    return {
+        id: listing.id || Date.now() + fallbackIndex,
+        title: String(listing.title || 'Untitled Item'),
+        price: normalizedPrice,
+        category: normalizedCategory,
+        seller: String(listing.seller || 'Campus Seller'),
+        sellerPaymentQR: listing.sellerPaymentQR || '',
+        image: String(listing.image || '📦'),
+        imageUrl: primaryImageUrl,
+        images: imageList.length ? imageList : (primaryImageUrl ? [primaryImageUrl] : []),
+        badge: String(listing.badge || 'Used'),
+        description: String(listing.description || ''),
+        status: String(listing.status || 'active').toLowerCase()
+    };
+}
+
+function removeSampleListingsFromStorage() {
+    // Aggressive cleanup - remove all sample items from storage with case-insensitive matching
+    const sampleTitlesLower = Array.from(SAMPLE_TITLES).map(t => t.toLowerCase());
+    
+    [USER_LISTINGS_KEY, LEGACY_LISTINGS_KEY].forEach((key) => {
+        const parsed = parseListingsFromKey(key);
+        if (!parsed.length) return;
+
+        const filtered = parsed.filter((listing) => {
+            const title = String(listing?.title || '').trim().toLowerCase();
+            return !sampleTitlesLower.includes(title);
+        });
+
+        if (filtered.length !== parsed.length) {
+            localStorage.setItem(key, JSON.stringify(filtered));
+            console.log(`Removed ${parsed.length - filtered.length} sample items from ${key}`);
+        }
+    });
+}
+
+function getUserListings() {
+    const merged = [
+        ...parseListingsFromKey(USER_LISTINGS_KEY),
+        ...parseListingsFromKey(LEGACY_LISTINGS_KEY)
+    ];
+
+    const seen = new Set();
+    const normalized = [];
+    const sampleTitlesLower = Array.from(SAMPLE_TITLES).map(t => t.toLowerCase());
+
+    merged.forEach((listing, index) => {
+        const normalizedListing = normalizeListing(listing, index);
+        if (!normalizedListing) return;
+        
+        // Case-insensitive sample title check
+        const titleLower = normalizedListing.title.trim().toLowerCase();
+        if (sampleTitlesLower.includes(titleLower)) return;
+        if (normalizedListing.status !== 'active') return;
+
+        const key = `${normalizedListing.id}-${normalizedListing.title}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        normalized.push(normalizedListing);
+    });
+
+    return normalized;
+}
+
+function loadMarketplaceProducts() {
+    removeSampleListingsFromStorage();
+    const userListings = getUserListings();
+    products = [...DEFAULT_PRODUCTS, ...userListings];
+    filteredProducts = [...products];
+}
+
+function refreshMarketplaceProducts() {
+    loadMarketplaceProducts();
+    filterProducts();
+}
+
+function parsePrice(price) {
+    const numericPrice = String(price).replace(/[^\d.]/g, '');
+    return parseFloat(numericPrice) || 0;
+}
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', () => {
+    loadMarketplaceProducts();
     updateCategoryCounts(); // Update counts on initial load
     renderProducts(products);
     setupCategoryFilters();
@@ -69,6 +229,18 @@ document.addEventListener('DOMContentLoaded', () => {
     setupScrollToTop();
     setupProductModal(); // Setup product detail modal
     setupPaymentModal(); // Setup payment modal
+});
+
+// Refresh marketplace when page becomes visible (e.g., after navigating back from sell-item)
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        refreshMarketplaceProducts();
+    }
+});
+
+// Also refresh when window gains focus (for better reliability)
+window.addEventListener('focus', () => {
+    refreshMarketplaceProducts();
 });
 
 // Render products in the grid
@@ -94,9 +266,20 @@ function createProductCard(product) {
     const isFavorited = checkIfFavorited(product.id);
     const favBtnColor = isFavorited ? '#ef4444' : '#9ca3af';
     
+    // Show uploaded image if available, otherwise show emoji icon
+    let cardImage;
+    if (product.imageUrl || (product.images && product.images.length > 0)) {
+        const imgSrc = product.imageUrl || product.images[0];
+        cardImage = `<img src="${imgSrc}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">`;
+    } else if (product.image) {
+        cardImage = product.image;
+    } else {
+        cardImage = '📦';
+    }
+
     card.innerHTML = `
         <div class="product-image" style="position: relative; cursor: pointer;" onclick="handleViewDetails(${product.id})">
-            ${product.image}
+            ${cardImage}
             <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite(${product.id}, ${JSON.stringify(product).replace(/"/g, '&quot;')})" style="position: absolute; top: 8px; right: 8px; background-color: transparent; border: none; color: ${favBtnColor}; font-size: 20px; cursor: pointer; z-index: 10;">
                 <i class="fas fa-heart"></i>
             </button>
@@ -105,7 +288,6 @@ function createProductCard(product) {
             <span class="product-badge">${product.badge}</span>
             <h3 class="product-title">${product.title}</h3>
             <div class="product-price">${product.price}</div>
-            <div class="product-seller">by ${product.seller}</div>
             <div class="product-actions">
                 <button onclick="handleViewDetails(${product.id})">View Details</button>
             </div>
@@ -215,20 +397,47 @@ function handleViewDetails(productId) {
 let currentProduct = null;
 let currentImageIndex = 0;
 
-// Building data for each college
-const buildingsByCollege = {
-    'Shaw': ['A', 'B', 'C', 'D', 'E', 'F'],
-    'Ling': ['A', 'B', 'C'],
-    'Muse': ['A', 'B', 'C'],
-    'Diligentia': ['A', 'B', 'C'],
-    'Harmonia': ['A', 'B', 'C', 'D'],
-    'Minerva': ['A', 'C']
-};
+function getProductImages(product) {
+    if (!product) return [];
+    if (Array.isArray(product.images) && product.images.length) return product.images.filter(Boolean);
+    if (product.imageUrl) return [product.imageUrl];
+    return [];
+}
+
+function renderCurrentModalImage() {
+    const modalImage = document.getElementById('carouselImage');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const images = getProductImages(currentProduct);
+
+    if (!modalImage) return;
+
+    if (!images.length) {
+        // Show emoji icon if no uploaded images
+        const emojiIcon = currentProduct?.image || '📦';
+        modalImage.textContent = emojiIcon;
+        modalImage.style.display = 'flex';
+        modalImage.style.alignItems = 'center';
+        modalImage.style.justifyContent = 'center';
+        modalImage.style.fontSize = '120px';
+        if (prevBtn) prevBtn.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
+        return;
+    }
+
+    if (currentImageIndex >= images.length) currentImageIndex = 0;
+    if (currentImageIndex < 0) currentImageIndex = images.length - 1;
+
+    modalImage.innerHTML = `<img src="${images[currentImageIndex]}" alt="${currentProduct.title}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+    modalImage.style.display = '';
+    modalImage.style.fontSize = '';
+
+    const showNav = images.length > 1;
+    if (prevBtn) prevBtn.style.display = showNav ? 'flex' : 'none';
+    if (nextBtn) nextBtn.style.display = showNav ? 'flex' : 'none';
+}
 
 // Payment modal variables
-let paymentTimer = null;
-let paymentTimeLeft = 600; // 10 minutes in seconds
-let currentOrderSerial = '';
 let currentOrderData = null;
 
 function openProductModal(product) {
@@ -238,10 +447,13 @@ function openProductModal(product) {
     // Update modal content
     document.getElementById('modalProductTitle').textContent = product.title;
     document.getElementById('modalProductPrice').textContent = product.price;
-    document.getElementById('modalSeller').textContent = product.seller;
     document.getElementById('modalBadge').textContent = product.badge;
-    document.getElementById('carouselImage').textContent = product.image;
-    document.getElementById('modalDescription').textContent = `A ${product.badge.toLowerCase()} ${product.category.toLowerCase()} item in excellent condition.`;
+    
+    // Display uploaded image(s)
+    renderCurrentModalImage();
+    
+    // Use seller-provided description
+    document.getElementById('modalDescription').textContent = product.description || 'No description available.';
 
     // Update favorite button state
     const saveBtn = document.getElementById('modalSaveBtn');
@@ -268,62 +480,22 @@ function closeProductModal() {
 
 // Check if order button should be enabled
 function checkOrderButtonStatus() {
-    const modalCollege = document.getElementById('modalCollege');
-    const modalBuilding = document.getElementById('modalBuilding');
     const modalOrderBtn = document.getElementById('modalOrderBtn');
     const qrWarning = document.getElementById('qrWarning');
-    
-    // Check if user has QR code uploaded
-    let userHasQR = false;
-    try {
-        const userData = localStorage.getItem('unimart_user');
-        if (userData) {
-            const user = JSON.parse(userData);
-            userHasQR = user.paymentQR !== null && user.paymentQR !== undefined;
-        }
-    } catch (error) {
-        console.error('Error checking user QR status:', error);
-    }
-    
-    const collegeSelected = modalCollege && modalCollege.value !== '';
-    const buildingSelected = modalBuilding && modalBuilding.value !== '';
-    
-    // Show/hide QR warning
+
+    // Buyer QR is not required in marketplace checkout
     if (qrWarning) {
-        qrWarning.style.display = !userHasQR ? 'flex' : 'none';
+        qrWarning.style.display = 'none';
     }
-    
+
     if (modalOrderBtn) {
-        if (collegeSelected && buildingSelected && userHasQR) {
-            modalOrderBtn.disabled = false;
-            modalOrderBtn.title = '';
-        } else {
-            modalOrderBtn.disabled = true;
-            
-            // Set helpful tooltip message
-            if (!userHasQR) {
-                modalOrderBtn.title = 'Please upload your payment QR code in your profile first';
-            } else if (!collegeSelected) {
-                modalOrderBtn.title = 'Please select your delivery college';
-            } else if (!buildingSelected) {
-                modalOrderBtn.title = 'Please select your building';
-            }
-        }
+        modalOrderBtn.disabled = false;
+        modalOrderBtn.title = '';
     }
 }
 
 // Reset modal form when closing
 function resetModalForm() {
-    const modalCollege = document.getElementById('modalCollege');
-    const modalBuilding = document.getElementById('modalBuilding');
-    const modalNotes = document.getElementById('modalNotes');
-    const buildingSection = document.getElementById('buildingSection');
-    
-    if (modalCollege) modalCollege.value = '';
-    if (modalBuilding) modalBuilding.value = '';
-    if (modalNotes) modalNotes.value = '';
-    if (buildingSection) buildingSection.style.display = 'none';
-    
     checkOrderButtonStatus();
 }
 
@@ -337,56 +509,15 @@ function setupProductModal() {
     const modalOverlay = document.getElementById('modalOverlay');
     if (modalOverlay) modalOverlay.addEventListener('click', closeProductModal);
 
-    // College selection change
-    const modalCollege = document.getElementById('modalCollege');
-    if (modalCollege) {
-        modalCollege.addEventListener('change', (e) => {
-            const selectedCollege = e.target.value;
-            const buildingSection = document.getElementById('buildingSection');
-            const modalBuilding = document.getElementById('modalBuilding');
-            
-            if (selectedCollege && buildingsByCollege[selectedCollege]) {
-                // Show building section
-                buildingSection.style.display = 'flex';
-                
-                // Populate buildings
-                const buildings = buildingsByCollege[selectedCollege];
-                modalBuilding.innerHTML = '<option value="">Select building</option>';
-                buildings.forEach(building => {
-                    const option = document.createElement('option');
-                    option.value = building;
-                    option.textContent = `Building ${building}`;
-                    modalBuilding.appendChild(option);
-                });
-                
-                // Reset building selection
-                modalBuilding.value = '';
-            } else {
-                // Hide building section if no college selected
-                buildingSection.style.display = 'none';
-                modalBuilding.value = '';
-            }
-            
-            // Check if order button should be enabled
-            checkOrderButtonStatus();
-        });
-    }
-
-    // Building selection change
-    const modalBuilding = document.getElementById('modalBuilding');
-    if (modalBuilding) {
-        modalBuilding.addEventListener('change', () => {
-            checkOrderButtonStatus();
-        });
-    }
-
     // Carousel navigation
     const prevBtn = document.getElementById('prevBtn');
     if (prevBtn) {
         prevBtn.addEventListener('click', () => {
             if (currentProduct) {
-                currentImageIndex = (currentImageIndex - 1 + 1) % 1; // Simple carousel with 1 image per product
-                document.getElementById('carouselImage').textContent = currentProduct.image;
+                const images = getProductImages(currentProduct);
+                if (images.length <= 1) return;
+                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                renderCurrentModalImage();
             }
         });
     }
@@ -395,8 +526,10 @@ function setupProductModal() {
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
             if (currentProduct) {
-                currentImageIndex = (currentImageIndex + 1) % 1; // Simple carousel with 1 image per product
-                document.getElementById('carouselImage').textContent = currentProduct.image;
+                const images = getProductImages(currentProduct);
+                if (images.length <= 1) return;
+                currentImageIndex = (currentImageIndex + 1) % images.length;
+                renderCurrentModalImage();
             }
         });
     }
@@ -424,18 +557,16 @@ function setupProductModal() {
     if (modalOrderBtn) {
         modalOrderBtn.addEventListener('click', () => {
             if (currentProduct && !modalOrderBtn.disabled) {
-                const college = document.getElementById('modalCollege').value;
-                const building = document.getElementById('modalBuilding').value;
-                const notes = document.getElementById('modalNotes').value;
-                
+                if (!enforceBuyPolicyOrRedirect()) {
+                    return;
+                }
+
                 // Prepare order data
                 const orderData = {
                     itemName: currentProduct.title,
                     price: currentProduct.price,
-                    college: college,
-                    building: building,
-                    notes: notes,
                     seller: currentProduct.seller,
+                    sellerPaymentQR: currentProduct.sellerPaymentQR,
                     productId: currentProduct.id
                 };
                 
@@ -491,14 +622,14 @@ document.querySelectorAll('.filter-select').forEach((select, index) => {
                 filteredProducts.reverse();
             } else if (sortBy === 'Price Low to High') {
                 filteredProducts.sort((a, b) => {
-                    const priceA = parseFloat(a.price.replace('$', ''));
-                    const priceB = parseFloat(b.price.replace('$', ''));
+                    const priceA = parsePrice(a.price);
+                    const priceB = parsePrice(b.price);
                     return priceA - priceB;
                 });
             } else if (sortBy === 'Price High to Low') {
                 filteredProducts.sort((a, b) => {
-                    const priceA = parseFloat(a.price.replace('$', ''));
-                    const priceB = parseFloat(b.price.replace('$', ''));
+                    const priceA = parsePrice(a.price);
+                    const priceB = parsePrice(b.price);
                     return priceB - priceA;
                 });
             }
@@ -617,59 +748,32 @@ window.addEventListener('DOMContentLoaded', () => {
     checkAuthStatus();
 });
 
-// ======================== Payment Modal Functions ========================
-// Generate random serial number in format: CUHK + random 8 chars
-function generateSerialNumber() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let serial = 'CUHK';
-    for (let i = 0; i < 8; i++) {
-        serial += chars.charAt(Math.floor(Math.random() * chars.length));
+window.addEventListener('focus', refreshMarketplaceProducts);
+
+window.addEventListener('storage', (event) => {
+    if (event.key === USER_LISTINGS_KEY || event.key === LEGACY_LISTINGS_KEY) {
+        refreshMarketplaceProducts();
     }
-    return serial;
-}
+});
 
-// Format time in MM:SS format
-function formatTime(seconds) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-}
-
+// ======================== Payment Modal Functions ========================
 // Open payment modal
 function openPaymentModal(orderData) {
     currentOrderData = orderData;
-    currentOrderSerial = generateSerialNumber();
-    paymentTimeLeft = 600; // Reset to 10 minutes
-    
+
     const paymentModal = document.getElementById('paymentModal');
-    const timerDisplay = document.getElementById('timerDisplay');
-    const paymentTimer = document.getElementById('paymentTimer');
-    
+
     // Update modal content
     document.getElementById('paymentItemName').textContent = orderData.itemName;
-    document.getElementById('paymentDeliveryLocation').textContent = `${orderData.college} - Building ${orderData.building}`;
-    document.getElementById('deliveryLocationAfter').textContent = `${orderData.college} - Building ${orderData.building}`;
-    document.getElementById('paymentAmount').textContent = orderData.price;
-    document.getElementById('serialNumber').textContent = currentOrderSerial;
-    document.getElementById('serialNumberInSteps').textContent = currentOrderSerial;
-    
-    // Load user's payment QR code
-    try {
-        const userData = localStorage.getItem('unimart_user');
-        if (userData) {
-            const user = JSON.parse(userData);
-            if (user.paymentQR) {
-                const qrCodeImage = document.getElementById('paymentQRCode');
-                qrCodeImage.innerHTML = `<img src="${user.paymentQR}" alt="Payment QR Code" style="max-width: 100%; max-height: 240px;">`;
-            }
-        }
-    } catch (error) {
-        console.error('Error loading payment QR:', error);
+
+    // Show seller QR code directly in marketplace checkout
+    const qrCodeImage = document.getElementById('paymentQRCode');
+    if (orderData.sellerPaymentQR) {
+        qrCodeImage.innerHTML = `<img src="${orderData.sellerPaymentQR}" alt="${orderData.seller} QR Code" style="max-width: 100%; max-height: 240px;">`;
+    } else {
+        qrCodeImage.innerHTML = '<i class="fas fa-qrcode" style="font-size: 120px; color: #ddd;"></i>';
     }
-    
-    // Start timer
-    startPaymentTimer();
-    
+
     // Show modal
     paymentModal.classList.add('active');
 }
@@ -678,125 +782,24 @@ function openPaymentModal(orderData) {
 function closePaymentModal() {
     const paymentModal = document.getElementById('paymentModal');
     paymentModal.classList.remove('active');
-    
-    // Clear timer
-    if (paymentTimer) {
-        clearInterval(paymentTimer);
-        paymentTimer = null;
-    }
-    
+
     currentOrderData = null;
-    currentOrderSerial = '';
-}
-
-// Start payment timer
-function startPaymentTimer() {
-    const timerDisplay = document.getElementById('timerDisplay');
-    const timerElement = document.getElementById('paymentTimer');
-    
-    // Clear any existing timer
-    if (paymentTimer) {
-        clearInterval(paymentTimer);
-    }
-    
-    paymentTimer = setInterval(() => {
-        paymentTimeLeft--;
-        timerDisplay.textContent = formatTime(paymentTimeLeft);
-        
-        // Update timer color based on time remaining
-        timerElement.classList.remove('warning', 'danger');
-        if (paymentTimeLeft <= 60) {
-            timerElement.classList.add('danger');
-        } else if (paymentTimeLeft <= 180) {
-            timerElement.classList.add('warning');
-        }
-        
-        // Auto-cancel when time runs out
-        if (paymentTimeLeft <= 0) {
-            clearInterval(paymentTimer);
-            alert('Order has expired due to timeout. Please try again.');
-            closePaymentModal();
-        }
-    }, 1000);
-}
-
-// Copy serial number to clipboard
-function copySerialNumber() {
-    const serialNumber = document.getElementById('serialNumber').textContent;
-    
-    // Modern clipboard API
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(serialNumber).then(() => {
-            showCopyConfirmation();
-        }).catch(err => {
-            // Fallback for older browsers
-            fallbackCopySerial(serialNumber);
-        });
-    } else {
-        fallbackCopySerial(serialNumber);
-    }
-}
-
-// Fallback copy method
-function fallbackCopySerial(text) {
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
-    
-    try {
-        document.execCommand('copy');
-        showCopyConfirmation();
-    } catch (err) {
-        alert('Failed to copy. Please copy manually: ' + text);
-    }
-    
-    document.body.removeChild(textarea);
-}
-
-// Show copy confirmation
-function showCopyConfirmation() {
-    const btn = document.getElementById('btnCopySerial');
-    const originalHTML = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-    btn.style.background = '#dcfce7';
-    btn.style.color = '#166534';
-    btn.style.borderColor = '#86efac';
-    
-    setTimeout(() => {
-        btn.innerHTML = originalHTML;
-        btn.style.background = 'white';
-        btn.style.color = '#991b1b';
-        btn.style.borderColor = '#dc2626';
-    }, 2000);
 }
 
 // Handle order cancellation
 function handleCancelOrder() {
-    const confirmed = confirm('Are you sure you want to cancel this order?');
-    if (confirmed) {
-        closePaymentModal();
-        alert('Order has been cancelled.');
-    }
+    closePaymentModal();
 }
 
 // Handle payment made confirmation
 function handlePaymentMade() {
-    const confirmed = confirm('Have you completed the payment and included the serial number in the payment note?');
-    if (confirmed) {
-        alert('Thank you! We will verify your payment within 2-4 hours and notify you once confirmed.');
-        closePaymentModal();
-        // Here you would typically send the order data to your backend
-    }
+    closePaymentModal();
 }
 
 // Setup payment modal event listeners
 function setupPaymentModal() {
     const paymentModalClose = document.getElementById('paymentModalClose');
     const paymentModalOverlay = document.getElementById('paymentModalOverlay');
-    const btnCopySerial = document.getElementById('btnCopySerial');
     const btnCancelOrder = document.getElementById('btnCancelOrder');
     const btnPaymentMade = document.getElementById('btnPaymentMade');
     
@@ -806,10 +809,6 @@ function setupPaymentModal() {
     
     if (paymentModalOverlay) {
         paymentModalOverlay.addEventListener('click', closePaymentModal);
-    }
-    
-    if (btnCopySerial) {
-        btnCopySerial.addEventListener('click', copySerialNumber);
     }
     
     if (btnCancelOrder) {

@@ -140,46 +140,6 @@
                             <input type="number" id="price" name="price" placeholder="2" step="0.01" min="0.01" required>
                         </div>
 
-                        <!-- Earnings Breakdown -->
-                        <div class="earnings-breakdown" id="earningsBreakdown" style="display: none;">
-                            <div class="earnings-header">
-                                <i class="fas fa-info-circle"></i>
-                                Your Earnings Breakdown
-                            </div>
-                            <div class="earnings-row">
-                                <span>Buyer pays:</span>
-                                <strong id="buyerPays">¥2.00</strong>
-                            </div>
-                            <div class="earnings-row fee">
-                                <span>Platform fee (1% + ¥1):</span>
-                                <strong id="platformFee">-¥1.01</strong>
-                            </div>
-                            <div class="earnings-row total">
-                                <span>You receive:</span>
-                                <strong id="youReceive">¥0.99</strong>
-                            </div>
-                        </div>
-
-                        <!-- Earnings Breakdown -->
-                        <div class="earnings-breakdown" id="earningsBreakdown" style="display: none;">
-                            <div class="earnings-header">
-                                <i class="fas fa-info-circle"></i>
-                                Your Earnings Breakdown
-                            </div>
-                            <div class="earnings-row">
-                                <span>Buyer pays:</span>
-                                <strong id="buyerPays">¥2.00</strong>
-                            </div>
-                            <div class="earnings-row fee">
-                                <span>Platform fee (1% + ¥1):</span>
-                                <strong id="platformFee">-¥1.01</strong>
-                            </div>
-                            <div class="earnings-row total">
-                                <span>You receive:</span>
-                                <strong id="youReceive">¥0.99</strong>
-                            </div>
-                        </div>
-
                         <!-- Description -->
                         <div class="form-group">
                             <label for="description">
@@ -257,14 +217,14 @@
                             </label>
                             <div class="image-upload">
                                 <input type="file" id="images" name="images" multiple accept="image/*" style="display: none;">
+                                <div id="imagePreview" class="image-preview"></div>
                                 <div class="upload-area" id="uploadArea">
                                     <i class="fas fa-cloud-upload-alt"></i>
-                                    <p>Add Photo</p>
+                                    <p id="uploadText">Add Photos</p>
                                 </div>
-                                <div id="imagePreview" class="image-preview"></div>
                             </div>
                             <div class="image-requirements">
-                                <small>Upload 4-8 high-quality photos (minimum 4 required)</small>
+                                <small>Upload minimum 1 photo. Click "Add Photos" to upload more images.</small>
                             </div>
                         </div>
                     </div>
@@ -280,38 +240,130 @@
     </div>
 
     <script src="../js/user-sidebar.js"></script>
-    <script src="script.js"></script>
     <script>
-        // Price and earnings breakdown functionality
-        const priceInput = document.getElementById('price');
-        const earningsBreakdown = document.getElementById('earningsBreakdown');
-        const buyerPaysEl = document.getElementById('buyerPays');
-        const platformFeeEl = document.getElementById('platformFee');
-        const youReceiveEl = document.getElementById('youReceive');
+        const USER_LISTINGS_KEY = 'unimartListings';
+        const LEGACY_LISTINGS_KEY = 'listings';
+        let canSell = true;
 
-        function calculateEarnings() {
-            const price = parseFloat(priceInput.value);
-            
-            if (price && price > 0) {
-                // Show breakdown
-                earningsBreakdown.style.display = 'block';
-                
-                // Calculate platform fee: 1% + ¥1
-                const platformFee = (price * 0.01) + 1;
-                const youReceive = price - platformFee;
-                
-                // Update display
-                buyerPaysEl.textContent = `¥${price.toFixed(2)}`;
-                platformFeeEl.textContent = `-¥${platformFee.toFixed(2)}`;
-                youReceiveEl.textContent = `¥${Math.max(0, youReceive).toFixed(2)}`;
-            } else {
-                // Hide breakdown if no price
-                earningsBreakdown.style.display = 'none';
+        function getCachedUser() {
+            try {
+                const raw = localStorage.getItem('unimart_last_user');
+                return raw ? JSON.parse(raw) : null;
+            } catch (error) {
+                return null;
             }
         }
 
-        priceInput.addEventListener('input', calculateEarnings);
-        priceInput.addEventListener('change', calculateEarnings);
+        function getCurrentUserUid() {
+            const firebaseUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+            if (firebaseUser && firebaseUser.uid) return firebaseUser.uid;
+            const cachedUser = getCachedUser();
+            return cachedUser && cachedUser.uid ? cachedUser.uid : null;
+        }
+
+        function getCurrentExtendedProfile() {
+            const uid = getCurrentUserUid();
+            if (!uid) return null;
+
+            try {
+                const raw = localStorage.getItem(`unimart_profile_${uid}`);
+                return raw ? JSON.parse(raw) : null;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function enforceSellAccessOrRedirect() {
+            const profile = getCurrentExtendedProfile();
+
+            if (!profile || profile.agreedToPolicies !== true) {
+                alert('You must agree to marketplace policies before selling. You will be redirected to your profile.');
+                window.location.href = 'profile.html';
+                return false;
+            }
+
+            if (!profile.paymentQR) {
+                alert('You must upload your QR code in profile before selling. You will be redirected now.');
+                window.location.href = 'profile.html';
+                return false;
+            }
+
+            return true;
+        }
+
+        function initializeSellAccessGuard() {
+            const runCheck = () => {
+                canSell = enforceSellAccessOrRedirect();
+            };
+
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                firebase.auth().onAuthStateChanged(() => {
+                    runCheck();
+                });
+            } else {
+                runCheck();
+            }
+        }
+
+        initializeSellAccessGuard();
+
+        function toTitleCase(value) {
+            return value
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        }
+
+        function categoryToEmoji(category) {
+            const imageMap = {
+                textbooks: '📚',
+                electronics: '🎧',
+                furniture: '🪑',
+                clothing: '🧥',
+                sports: '🏀',
+                stationery: '📓',
+                kitchen: '🍳',
+                vehicles: '🚲',
+                other: '📦'
+            };
+
+            return imageMap[category] || '📦';
+        }
+
+        function getSellerName() {
+            const firebaseUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+            if (firebaseUser && firebaseUser.displayName) {
+                return firebaseUser.displayName;
+            }
+
+            const savedProfile = localStorage.getItem('userProfile');
+            if (!savedProfile) return 'Campus Seller';
+
+            try {
+                const userProfile = JSON.parse(savedProfile);
+                return userProfile.name || 'Campus Seller';
+            } catch (error) {
+                return 'Campus Seller';
+            }
+        }
+
+        function saveListing(listing) {
+            const existingListings = localStorage.getItem(USER_LISTINGS_KEY);
+            let listings = [];
+
+            if (existingListings) {
+                try {
+                    listings = JSON.parse(existingListings);
+                    if (!Array.isArray(listings)) listings = [];
+                } catch (error) {
+                    listings = [];
+                }
+            }
+
+            listings.push(listing);
+            localStorage.setItem(USER_LISTINGS_KEY, JSON.stringify(listings));
+            localStorage.setItem(LEGACY_LISTINGS_KEY, JSON.stringify(listings));
+        }
 
         // Condition slider functionality
         const conditionSlider = document.getElementById('condition');
@@ -350,27 +402,80 @@
         const uploadArea = document.getElementById('uploadArea');
         const imageInput = document.getElementById('images');
         const imagePreview = document.getElementById('imagePreview');
+        const uploadText = document.getElementById('uploadText');
+        let uploadedImages = [];
 
         uploadArea.addEventListener('click', () => imageInput.click());
 
         imageInput.addEventListener('change', (e) => {
             const files = Array.from(e.target.files);
-            imagePreview.innerHTML = '';
             
-            files.forEach(file => {
+            // Append new images to existing ones
+            files.forEach((file, index) => {
                 const reader = new FileReader();
                 reader.onload = (event) => {
+                    const imageContainer = document.createElement('div');
+                    imageContainer.style.position = 'relative';
+                    imageContainer.style.display = 'inline-block';
+                    
                     const img = document.createElement('img');
                     img.src = event.target.result;
-                    imagePreview.appendChild(img);
+                    img.style.width = '100px';
+                    img.style.height = '100px';
+                    img.style.objectFit = 'cover';
+                    img.style.margin = '4px';
+                    img.style.borderRadius = '8px';
+                    img.style.border = '2px solid #e5e7eb';
+                    
+                    // Add remove button
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                    removeBtn.style.position = 'absolute';
+                    removeBtn.style.top = '8px';
+                    removeBtn.style.right = '8px';
+                    removeBtn.style.background = '#ef4444';
+                    removeBtn.style.color = 'white';
+                    removeBtn.style.border = 'none';
+                    removeBtn.style.borderRadius = '50%';
+                    removeBtn.style.width = '24px';
+                    removeBtn.style.height = '24px';
+                    removeBtn.style.cursor = 'pointer';
+                    removeBtn.style.fontSize = '12px';
+                    removeBtn.style.display = 'flex';
+                    removeBtn.style.alignItems = 'center';
+                    removeBtn.style.justifyContent = 'center';
+                    
+                    removeBtn.addEventListener('click', () => {
+                        const imgIndex = uploadedImages.indexOf(event.target.result);
+                        if (imgIndex > -1) {
+                            uploadedImages.splice(imgIndex, 1);
+                        }
+                        imageContainer.remove();
+                        updateUploadText();
+                    });
+                    
+                    imageContainer.appendChild(img);
+                    imageContainer.appendChild(removeBtn);
+                    imagePreview.appendChild(imageContainer);
+                    uploadedImages.push(event.target.result);
+                    
+                    updateUploadText();
                 };
                 reader.readAsDataURL(file);
             });
 
-            if (files.length > 0) {
-                uploadArea.style.display = 'none';
-            }
+            // Reset the file input so the same file can be selected again if needed
+            imageInput.value = '';
         });
+
+        function updateUploadText() {
+            if (uploadedImages.length === 0) {
+                uploadText.textContent = 'Add Photos';
+            } else {
+                uploadText.textContent = `Add More Photos (${uploadedImages.length} uploaded)`;
+            }
+        }
 
         // Form submission
         const sellForm = document.getElementById('sellForm');
@@ -379,6 +484,11 @@
 
         sellForm.addEventListener('submit', (e) => {
             e.preventDefault();
+
+            if (!canSell) {
+                enforceSellAccessOrRedirect();
+                return;
+            }
             
             // Prevent duplicate submissions
             if (isSubmitting) {
@@ -392,6 +502,33 @@
             submitBtn.style.opacity = '0.6';
             submitBtn.style.cursor = 'not-allowed';
             
+            const formData = new FormData(sellForm);
+            const categoryValue = formData.get('category');
+            const listingPrice = Number(formData.get('price'));
+            const sellerName = getSellerName();
+            const firebaseUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+            const badge = conditionLabel.textContent.trim() || 'Used';
+            const listing = {
+                id: Date.now(),
+                title: String(formData.get('productTitle')).trim(),
+                price: `¥${listingPrice.toFixed(2)}`,
+                category: toTitleCase(String(categoryValue).replace(/-/g, ' ')),
+                seller: sellerName,
+                sellerUid: firebaseUser ? firebaseUser.uid : null,
+                sellerEmail: firebaseUser ? (firebaseUser.email || null) : null,
+                sellerPaymentQR: `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=UniMart-Seller-${encodeURIComponent(sellerName)}`,
+                image: categoryToEmoji(categoryValue),
+                imageUrl: uploadedImages.length > 0 ? uploadedImages[0] : '',
+                images: uploadedImages,
+                badge,
+                description: String(formData.get('description')).trim(),
+                listedAt: new Date().toISOString(),
+                quantity: Number(formData.get('quantity')) || 1,
+                status: 'active'
+            };
+
+            saveListing(listing);
+
             // Simulate processing (in real app, this would be an API call)
             setTimeout(() => {
                 // Show success message

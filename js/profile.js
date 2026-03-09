@@ -243,7 +243,7 @@ function handleQRUpload(e) {
         // Update display
         displayUploadedQR(imageData);
         
-        showNotification('Payment QR code uploaded successfully!', 'success');
+        showNotification('Profile QR code uploaded successfully!', 'success');
     };
     reader.readAsDataURL(file);
 }

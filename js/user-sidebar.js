@@ -84,14 +84,10 @@ function enforcePolicy(user) {
         console.error('Failed to parse profile data for policy check', e);
     }
     const agreed = profile && profile.agreedToPolicies;
-    const path = window.location.pathname || '';
-    const inPagesDir = path.includes('/pages/');
-    const isProfilePage = path.endsWith('profile.html');
-    if (!agreed && !isProfilePage) {
-        // redirect to profile page so user can accept
-        const dest = inPagesDir ? 'profile.html' : 'pages/profile.html';
-        window.location.href = dest;
-    }
+
+    // Keep policy status available to page scripts, but do not hard-redirect.
+    // Auto-redirecting causes login/profile navigation loops and poor UX.
+    document.body.dataset.policyAgreed = agreed ? 'true' : 'false';
 }
 
 });

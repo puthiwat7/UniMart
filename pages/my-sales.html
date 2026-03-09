@@ -140,6 +140,133 @@
                 </div>
             </div>
         </main>
+
+        <!-- My Sales Detail/Edit Modal -->
+        <div class="product-modal" id="salesModal">
+            <div class="modal-overlay" id="salesModalOverlay"></div>
+            <div class="modal-content">
+                <button class="modal-close" id="salesModalCloseBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+
+                <div class="modal-body">
+                    <div class="modal-image-section">
+                        <div class="image-carousel">
+                            <button class="carousel-btn prev-btn" id="salesPrevBtn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div class="carousel-image" id="salesCarouselImage"></div>
+                            <button class="carousel-btn next-btn" id="salesNextBtn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="badge-group">
+                            <span class="badge" id="salesModalBadge">Used</span>
+                        </div>
+                    </div>
+
+                    <div class="modal-details-section">
+                        <div id="salesViewPanel">
+                            <h2 id="salesModalTitle">Product Title</h2>
+                            <div class="modal-price" id="salesModalPrice">¥0.00</div>
+
+                            <div class="modal-section">
+                                <h4><i class="fas fa-info-circle" style="color: var(--primary-blue); margin-right: 6px;"></i>Description</h4>
+                                <p id="salesModalDescription">No description available</p>
+                            </div>
+
+                            <div class="modal-section">
+                                <h4><i class="fas fa-list" style="color: var(--primary-blue); margin-right: 6px;"></i>Details</h4>
+                                <p><strong>Category:</strong> <span id="salesModalCategory">-</span></p>
+                                <p><strong>Quantity:</strong> <span id="salesModalQuantity">1</span></p>
+                                <p><strong>Status:</strong> <span id="salesModalStatus">ACTIVE</span></p>
+                            </div>
+
+                            <div class="modal-actions">
+                                <button class="btn-order" id="salesEditBtn" style="background-color: #3b82f6;">
+                                    <i class="fas fa-pen"></i>
+                                    Edit
+                                </button>
+                                <button class="btn-save" id="salesWithdrawBtn" style="background-color: #ef4444; color: #fff;">
+                                    <i class="fas fa-ban"></i>
+                                    Withdraw
+                                </button>
+                                <button class="btn-save" id="salesMarkSoldBtn" style="background-color: #10b981; color: #fff;">
+                                    <i class="fas fa-check-circle"></i>
+                                    Mark as Sold
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="salesEditPanel" style="display: none;">
+                            <h3 style="margin-bottom: 12px;">Edit Listing</h3>
+
+                            <div class="form-group">
+                                <label for="editTitle">Product Title</label>
+                                <input type="text" id="editTitle" />
+                            </div>
+                            <div class="form-group">
+                                <label for="editPrice">Listing Price (¥)</label>
+                                <input type="number" id="editPrice" min="0.01" step="0.01" />
+                            </div>
+                            <div class="form-group">
+                                <label for="editDescription">Description</label>
+                                <textarea id="editDescription" rows="4"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="editCategory">Category</label>
+                                <select id="editCategory">
+                                    <option value="Textbooks">Textbooks</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Furniture">Furniture</option>
+                                    <option value="Clothing">Clothing</option>
+                                    <option value="Sports">Sports</option>
+                                    <option value="Stationery">Stationery</option>
+                                    <option value="Kitchen">Kitchen</option>
+                                    <option value="Vehicles">Vehicles</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editCondition">Condition</label>
+                                <select id="editCondition">
+                                    <option value="Very Poor">Very Poor</option>
+                                    <option value="Poor">Poor</option>
+                                    <option value="Fair">Fair</option>
+                                    <option value="Good">Good</option>
+                                    <option value="Like New">Like New</option>
+                                    <option value="Brand New">Brand New</option>
+                                    <option value="Used">Used</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editQuantity">Quantity</label>
+                                <input type="number" id="editQuantity" min="1" step="1" />
+                            </div>
+                            <div class="form-group">
+                                <label for="editImages">Upload More Images</label>
+                                <input type="file" id="editImages" multiple accept="image/*" />
+                            </div>
+                            <div class="form-group">
+                                <label>Current Images</label>
+                                <div id="editImagesPreview" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;"></div>
+                            </div>
+
+                            <div class="modal-actions">
+                                <button class="btn-order" id="salesSaveEditBtn" style="background-color: #10b981;">
+                                    <i class="fas fa-save"></i>
+                                    Save Changes
+                                </button>
+                                <button class="btn-save" id="salesCancelEditBtn" style="background-color: #6b7280; color: #fff;">
+                                    <i class="fas fa-times"></i>
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="../js/user-sidebar.js"></script>

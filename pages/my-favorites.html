@@ -125,6 +125,123 @@
                 </div>
             </div>
         </main>
+
+        <!-- Product Detail Modal -->
+        <div class="product-modal" id="productModal">
+            <div class="modal-overlay" id="modalOverlay"></div>
+            <div class="modal-content">
+                <button class="modal-close" id="modalCloseBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+
+                <div class="modal-body">
+                    <!-- Image Carousel -->
+                    <div class="modal-image-section">
+                        <div class="image-carousel">
+                            <button class="carousel-btn prev-btn" id="prevBtn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div class="carousel-image" id="carouselImage">📱</div>
+                            <button class="carousel-btn next-btn" id="nextBtn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="badge-group">
+                            <span class="badge" id="modalBadge">Brand New</span>
+                        </div>
+                    </div>
+
+                    <!-- Product Details -->
+                    <div class="modal-details-section">
+                        <h2 id="modalProductTitle">Product Title</h2>
+                        <div class="modal-price" id="modalProductPrice">$0.00</div>
+
+                        <!-- Seller Info -->
+                        <div class="seller-info" style="display: none;">
+                            <div class="seller-item">
+                                <i class="fas fa-user-circle"></i>
+                                <span id="modalSeller">Seller Name</span>
+                            </div>
+                            <div class="seller-item">
+                                <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                                <span>Verified</span>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="modal-section">
+                            <h4><i class="fas fa-info-circle" style="color: var(--primary-blue); margin-right: 6px;"></i>Description</h4>
+                            <p id="modalDescription">No description available</p>
+                        </div>
+
+                        <!-- Availability Status -->
+                        <div class="modal-section" id="availabilitySection" style="display: none;">
+                            <div class="availability-notice" id="availabilityNotice">
+                                <i class="fas fa-info-circle"></i>
+                                <span id="availabilityText">This item is no longer available</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="modal-actions">
+                            <button class="btn-order" id="modalOrderBtn">
+                                <i class="fas fa-check-circle"></i>
+                                Confirm
+                            </button>
+                            <button class="btn-save" id="modalSaveBtn">
+                                <i class="fas fa-heart"></i>
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Modal -->
+        <div class="payment-modal" id="paymentModal">
+            <div class="payment-modal-overlay" id="paymentModalOverlay"></div>
+            <div class="payment-modal-content">
+                <button class="payment-modal-close" id="paymentModalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+
+                <div class="payment-header">
+                    <div class="payment-title">
+                        <i class="fas fa-qrcode"></i>
+                        <span>Seller Profile QR</span>
+                    </div>
+                </div>
+
+                <div class="payment-body">
+                    <!-- Order Summary -->
+                    <div class="payment-order-summary">
+                        <h3 id="paymentItemName">Product Name</h3>
+                    </div>
+
+                    <!-- QR Code Display -->
+                    <div class="payment-qr-section">
+                        <div class="qr-code-container">
+                            <div class="qr-code-title">Seller Profile QR Code</div>
+                            <div class="qr-code-image" id="paymentQRCode">
+                                <i class="fas fa-qrcode" style="font-size: 120px; color: #ddd;"></i>
+                            </div>
+                            <div class="wechat-pay-logo">
+                                <i class="fab fa-weixin"></i>
+                                <span>微信支付</span>
+                            </div>
+                        </div>
+                        <div class="payment-official-text">Use this QR to communicate with the seller directly.</div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="payment-actions">
+                        <button class="btn-cancel-order" id="btnCancelOrder">Cancel Order</button>
+                        <button class="btn-payment-made" id="btnPaymentMade">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="../js/user-sidebar.js"></script>

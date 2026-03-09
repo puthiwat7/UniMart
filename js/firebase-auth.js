@@ -5,13 +5,45 @@ class FirebaseAuthManager {
     constructor() {
         this.user = null;
         this.auth = firebase.auth();
-        this.analytics = firebase.analytics();
         
         // Send initial page view with custom parameters (helps populate dimensions)
         this.analytics.logEvent('page_view', {
-            page_title: document.title,
-            page_location: window.location.href
-        });
+        this.analytics = null;
+
+        // Analytics SDK is optional on some pages. Do not break auth if unavailable.
+        try {
+            if (typeof firebase.analytics === 'function') {
+                this.analytics = firebase.analytics();
+                this.logAnalyticsEvent('page_view', {
+                    page_title: document.title,
+                    page_location: window.location.href
+                });
+            }
+        } catch (error) {
+    }
+
+    logAnalyticsEvent(eventName, params = {}) {
+        if (!this.analytics || typeof this.analytics.logEvent !== 'function') {
+            return;
+        }
+
+        try {
+            this.analytics.logEvent(eventName, params);
+        } catch (error) {
+            console.warn(`Failed to log analytics event: ${eventName}`, error);
+        }
+    }
+
+    setAnalyticsUserProperties(properties = {}) {
+        if (!this.analytics || typeof this.analytics.setUserProperties !== 'function') {
+            return;
+        }
+
+        try {
+            this.analytics.setUserProperties(properties);
+        } catch (error) {
+            console.warn('Failed to set analytics user properties', error);
+        }
     }
 
     // Check if user is logged in
@@ -38,13 +70,13 @@ class FirebaseAuthManager {
             console.log('User signed in:', result.user);
             
             // Track login event
-            this.analytics.logEvent('login', {
+            this.logAnalyticsEvent('login', {
                 method: 'google',
                 user_id: result.user.uid
             });
 
             // Send a test item view event to populate dimensions
-            this.analytics.logEvent('view_item', {
+            this.logAnalyticsEvent('view_item', {
                 item_id: 'welcome_item',
                 item_name: 'Welcome to UniMart',
                 item_category: 'System',
@@ -63,7 +95,7 @@ class FirebaseAuthManager {
             });
 
             // Set user properties
-            this.analytics.setUserProperties({
+            this.setAnalyticsUserProperties({
                 total_items_listed: '0',
                 items_sold: '0',
                 user_type: 'new_user'
@@ -83,13 +115,13 @@ class FirebaseAuthManager {
             console.log('User signed in with email:', result.user);
             
             // Track login event
-            this.analytics.logEvent('login', {
+            this.logAnalyticsEvent('login', {
                 method: 'email',
                 user_id: result.user.uid
             });
 
             // Send a test item view event to populate dimensions
-            this.analytics.logEvent('view_item', {
+            this.logAnalyticsEvent('view_item', {
                 item_id: 'welcome_item',
                 item_name: 'Welcome to UniMart',
                 item_category: 'System',
@@ -108,7 +140,7 @@ class FirebaseAuthManager {
             });
 
             // Set user properties
-            this.analytics.setUserProperties({
+            this.setAnalyticsUserProperties({
                 total_items_listed: '0',
                 items_sold: '0',
                 user_type: 'returning_user'
@@ -128,13 +160,13 @@ class FirebaseAuthManager {
             console.log('User signed up with email:', result.user);
             
             // Track sign up event
-            this.analytics.logEvent('sign_up', {
+            this.logAnalyticsEvent('sign_up', {
                 method: 'email',
                 user_id: result.user.uid
             });
 
             // Send a test item view event to populate dimensions
-            this.analytics.logEvent('view_item', {
+            this.logAnalyticsEvent('view_item', {
                 item_id: 'welcome_new_user',
                 item_name: 'Welcome New User',
                 item_category: 'System',
@@ -153,7 +185,7 @@ class FirebaseAuthManager {
             });
 
             // Set user properties
-            this.analytics.setUserProperties({
+            this.setAnalyticsUserProperties({
                 total_items_listed: '0',
                 items_sold: '0',
                 user_type: 'new_user'
