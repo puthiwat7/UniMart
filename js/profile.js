@@ -1,138 +1,103 @@
-// ======================== User Management ========================
-// This is a basic user management system that will be extended with Google API
+// ======================== Profile Page Logic ========================
+// Uses Firebase auth for base user data and localStorage (by uid) for extended profile fields.
 
-class UserManager {
-    constructor() {
-        this.currentUser = this.loadFromLocalStorage() || this.createDummyUser();
+// Keyed by Firebase user uid so data follows the logged-in account
+function loadExtendedProfile(uid) {
+    if (!uid) return null;
+    try {
+        const raw = localStorage.getItem(`unimart_profile_${uid}`);
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        console.error('Error loading extended profile:', e);
+        return null;
+    }
+}
+
+function saveExtendedProfile(uid, data) {
+    if (!uid) return;
+    try {
+        localStorage.setItem(`unimart_profile_${uid}`, JSON.stringify(data));
+    } catch (e) {
+        console.error('Error saving extended profile:', e);
+    }
+}
+
+let currentFirebaseUser = null;
+let currentExtendedProfile = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof firebaseAuthManager === 'undefined') {
+        console.error('firebaseAuthManager is not available on profile page.');
+        return;
     }
 
-    // Create a dummy user for initial testing
-    createDummyUser() {
-        const dummyUser = {
-            id: 'user_' + Date.now(),
-            name: 'Alex Johnson',
-            email: 'alex.johnson@student.cuhk.edu.hk',
+    // Wait for auth and then initialize profile with real login data
+    firebaseAuthManager.onAuthStateChanged((user) => {
+        if (!user) {
+            // Auth guard in HTML will redirect, but just in case:
+            window.location.href = 'login.html';
+            return;
+        }
+
+        currentFirebaseUser = user;
+        currentExtendedProfile = loadExtendedProfile(user.uid) || {
             college: '',
             studentId: '',
             phone: '',
             wechat: '',
             bio: '',
             paymentQR: null,
-            agreedToPolicies: false,
-            createdAt: new Date().toISOString(),
-            googleId: null // Will be populated when Google login is implemented
+            agreedToPolicies: false
         };
-        this.saveToLocalStorage(dummyUser);
-        return dummyUser;
-    }
 
-    // Load user from localStorage
-    loadFromLocalStorage() {
-        try {
-            const userData = localStorage.getItem('unimart_user');
-            return userData ? JSON.parse(userData) : null;
-        } catch (error) {
-            console.error('Error loading user from localStorage:', error);
-            return null;
-        }
-    }
-
-    // Save user to localStorage
-    saveToLocalStorage(user) {
-        try {
-            localStorage.setItem('unimart_user', JSON.stringify(user));
-        } catch (error) {
-            console.error('Error saving user to localStorage:', error);
-        }
-    }
-
-    // Update user profile
-    updateProfile(profileData) {
-        this.currentUser = {
-            ...this.currentUser,
-            ...profileData,
-            updatedAt: new Date().toISOString()
-        };
-        this.saveToLocalStorage(this.currentUser);
-        return this.currentUser;
-    }
-
-    // Get current user
-    getCurrentUser() {
-        return this.currentUser;
-    }
-
-    // Check if user has agreed to policies
-    hasPolicyAgreement() {
-        return this.currentUser.agreedToPolicies === true;
-    }
-
-    // Agree to policies
-    agreeToPolicies() {
-        return this.updateProfile({ agreedToPolicies: true });
-    }
-
-    // Set payment QR code
-    setPaymentQR(qrData) {
-        return this.updateProfile({ paymentQR: qrData });
-    }
-}
-
-// Global user manager instance
-const userManager = new UserManager();
-
-// ======================== Profile Page Logic ========================
-document.addEventListener('DOMContentLoaded', () => {
-    initializeProfile();
-    setupEventListeners();
+        initializeProfile();
+        setupEventListeners();
+    });
 });
 
 function initializeProfile() {
-    const user = userManager.getCurrentUser();
+    if (!currentFirebaseUser || !currentExtendedProfile) return;
+
+    const user = currentFirebaseUser;
+    const profile = currentExtendedProfile;
     
     // Update profile display
-    document.getElementById('profileName').textContent = user.name;
-    document.getElementById('profileEmail').textContent = user.email;
+    document.getElementById('profileName').textContent = user.displayName || 'User';
+    document.getElementById('profileEmail').textContent = user.email || '';
     
     // Load existing QR code if available
-    if (user.paymentQR) {
-        displayUploadedQR(user.paymentQR);
+    if (profile.paymentQR) {
+        displayUploadedQR(profile.paymentQR);
     }
     
-    // Update sidebar user info if it exists
-    const userNameEl = document.getElementById('userName');
-    const userEmailEl = document.getElementById('userEmail');
-    if (userNameEl) userNameEl.textContent = user.name;
-    if (userEmailEl) userEmailEl.textContent = user.email;
-
     // Display profile information
-    updateProfileDisplay(user);
+    updateProfileDisplay(profile);
     
     // Set form values in case user switches to edit mode
-    updateFormValues(user);
+    updateFormValues(profile);
 }
 
-function updateProfileDisplay(user) {
-    document.getElementById('displayCollege').textContent = user.college || 'Not set';
-    document.getElementById('displayStudentID').textContent = user.studentId || 'Not set';
-    document.getElementById('displayPhone').textContent = user.phone || 'Not set';
-    document.getElementById('displayWechat').textContent = user.wechat || 'Not set';
-    document.getElementById('displayBio').textContent = user.bio || 'No bio added';
+function updateProfileDisplay(profile) {
+    document.getElementById('displayCollege').textContent = profile.college || 'Not set';
+    document.getElementById('displayStudentID').textContent = profile.studentId || 'Not set';
+    document.getElementById('displayPhone').textContent = profile.phone || 'Not set';
+    document.getElementById('displayWechat').textContent = profile.wechat || 'Not set';
+    document.getElementById('displayBio').textContent = profile.bio || 'No bio added';
 
     // Show or hide alert based on policy agreement
     const alert = document.querySelector('.alert-warning');
-    if (user.agreedToPolicies) {
+    if (profile.agreedToPolicies) {
         alert.style.display = 'none';
     }
 }
 
-function updateFormValues(user) {
-    document.getElementById('college').value = user.college || '';
-    document.getElementById('studentId').value = user.studentId || '';
-    document.getElementById('phone').value = user.phone || '';
-    document.getElementById('wechat').value = user.wechat || '';
-    document.getElementById('bio').value = user.bio || '';
-    document.getElementById('policyCheckbox').checked = user.agreedToPolicies || false;
+function updateFormValues(profile) {
+    document.getElementById('college').value = profile.college || '';
+    document.getElementById('studentId').value = profile.studentId || '';
+    document.getElementById('phone').value = profile.phone || '';
+    document.getElementById('wechat').value = profile.wechat || '';
+    document.getElementById('bio').value = profile.bio || '';
+    document.getElementById('policyCheckbox').checked = profile.agreedToPolicies || false;
 }
 
 function setupEventListeners() {
@@ -215,11 +180,16 @@ function handleProfileSubmit(e) {
         return;
     }
 
-    // Update user profile
-    const updatedUser = userManager.updateProfile(profileData);
+    // Merge and save extended profile (per Firebase user)
+    currentExtendedProfile = {
+        ...currentExtendedProfile,
+        ...profileData,
+        updatedAt: new Date().toISOString()
+    };
+    saveExtendedProfile(currentFirebaseUser.uid, currentExtendedProfile);
     
     // Update display
-    updateProfileDisplay(updatedUser);
+    updateProfileDisplay(currentExtendedProfile);
     
     // Toggle back to view mode
     toggleEditMode();
@@ -248,8 +218,13 @@ function handleQRUpload(e) {
     reader.onload = (event) => {
         const imageData = event.target.result;
         
-        // Save to user profile
-        userManager.setPaymentQR(imageData);
+        // Save to extended profile
+        currentExtendedProfile = {
+            ...currentExtendedProfile,
+            paymentQR: imageData,
+            updatedAt: new Date().toISOString()
+        };
+        saveExtendedProfile(currentFirebaseUser.uid, currentExtendedProfile);
         
         // Update display
         displayUploadedQR(imageData);
@@ -289,8 +264,13 @@ function closePoliciesModal() {
 }
 
 function handleAgreeToPolicy() {
-    // Update user agreement
-    const updatedUser = userManager.agreeToPolicies();
+    // Update user agreement in extended profile
+    currentExtendedProfile = {
+        ...currentExtendedProfile,
+        agreedToPolicies: true,
+        updatedAt: new Date().toISOString()
+    };
+    saveExtendedProfile(currentFirebaseUser.uid, currentExtendedProfile);
     
     // Update form
     document.getElementById('policyCheckbox').checked = true;

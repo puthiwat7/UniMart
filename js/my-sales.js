@@ -49,7 +49,6 @@ let currentSalesFilter = 'all';
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
     renderSales(mySalesData);
-    checkAuthStatus();
     setupSalesFilters();
     updateSalesStats();
 });
@@ -176,51 +175,4 @@ function handleRemoveListing(itemId) {
     }
 }
 
-// ======================== Authentication Management ========================
-// Check if user is logged in (from localStorage)
-function checkAuthStatus() {
-    const userProfile = localStorage.getItem('userProfile');
-    if (userProfile) {
-        showUserProfile(JSON.parse(userProfile));
-    } else {
-        showLoginButton();
-    }
-}
-
-// Display user profile
-function showUserProfile(user) {
-    const userProfile = document.getElementById('userProfile');
-    const loginBtn = document.getElementById('loginBtn');
-    
-    userProfile.style.display = 'flex';
-    loginBtn.style.display = 'none';
-    
-    document.getElementById('userName').textContent = user.name || 'User';
-    document.getElementById('userEmail').textContent = user.email || '';
-}
-
-// Display login button
-function showLoginButton() {
-    const userProfile = document.getElementById('userProfile');
-    const loginBtn = document.getElementById('loginBtn');
-    
-    userProfile.style.display = 'none';
-    loginBtn.style.display = 'flex';
-}
-
-// Handle login button click
-document.addEventListener('DOMContentLoaded', () => {
-    const loginBtn = document.getElementById('loginBtn');
-    if (loginBtn) {
-        loginBtn.addEventListener('click', () => {
-            alert('Login button clicked! (Placeholder for future Google Sign-In integration)');
-        });
-    }
-});
-
-// Handle logout
-function logout() {
-    localStorage.removeItem('userProfile');
-    showLoginButton();
-    alert('Signed out successfully!');
-}
+// (Authentication and sidebar display are handled globally by user-sidebar.js)
