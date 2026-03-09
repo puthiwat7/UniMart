@@ -7,7 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Check if already logged in
     firebaseAuthManager.onAuthStateChanged((user) => {
-        if (user) {
+        const params = new URLSearchParams(window.location.search);
+        const justLoggedOut = params.has('loggedout');
+        if (user && !justLoggedOut) {
             // User is logged in, redirect to home
             console.log('User already logged in:', user.email);
             window.location.href = '../index.html';

@@ -143,7 +143,7 @@ function createSaleCard(item) {
             ${extraInfo}
             <div class="product-actions">
                 <button onclick="handleViewSaleDetails(${item.id})">View Details</button>
-                ${item.status === 'active' ? `<button onclick="handleRemoveListing(${item.id})" style="background-color: #ef4444;">Remove</button>` : ''}
+                ${item.status === 'active' ? `<button onclick="handleEditListing(${item.id})" style="background-color: #3b82f6;">Edit</button><button onclick="handleRemoveListing(${item.id})" style="background-color: #ef4444;">Remove</button>` : ''}
             </div>
         </div>
     `;
@@ -173,6 +173,19 @@ function handleRemoveListing(itemId) {
             alert('Listing removed successfully!');
         }
     }
+}
+
+// Edit an active listing
+function handleEditListing(itemId) {
+    const item = mySalesData.find(i => i.id === itemId);
+    if (!item) return;
+    const newTitle = prompt('Enter new title', item.title);
+    if (newTitle !== null) item.title = newTitle;
+    const newPrice = prompt('Enter new price (numbers only)', item.price.replace('$',''));
+    if (newPrice !== null && newPrice.trim() !== '') item.price = `$${newPrice}`;
+    updateSalesStats();
+    filterSales();
+    alert('Listing updated successfully!');
 }
 
 // (Authentication and sidebar display are handled globally by user-sidebar.js)

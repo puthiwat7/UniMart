@@ -64,6 +64,20 @@ function initializeProfile() {
     // Update profile display
     document.getElementById('profileName').textContent = user.displayName || 'User';
     document.getElementById('profileEmail').textContent = user.email || '';
+
+    // Show avatar photo if user has one
+    const avatarImg = document.getElementById('profileAvatarImage');
+    const avatarIcon = document.querySelector('.user-avatar-large i');
+    if (avatarImg && avatarIcon) {
+        if (user.photoURL) {
+            avatarImg.src = user.photoURL;
+            avatarImg.style.display = 'block';
+            avatarIcon.style.display = 'none';
+        } else {
+            avatarImg.style.display = 'none';
+            avatarIcon.style.display = 'block';
+        }
+    }
     
     // Load existing QR code if available
     if (profile.paymentQR) {
