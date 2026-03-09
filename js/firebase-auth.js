@@ -5,9 +5,6 @@ class FirebaseAuthManager {
     constructor() {
         this.user = null;
         this.auth = firebase.auth();
-        
-        // Send initial page view with custom parameters (helps populate dimensions)
-        this.analytics.logEvent('page_view', {
         this.analytics = null;
 
         // Analytics SDK is optional on some pages. Do not break auth if unavailable.
@@ -20,6 +17,8 @@ class FirebaseAuthManager {
                 });
             }
         } catch (error) {
+            console.warn('Firebase Analytics is unavailable on this page:', error);
+        }
     }
 
     logAnalyticsEvent(eventName, params = {}) {
