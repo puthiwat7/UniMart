@@ -70,21 +70,77 @@ document.addEventListener('DOMContentLoaded', () => {
 
     firebaseAuthManager.onAuthStateChanged((user) => {
         applyUserToSidebar(user);
+        enforcePolicy(user);
     });
+
+// check whether the user has agreed to marketplace policies; if not, force them to profile page
+function enforcePolicy(user) {
+    if (!user || !user.uid) return;
+    let profile = null;
+    try {
+        const raw = localStorage.getItem(`unimart_profile_${user.uid}`);
+        profile = raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        console.error('Failed to parse profile data for policy check', e);
+    }
+    const agreed = profile && profile.agreedToPolicies;
+    const path = window.location.pathname || '';
+    const inPagesDir = path.includes('/pages/');
+    const isProfilePage = path.endsWith('profile.html');
+    if (!agreed && !isProfilePage) {
+        // redirect to profile page so user can accept
+        const dest = inPagesDir ? 'profile.html' : 'pages/profile.html';
+        window.location.href = dest;
+    }
+}
+
 });
 
 // Global sign-out handler used by main sidebar button
 async function handleSignOut() {
+    console.log('sign-out initiated');
+    const path = window.location.pathname || '';
+    const inPagesDir = path.includes('/pages/');
+    const loginPath = inPagesDir ? 'login.html' : 'pages/login.html';
+
     try {
-        await firebaseAuthManager.signOut();
-        // Redirect to login page from both root and /pages/ URLs
-        const path = window.location.pathname || '';
-        const inPagesDir = path.includes('/pages/');
-        const loginPath = inPagesDir ? 'login.html' : 'pages/login.html';
-        window.location.href = loginPath;
+        if (typeof firebaseAuthManager !== 'undefined') {
+            await firebaseAuthManager.signOut();
+            console.log('firebaseAuthManager.signOut completed');
+        } else {
+            console.warn('firebaseAuthManager not available, skipping signOut call');
+        }
     } catch (error) {
-        console.error('Error signing out:', error);
-        alert('Error signing out. Please try again.');
+        console.error('Error during sign out call:', error);
     }
+
+    // also clear cached user immediately to avoid ghost profile
+    try {
+        localStorage.removeItem('unimart_last_user');
+    } catch (e) {
+        console.warn('Could not remove cached user:', e);
+    }
+
+    // wait briefly for Firebase to propagate state, then redirect with flag
+    setTimeout(() => {
+        window.location.href = loginPath + '?loggedout=1';
+    }, 300);
+
 }
+
+// add event listener fallback in case inline onclick is not firing
+function attachLogoutHandlers() {
+    const logoutButtons = document.querySelectorAll('.btn-logout');
+    logoutButtons.forEach(btn => {
+        btn.removeEventListener('click', handleSignOut);
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleSignOut();
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    attachLogoutHandlers();
+});
 

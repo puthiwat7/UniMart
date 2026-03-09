@@ -57,6 +57,14 @@
     margin: 0 auto 16px;
 }
 
+/* when an img is added inside the avatar container */
+.user-avatar-large img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
 .user-card h3 {
     font-size: 18px;
     font-weight: 700;
