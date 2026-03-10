@@ -259,6 +259,13 @@
             if (firebaseUser && firebaseUser.uid) return firebaseUser.uid;
             const cachedUser = getCachedUser();
             return cachedUser && cachedUser.uid ? cachedUser.uid : null;
+
+                function getCurrentUserEmail() {
+                    const firebaseUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+                    if (firebaseUser && firebaseUser.email) return firebaseUser.email;
+                    const cachedUser = getCachedUser();
+                    return cachedUser && cachedUser.email ? cachedUser.email : null;
+                }
         }
 
         function getCurrentExtendedProfile() {
@@ -506,7 +513,8 @@
             const categoryValue = formData.get('category');
             const listingPrice = Number(formData.get('price'));
             const sellerName = getSellerName();
-            const firebaseUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+            const sellerUid = getCurrentUserUid();
+            const sellerEmail = getCurrentUserEmail();
             const badge = conditionLabel.textContent.trim() || 'Used';
             const listing = {
                 id: Date.now(),
@@ -514,8 +522,8 @@
                 price: `¥${listingPrice.toFixed(2)}`,
                 category: toTitleCase(String(categoryValue).replace(/-/g, ' ')),
                 seller: sellerName,
-                sellerUid: firebaseUser ? firebaseUser.uid : null,
-                sellerEmail: firebaseUser ? (firebaseUser.email || null) : null,
+                sellerUid: sellerUid,
+                sellerEmail: sellerEmail,
                 sellerPaymentQR: `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=UniMart-Seller-${encodeURIComponent(sellerName)}`,
                 image: categoryToEmoji(categoryValue),
                 imageUrl: uploadedImages.length > 0 ? uploadedImages[0] : '',
@@ -529,14 +537,11 @@
 
             saveListing(listing);
 
-            // Simulate processing (in real app, this would be an API call)
-            setTimeout(() => {
-                // Show success message
-                alert('Listing created successfully! Redirecting to marketplace...');
-                
-                // Redirect to marketplace
-                window.location.href = '../index.html';
-            }, 1000);
+            // Show success message
+            alert('Listing created successfully! Redirecting to marketplace...');
+            
+            // Redirect to marketplace
+            window.location.href = '../index.html';
             
             // Here you would typically send the data to a server
             // fetch('/api/listings', { method: 'POST', body: formData })

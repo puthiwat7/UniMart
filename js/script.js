@@ -372,14 +372,6 @@ function setupSearch() {
 function setupRefresh() {
     const refreshBtn = document.querySelector('.btn-refresh');
     refreshBtn.addEventListener('click', () => {
-        // Animate rotation
-        refreshBtn.style.transform = 'rotate(360deg)';
-        refreshBtn.style.transition = 'transform 0.6s ease';
-        
-        setTimeout(() => {
-            refreshBtn.style.transform = 'rotate(0deg)';
-        }, 600);
-
         // Refresh the products
         filterProducts();
     });

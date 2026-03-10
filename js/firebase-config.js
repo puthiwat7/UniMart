@@ -19,8 +19,13 @@ if (typeof firebase !== 'undefined') {
   // Get Firebase Auth instance
   const auth = firebase.auth();
   
-  // Initialize Firebase Analytics
-  const analytics = firebase.analytics();
+    // Initialize Firebase Analytics only when available on this page
+    let analytics = null;
+    if (typeof firebase.analytics === 'function') {
+      analytics = firebase.analytics();
+    } else {
+      console.warn('Firebase Analytics SDK not loaded on this page. Skipping analytics initialization.');
+    }
   
   // Enable persistence
   firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
@@ -29,7 +34,9 @@ if (typeof firebase !== 'undefined') {
       });
   
   console.log('Firebase initialized successfully');
-  console.log('Analytics enabled');
+  if (analytics) {
+      console.log('Analytics enabled');
+  }
 } else {
   console.error('Firebase SDK not loaded. Make sure firebase-app-compat.js is loaded.');
 }

@@ -98,17 +98,40 @@ function parseListingsFromKey(key) {
 }
 
 function writeListingsToAllKeys(listings) {
-    localStorage.setItem(USER_LISTINGS_KEY, JSON.stringify(listings));
-    localStorage.setItem(LEGACY_LISTINGS_KEY, JSON.stringify(listings));
+    const payload = JSON.stringify(listings);
+
+    try {
+        localStorage.setItem(USER_LISTINGS_KEY, payload);
+    } catch (error) {
+        console.warn('Unable to save listings to primary key (quota or storage error):', error);
+    }
+
+    try {
+        localStorage.setItem(LEGACY_LISTINGS_KEY, payload);
+    } catch (error) {
+        console.warn('Unable to save listings to legacy key (quota or storage error):', error);
+    }
 }
 
 function getCurrentUserIdentity() {
     const firebaseUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+    let profileName = '';
+
+    try {
+        const rawProfile = localStorage.getItem('userProfile');
+        if (rawProfile) {
+            const parsedProfile = JSON.parse(rawProfile);
+            profileName = parsedProfile?.name || '';
+        }
+    } catch (error) {
+        profileName = '';
+    }
+
     if (firebaseUser) {
         return {
             uid: firebaseUser.uid || null,
             email: (firebaseUser.email || '').toLowerCase(),
-            displayName: firebaseUser.displayName || ''
+            displayName: firebaseUser.displayName || profileName || ''
         };
     }
 
@@ -119,10 +142,10 @@ function getCurrentUserIdentity() {
         return {
             uid: user.uid || null,
             email: (user.email || '').toLowerCase(),
-            displayName: user.displayName || ''
+            displayName: user.displayName || profileName || ''
         };
     } catch (error) {
-        return { uid: null, email: '', displayName: '' };
+        return { uid: null, email: '', displayName: profileName || '' };
     }
 }
 
@@ -152,9 +175,21 @@ function normalizeListing(item, index = 0) {
 }
 
 function listingBelongsToCurrentUser(listing, currentUser) {
-    if (!currentUser.uid && !currentUser.email) return false;
     if (listing.sellerUid && currentUser.uid) return listing.sellerUid === currentUser.uid;
     if (listing.sellerEmail && currentUser.email) return listing.sellerEmail === currentUser.email;
+
+    // Backward compatibility for old listings that were saved without uid/email.
+    const sellerName = String(listing.seller || '').trim().toLowerCase();
+    const currentName = String(currentUser.displayName || '').trim().toLowerCase();
+    if (sellerName && currentName) return sellerName === currentName;
+
+    // Legacy fallback: very old listings may not have owner fields and used default seller label.
+    const hasOwnerIdentity = Boolean(currentUser.uid || currentUser.email);
+    const listingHasNoOwner = !listing.sellerUid && !listing.sellerEmail;
+    if (hasOwnerIdentity && listingHasNoOwner && (!sellerName || sellerName === 'campus seller')) {
+        return true;
+    }
+
     return false;
 }
 
@@ -205,14 +240,16 @@ function loadAllListingsForStorage() {
         deduped.push(normalized);
     });
 
-    writeListingsToAllKeys(deduped);
     return deduped;
 }
 
 function loadMySalesData() {
     const currentUser = getCurrentUserIdentity();
+    console.log('My Sales - Current User:', currentUser);
     const allListings = loadAllListingsForStorage();
+    console.log('My Sales - All Listings:', allListings.length);
     mySalesData = allListings.filter((item) => listingBelongsToCurrentUser(item, currentUser));
+    console.log('My Sales - User\'s Listings:', mySalesData.length, mySalesData);
 }
 
 function persistMySalesChanges() {
@@ -295,10 +332,10 @@ function renderSales(salesToRender) {
 
     if (salesToRender.length === 0) {
         grid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 48px; color: #6b7280;">
-                <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+            <div class="my-sales-empty-state">
+                <i class="fas fa-inbox"></i>
                 <p>No items found</p>
-                <a href="sell-item.html" style="display: inline-block; margin-top: 16px; padding: 8px 16px; background-color: #4a5fc1; color: white; text-decoration: none; border-radius: 6px;">
+                <a href="sell-item.html" class="my-sales-start-selling-btn">
                     Start Selling
                 </a>
             </div>
@@ -316,25 +353,25 @@ function renderSales(salesToRender) {
 function createSaleCard(item) {
     const card = document.createElement('div');
     card.className = 'product-card';
-    const statusColor = item.status === 'sold' ? '#10b981' : (item.status === 'withdrawed' ? '#6b7280' : '#f59e0b');
-    const statusText = item.status === 'sold' ? 'SOLD' : (item.status === 'withdrawed' ? 'WITHDRAWED' : 'ACTIVE');
+    const statusText = item.status === 'sold' ? 'SOLD' : (item.status === 'withdrawed' ? 'WITHDRAWN' : 'ACTIVE');
+    const statusClass = item.status === 'sold' ? 'status-sold' : (item.status === 'withdrawed' ? 'status-withdrawn' : 'status-active');
 
     let extraInfo = '';
     if (item.status === 'sold') {
         extraInfo = `
-            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">
+            <div class="sale-meta-line">
                 <p><strong>Sold:</strong> ${item.soldDate || '-'}</p>
             </div>
         `;
     } else if (item.status === 'withdrawed') {
         extraInfo = `
-            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">
-                <p><strong>Status:</strong> Withdrawed</p>
+            <div class="sale-meta-line">
+                <p><strong>Status:</strong> Withdrawn</p>
             </div>
         `;
     } else {
         extraInfo = `
-            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">
+            <div class="sale-meta-line">
                 <p><strong>Listed:</strong> ${String(item.listedDate).split('T')[0]}</p>
             </div>
         `;
@@ -344,7 +381,7 @@ function createSaleCard(item) {
     let cardImage;
     if (item.imageUrl || (item.images && item.images.length > 0)) {
         const imgSrc = item.imageUrl || item.images[0];
-        cardImage = `<img src="${imgSrc}" alt="${item.title}" style="width: 100%; height: 100%; object-fit: cover;">`;
+        cardImage = `<img src="${imgSrc}" alt="${item.title}" class="sale-card-image">`;
     } else if (item.image) {
         cardImage = item.image;
     } else {
@@ -352,12 +389,12 @@ function createSaleCard(item) {
     }
 
     card.innerHTML = `
-        <div class="product-image" style="cursor: pointer;" onclick="openSalesModal(${item.id})">${cardImage}</div>
+        <div class="product-image" onclick="openSalesModal(${item.id})">${cardImage}</div>
         <div class="product-info">
-            <span class="product-badge" style="background-color: ${statusColor}; color: white;">${statusText}</span>
-            <h3 class="product-title" style="cursor: pointer;" onclick="openSalesModal(${item.id})">${item.title}</h3>
+            <span class="product-badge sale-status-badge ${statusClass}">${statusText}</span>
+            <h3 class="product-title" onclick="openSalesModal(${item.id})">${item.title}</h3>
             <div class="product-price">${item.price}</div>
-            <div class="product-category" style="color: #6b7280; font-size: 12px;">${item.category}</div>
+            <div class="product-seller">${item.category}</div>
             ${extraInfo}
             <div class="product-actions">
                 <button onclick="openSalesModal(${item.id})">View Details</button>
