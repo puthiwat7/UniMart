@@ -1,0 +1,18 @@
+{
+  "rules": {
+    "unimartListingsV1": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "unimartListingsMeta": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "unimartProfiles": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    }
+  }
+}

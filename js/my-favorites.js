@@ -1,6 +1,3 @@
-const USER_LISTINGS_KEY = 'unimartListings';
-const LEGACY_LISTINGS_KEY = 'listings';
-
 function getCachedUser() {
     try {
         const raw = localStorage.getItem('unimart_last_user');
@@ -39,46 +36,25 @@ function enforceBuyPolicyOrRedirect() {
     return false;
 }
 
-// Get all listings from localStorage to check status
-function getAllListings() {
-    const parseListingsFromKey = (key) => {
-        const raw = localStorage.getItem(key);
-        if (!raw) return [];
-        try {
-            const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed)) return parsed;
-            if (parsed && Array.isArray(parsed.listings)) return parsed.listings;
-            return [];
-        } catch (error) {
-            return [];
-        }
-    };
+// Get all listings from cloud database
+async function getAllListings() {
+    if (!window.unimartListingsSync || typeof window.unimartListingsSync.getAllListingsFromCloud !== 'function') {
+        return [];
+    }
 
-    const merged = [
-        ...parseListingsFromKey(USER_LISTINGS_KEY),
-        ...parseListingsFromKey(LEGACY_LISTINGS_KEY)
-    ];
-
-    // Deduplicate by id
-    const seen = new Set();
-    return merged.filter(item => {
-        if (!item || !item.id) return false;
-        if (seen.has(item.id)) return false;
-        seen.add(item.id);
-        return true;
-    });
+    return window.unimartListingsSync.getAllListingsFromCloud();
 }
 
 // Get product status from listings
-function getProductStatus(productId) {
-    const listings = getAllListings();
-    const listing = listings.find(l => l.id === productId);
+async function getProductStatus(productId) {
+    const listings = await getAllListings();
+    const listing = listings.find((l) => l.id === productId);
     return listing ? (listing.status || 'active').toLowerCase() : 'active';
 }
 
 // Get updated product data (to reflect edits)
-function getUpdatedProduct(product) {
-    const listings = getAllListings();
+async function getUpdatedProduct(product) {
+    const listings = await getAllListings();
     const listing = listings.find(l => l.id === product.id);
     
     if (listing) {
@@ -135,7 +111,7 @@ function isFavorited(productId) {
 }
 
 // Render favorites
-function renderFavorites() {
+async function renderFavorites() {
     const grid = document.getElementById('favoritesGrid');
     const favorites = getFavorites();
 
@@ -143,11 +119,11 @@ function renderFavorites() {
 
     if (favorites.length === 0) {
         grid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 48px; color: #6b7280;">
-                <i class="fas fa-heart" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+            <div class="my-sales-empty-state">
+                <i class="fas fa-heart"></i>
                 <p>No favorites yet</p>
-                <p style="font-size: 14px; margin-top: 8px;">Start adding items to your favorites!</p>
-                <a href="../index.html" style="display: inline-block; margin-top: 16px; padding: 8px 16px; background-color: #4a5fc1; color: white; text-decoration: none; border-radius: 6px;">
+                <p class="favorites-empty-hint">Start adding items to your favorites!</p>
+                <a href="../index.html" class="my-sales-start-selling-btn">
                     Browse Marketplace
                 </a>
             </div>
@@ -155,11 +131,11 @@ function renderFavorites() {
         return;
     }
 
-    favorites.forEach(product => {
-        const updatedProduct = getUpdatedProduct(product);
+    for (const product of favorites) {
+        const updatedProduct = await getUpdatedProduct(product);
         const card = createFavoriteCard(updatedProduct);
         grid.appendChild(card);
-    });
+    }
 }
 
 // Create favorite card
@@ -169,14 +145,14 @@ function createFavoriteCard(product) {
     
     const status = product.status || 'active';
     const isAvailable = status === 'active';
-    const statusColor = isAvailable ? '#10b981' : '#ef4444';
+    const statusClass = isAvailable ? 'status-available' : 'status-unavailable';
     const statusText = isAvailable ? 'Available' : 'Unavailable';
     
     // Show uploaded image if available, otherwise show emoji icon
     let cardImage;
     if (product.imageUrl || (product.images && product.images.length > 0)) {
         const imgSrc = product.imageUrl || product.images[0];
-        cardImage = `<img src="${imgSrc}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">`;
+        cardImage = `<img src="${imgSrc}" alt="${product.title}" class="sale-card-image">`;
     } else if (product.image) {
         cardImage = product.image;
     } else {
@@ -184,14 +160,14 @@ function createFavoriteCard(product) {
     }
     
     card.innerHTML = `
-        <div class="product-image" style="position: relative; cursor: pointer;" onclick="handleViewDetails(${product.id})">
+        <div class="product-image favorite-image-wrapper" onclick="handleViewDetails(${product.id})">
             ${cardImage}
-            ${!isAvailable ? '<div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">UNAVAILABLE</div>' : ''}
+            ${!isAvailable ? '<div class="favorite-unavailable-overlay">UNAVAILABLE</div>' : ''}
         </div>
         <div class="product-info">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <div class="favorite-card-top-row">
                 <span class="product-badge">${product.badge}</span>
-                <span style="font-size: 11px; font-weight: 600; color: ${statusColor}; padding: 2px 8px; background: ${statusColor}20; border-radius: 12px;">
+                <span class="favorite-status-pill ${statusClass}">
                     ${statusText}
                 </span>
             </div>
@@ -200,7 +176,7 @@ function createFavoriteCard(product) {
             <div class="product-seller">by ${product.seller}</div>
             <div class="product-actions">
                 <button onclick="handleViewDetails(${product.id})">View Details</button>
-                <button onclick="removeFromFavorites(${product.id})" style="background-color: #ef4444;">
+                <button class="favorite-remove-btn" onclick="removeFromFavorites(${product.id})">
                     <i class="fas fa-trash"></i> Remove
                 </button>
             </div>
@@ -210,8 +186,8 @@ function createFavoriteCard(product) {
 }
 
 // Initialize page
-document.addEventListener('DOMContentLoaded', () => {
-    renderFavorites();
+document.addEventListener('DOMContentLoaded', async () => {
+    await renderFavorites();
     checkAuthStatus();
     setupClearFavoritesButton();
     setupProductModal();
@@ -233,11 +209,11 @@ window.addEventListener('focus', () => {
 let currentProduct = null;
 
 // Handle view details
-function handleViewDetails(productId) {
+async function handleViewDetails(productId) {
     const favorites = getFavorites();
-    const product = favorites.find(p => p.id === productId);
+    const product = favorites.find((p) => p.id === productId);
     if (product) {
-        const updatedProduct = getUpdatedProduct(product);
+        const updatedProduct = await getUpdatedProduct(product);
         openProductModal(updatedProduct);
     }
 }

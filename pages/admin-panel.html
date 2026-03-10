@@ -3,22 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Sales - UniMart</title>
+    <title>Admin Panel - UniMart</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Firebase SDKs (Compat version for script tag compatibility) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
-    <!-- Firebase Config & Auth -->
     <script src="../js/firebase-config.js"></script>
     <script src="../js/firebase-auth.js"></script>
 
-    <!-- Auth Guard -->
     <script>
-        // Protect this page: redirect to login if not authenticated
         setTimeout(() => {
             try {
                 firebase.auth().onAuthStateChanged((user) => {
@@ -35,7 +31,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo">
                 <div class="logo-placeholder">
@@ -60,7 +55,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="my-sales.html" class="nav-item active">
+                        <a href="my-sales.html" class="nav-item">
                             <i class="fas fa-chart-line"></i>
                             <span>My Sales</span>
                         </a>
@@ -77,12 +72,16 @@
                             <span>Profile</span>
                         </a>
                     </li>
+                    <li data-admin-nav-item="true">
+                        <a href="admin-panel.html" class="nav-item active">
+                            <i class="fas fa-user-shield"></i>
+                            <span>Admin Panel</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
 
-            <!-- User Profile / Login Section -->
             <div id="userSection">
-                <!-- User Profile (shown when logged in) -->
                 <div class="user-profile" id="userProfile" style="display: none;">
                     <div class="user-avatar">
                         <i class="fas fa-user-circle"></i>
@@ -97,7 +96,6 @@
                     </button>
                 </div>
 
-                <!-- Login Button (shown when not logged in) -->
                 <button class="btn-login" id="loginBtn" onclick="window.location.href='login.html'">
                     <i class="fab fa-google"></i>
                     <span>Sign in with Google</span>
@@ -105,27 +103,37 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Header with Stats and Filter -->
             <div class="orders-header">
                 <div class="orders-header-content">
-                    <h1>My Sales</h1>
-                    <p>Items you're selling</p>
+                    <h1>Admin Panel</h1>
+                    <p>Manage all marketplace listings and admin access</p>
                 </div>
                 <div class="sales-stats">
                     <div class="stat-box">
-                        <div class="stat-number" id="totalSales">0</div>
-                        <div class="stat-label">Total Sales</div>
+                        <div class="stat-number" id="adminTotalListings">0</div>
+                        <div class="stat-label">All Listings</div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-number" id="activeListing">0</div>
-                        <div class="stat-label">Active Listings</div>
+                        <div class="stat-number" id="adminActiveListings">0</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="adminSoldListings">0</div>
+                        <div class="stat-label">Sold</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Sales Filter -->
+            <section class="admin-access-section">
+                <h3>Admin Access</h3>
+                <div class="admin-access-row">
+                    <input type="email" id="newAdminEmail" placeholder="Add admin email (e.g. name@example.com)">
+                    <button type="button" id="addAdminEmailBtn">Add Admin</button>
+                </div>
+                <ul id="adminEmailList" class="admin-email-list"></ul>
+            </section>
+
             <div class="sales-filter-bar">
                 <div class="filter-group">
                     <button class="filter-btn active" data-filter="all">All</button>
@@ -135,89 +143,91 @@
                 </div>
             </div>
 
-            <!-- Sales Grid -->
             <div class="sales-section">
-                <div class="products-grid my-sales-grid" id="salesGrid">
-                    <!-- Sales items will be rendered here by JavaScript -->
-                </div>
+                <div class="products-grid my-sales-grid" id="adminSalesGrid"></div>
             </div>
         </main>
 
-        <!-- My Sales Detail/Edit Modal -->
-        <div class="product-modal" id="salesModal">
-            <div class="modal-overlay" id="salesModalOverlay"></div>
+        <div class="product-modal" id="adminSalesModal">
+            <div class="modal-overlay" id="adminModalOverlay"></div>
             <div class="modal-content">
-                <button class="modal-close" id="salesModalCloseBtn">
+                <button class="modal-close" id="adminModalCloseBtn">
                     <i class="fas fa-times"></i>
                 </button>
 
                 <div class="modal-body">
                     <div class="modal-image-section">
                         <div class="image-carousel">
-                            <button class="carousel-btn prev-btn" id="salesPrevBtn">
+                            <button class="carousel-btn prev-btn" id="adminPrevBtn">
                                 <i class="fas fa-chevron-left"></i>
                             </button>
-                            <div class="carousel-image" id="salesCarouselImage"></div>
-                            <button class="carousel-btn next-btn" id="salesNextBtn">
+                            <div class="carousel-image" id="adminCarouselImage"></div>
+                            <button class="carousel-btn next-btn" id="adminNextBtn">
                                 <i class="fas fa-chevron-right"></i>
                             </button>
                         </div>
                         <div class="badge-group">
-                            <span class="badge" id="salesModalBadge">Used</span>
+                            <span class="badge" id="adminModalBadge">Used</span>
                         </div>
                     </div>
 
                     <div class="modal-details-section">
-                        <div id="salesViewPanel">
-                            <h2 id="salesModalTitle">Product Title</h2>
-                            <div class="modal-price" id="salesModalPrice">¥0.00</div>
+                        <div id="adminViewPanel">
+                            <h2 id="adminModalTitle">Product Title</h2>
+                            <div class="modal-price" id="adminModalPrice">¥0.00</div>
+
+                            <div class="modal-section">
+                                <h4><i class="fas fa-user" style="color: var(--primary-blue); margin-right: 6px;"></i>Seller</h4>
+                                <p><strong>Name:</strong> <span id="adminModalSellerName">-</span></p>
+                                <p><strong>Email:</strong> <span id="adminModalSellerEmail">-</span></p>
+                            </div>
 
                             <div class="modal-section">
                                 <h4><i class="fas fa-info-circle" style="color: var(--primary-blue); margin-right: 6px;"></i>Description</h4>
-                                <p id="salesModalDescription">No description available</p>
+                                <p id="adminModalDescription">No description available</p>
                             </div>
 
                             <div class="modal-section">
                                 <h4><i class="fas fa-list" style="color: var(--primary-blue); margin-right: 6px;"></i>Details</h4>
-                                <p><strong>Category:</strong> <span id="salesModalCategory">-</span></p>
-                                <p><strong>Quantity:</strong> <span id="salesModalQuantity">1</span></p>
-                                <p><strong>Status:</strong> <span id="salesModalStatus">ACTIVE</span></p>
+                                <p><strong>Category:</strong> <span id="adminModalCategory">-</span></p>
+                                <p><strong>Quantity:</strong> <span id="adminModalQuantity">1</span></p>
+                                <p><strong>Status:</strong> <span id="adminModalStatus">ACTIVE</span></p>
                             </div>
 
                             <div class="modal-actions">
-                                <button class="btn-order" id="salesEditBtn" style="background-color: #3b82f6;">
+                                <button class="btn-order" id="adminEditBtn" style="background-color: #3b82f6;">
                                     <i class="fas fa-pen"></i>
                                     Edit
                                 </button>
-                                <button class="btn-save" id="salesWithdrawBtn" style="background-color: #ef4444; color: #fff;">
+                                <button class="btn-save" id="adminWithdrawBtn" style="background-color: #ef4444; color: #fff;">
                                     <i class="fas fa-ban"></i>
                                     Withdraw
                                 </button>
-                                <button class="btn-save" id="salesMarkSoldBtn" style="background-color: #10b981; color: #fff;">
+                                <button class="btn-save" id="adminMarkSoldBtn" style="background-color: #10b981; color: #fff;">
                                     <i class="fas fa-check-circle"></i>
                                     Mark as Sold
                                 </button>
                             </div>
                         </div>
 
-                        <div id="salesEditPanel" style="display: none;">
+                        <div id="adminEditPanel" style="display: none;">
                             <h3 style="margin-bottom: 12px;">Edit Listing</h3>
 
                             <div class="form-group">
-                                <label for="editTitle">Product Title</label>
-                                <input type="text" id="editTitle" />
+                                <label for="adminEditTitle">Product Title</label>
+                                <input type="text" id="adminEditTitle" />
                             </div>
                             <div class="form-group">
-                                <label for="editPrice">Listing Price (¥)</label>
-                                <input type="number" id="editPrice" min="0.01" step="0.01" />
+                                <label for="adminEditPrice">Listing Price (¥)</label>
+                                <input type="number" id="adminEditPrice" min="0.01" step="0.01" />
                             </div>
                             <div class="form-group">
-                                <label for="editDescription">Description</label>
-                                <textarea id="editDescription" rows="4"></textarea>
+                                <label for="adminEditDescription">Description</label>
+                                <textarea id="adminEditDescription" rows="4"></textarea>
                             </div>
                             <div class="form-group">
-                                <label for="editCategory">Category</label>
-                                <select id="editCategory">
+                                <label for="adminEditCategory">Category</label>
+                                <select id="adminEditCategory">
                                     <option value="Textbooks">Textbooks</option>
                                     <option value="Electronics">Electronics</option>
                                     <option value="Furniture">Furniture</option>
@@ -230,8 +240,8 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="editCondition">Condition</label>
-                                <select id="editCondition">
+                                <label for="adminEditCondition">Condition</label>
+                                <select id="adminEditCondition">
                                     <option value="Very Poor">Very Poor</option>
                                     <option value="Poor">Poor</option>
                                     <option value="Fair">Fair</option>
@@ -242,24 +252,24 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="editQuantity">Quantity</label>
-                                <input type="number" id="editQuantity" min="1" step="1" />
+                                <label for="adminEditQuantity">Quantity</label>
+                                <input type="number" id="adminEditQuantity" min="1" step="1" />
                             </div>
                             <div class="form-group">
-                                <label for="editImages">Upload More Images</label>
-                                <input type="file" id="editImages" multiple accept="image/*" />
+                                <label for="adminEditImages">Upload More Images</label>
+                                <input type="file" id="adminEditImages" multiple accept="image/*" />
                             </div>
                             <div class="form-group">
                                 <label>Current Images</label>
-                                <div id="editImagesPreview" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;"></div>
+                                <div id="adminEditImagesPreview" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;"></div>
                             </div>
 
                             <div class="modal-actions">
-                                <button class="btn-order" id="salesSaveEditBtn" style="background-color: #10b981;">
+                                <button class="btn-order" id="adminSaveEditBtn" style="background-color: #10b981;">
                                     <i class="fas fa-save"></i>
                                     Save Changes
                                 </button>
-                                <button class="btn-save" id="salesCancelEditBtn" style="background-color: #6b7280; color: #fff;">
+                                <button class="btn-save" id="adminCancelEditBtn" style="background-color: #6b7280; color: #fff;">
                                     <i class="fas fa-times"></i>
                                     Cancel
                                 </button>
@@ -273,6 +283,6 @@
 
     <script src="../js/user-sidebar.js"></script>
     <script src="../js/listings-sync.js"></script>
-    <script src="../js/my-sales.js"></script>
+    <script src="../js/admin-panel.js"></script>
 </body>
 </html>

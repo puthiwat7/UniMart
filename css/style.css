@@ -578,10 +578,97 @@ body {
     color: #6b7280;
 }
 
+.my-sales-empty-state h3,
+.marketplace-empty-state h3 {
+    margin: 8px 0;
+    font-size: 22px;
+    color: var(--text-color);
+}
+
+.my-sales-empty-state p,
+.marketplace-empty-state p {
+    margin: 0;
+    color: #6b7280;
+}
+
 .my-sales-empty-state i {
     font-size: 48px;
     margin-bottom: 16px;
     opacity: 0.3;
+}
+
+.marketplace-empty-state {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 56px 20px;
+    border: 1px dashed #d1d5db;
+    border-radius: 14px;
+    color: #6b7280;
+    background: #fafbff;
+}
+
+.marketplace-empty-state i {
+    font-size: 46px;
+    margin-bottom: 12px;
+    opacity: 0.45;
+}
+
+.loading-card {
+    pointer-events: none;
+}
+
+.skeleton-block,
+.skeleton-line {
+    background: linear-gradient(90deg, #eef2f7 25%, #f7f9fc 50%, #eef2f7 75%);
+    background-size: 200% 100%;
+    animation: unimartSkeleton 1.2s infinite linear;
+    border-radius: 8px;
+}
+
+.skeleton-line {
+    height: 14px;
+    margin-bottom: 10px;
+}
+
+.skeleton-badge {
+    width: 32%;
+    height: 18px;
+}
+
+.skeleton-title {
+    width: 86%;
+    height: 16px;
+}
+
+.skeleton-price {
+    width: 44%;
+    height: 18px;
+}
+
+.skeleton-meta {
+    width: 60%;
+    height: 12px;
+}
+
+.skeleton-button {
+    width: 100%;
+    height: 34px;
+    margin-bottom: 0;
+}
+
+.skeleton-actions-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+@keyframes unimartSkeleton {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
 }
 
 .my-sales-start-selling-btn {
@@ -627,6 +714,133 @@ body {
     color: #6b7280;
 }
 
+.admin-owner-line {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 6px;
+    margin-bottom: 2px;
+    word-break: break-word;
+}
+
+.admin-access-section {
+    margin: 20px 48px 0;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.admin-access-section h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: var(--text-color);
+}
+
+.admin-access-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.admin-access-row input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.admin-access-row button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary-blue);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.admin-email-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.admin-email-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: #374151;
+}
+
+.admin-tag {
+    background: #e0ecff;
+    color: var(--primary-blue);
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 2px 8px;
+}
+
+.favorites-empty-hint {
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+.favorite-image-wrapper {
+    position: relative;
+    cursor: pointer;
+}
+
+.favorite-unavailable-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+}
+
+.favorite-card-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.favorite-status-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.favorite-status-pill.status-available {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.14);
+}
+
+.favorite-status-pill.status-unavailable {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.14);
+}
+
+.favorite-remove-btn {
+    background-color: #ef4444;
+}
+
+.favorite-remove-btn:hover {
+    background-color: #dc2626;
+}
+
 .my-sales-grid .product-image,
 .my-sales-grid .product-title {
     cursor: pointer;
@@ -635,6 +849,14 @@ body {
 @media (max-width: 768px) {
     .my-sales-grid {
         padding: 16px;
+    }
+
+    .admin-access-section {
+        margin: 16px;
+    }
+
+    .admin-access-row {
+        flex-direction: column;
     }
 }
 
@@ -708,6 +930,10 @@ body {
 }
 
 @media (max-width: 480px) {
+    body {
+        overflow-x: hidden;
+    }
+
     .sidebar {
         display: none;
     }
@@ -717,8 +943,9 @@ body {
     }
 
     .header-banner {
-        padding: 32px 16px;
-        margin-bottom: 16px;
+        padding: 28px 14px;
+        margin: 12px 12px 16px;
+        border-radius: 14px;
     }
 
     .header-banner h1 {
@@ -731,7 +958,9 @@ body {
 
     .search-filter-section {
         flex-direction: column;
-        padding: 0 16px 16px 16px;
+        margin-left: 0;
+        padding: 0 12px 14px;
+        gap: 10px;
     }
 
     .search-box {
@@ -741,6 +970,7 @@ body {
     .filters {
         width: 100%;
         flex-direction: column;
+        gap: 10px;
     }
 
     .filter-select,
@@ -749,18 +979,43 @@ body {
     }
 
     .categories-section {
-        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-        padding: 0 16px 24px 16px;
-        gap: 12px;
+        margin-left: 0;
+        padding: 0 12px 20px;
+        gap: 8px;
+    }
+
+    .category-card {
+        height: 36px;
+        padding: 8px 12px;
+        font-size: 12px;
+        gap: 6px;
     }
 
     .products-section {
-        padding: 0 16px 24px 16px;
+        margin-left: 0;
+        padding: 0 12px 20px;
     }
 
     .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-        gap: 12px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .product-image {
+        height: 140px;
+        font-size: 44px;
+    }
+
+    .product-info {
+        padding: 12px;
+    }
+
+    .product-title {
+        font-size: 14px;
+    }
+
+    .product-price {
+        font-size: 16px;
     }
 }
 /* ======================== Sell Item Page ======================== */
@@ -1453,7 +1708,6 @@ body {
 .btn-clear-favorites i {
     font-size: 14px;
 }
-}
 
 /* Orders Container */
 .orders-container {
@@ -2110,6 +2364,7 @@ body {
 
     .modal-content {
         width: 95%;
+        max-height: calc(100vh - 24px);
     }
 
     .modal-details-section h2 {
@@ -2122,6 +2377,38 @@ body {
 
     .carousel-image {
         font-size: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        width: calc(100vw - 12px);
+        max-height: calc(100vh - 12px);
+        border-radius: 12px;
+    }
+
+    .modal-body {
+        gap: 14px;
+        padding: 14px;
+    }
+
+    .modal-close {
+        top: 10px;
+        right: 10px;
+        width: 34px;
+        height: 34px;
+    }
+
+    .modal-details-section h2 {
+        font-size: 20px;
+    }
+
+    .modal-price {
+        font-size: 24px;
+    }
+
+    .product-actions {
+        flex-direction: column;
     }
 }
 
@@ -3026,5 +3313,58 @@ body {
 
     .payment-actions {
         flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-modal-content {
+        width: calc(100vw - 12px);
+        max-height: calc(100vh - 12px);
+        border-radius: 12px;
+    }
+
+    .payment-header {
+        padding: 12px;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .payment-title {
+        font-size: 16px;
+    }
+
+    .payment-body {
+        padding: 12px;
+    }
+
+    .payment-order-summary,
+    .payment-serial-section,
+    .payment-qr-section,
+    .payment-steps,
+    .payment-after-info {
+        padding: 14px;
+        margin-bottom: 12px;
+    }
+
+    .serial-number {
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        padding: 12px;
+        word-break: break-all;
+    }
+
+    .qr-code-container {
+        padding: 14px;
+    }
+
+    .qr-code-image {
+        min-height: 200px;
+        max-width: 100%;
+        padding: 12px;
+    }
+
+    .btn-cancel-order,
+    .btn-payment-made {
+        padding: 12px 14px;
+        font-size: 14px;
     }
 }

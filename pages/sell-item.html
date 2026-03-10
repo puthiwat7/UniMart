@@ -10,6 +10,7 @@
     <!-- Firebase SDKs (Compat version for script tag compatibility) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <!-- Firebase Config & Auth -->
     <script src="../js/firebase-config.js"></script>
@@ -240,10 +241,12 @@
     </div>
 
     <script src="../js/user-sidebar.js"></script>
+    <script src="../js/profile-sync.js"></script>
+    <script src="../js/listings-sync.js"></script>
     <script>
-        const USER_LISTINGS_KEY = 'unimartListings';
-        const LEGACY_LISTINGS_KEY = 'listings';
-        let canSell = true;
+        let canSell = false;
+        let sellAccessReady = false;
+        let currentExtendedProfile = null;
 
         function getCachedUser() {
             try {
@@ -259,17 +262,17 @@
             if (firebaseUser && firebaseUser.uid) return firebaseUser.uid;
             const cachedUser = getCachedUser();
             return cachedUser && cachedUser.uid ? cachedUser.uid : null;
-
-                function getCurrentUserEmail() {
-                    const firebaseUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
-                    if (firebaseUser && firebaseUser.email) return firebaseUser.email;
-                    const cachedUser = getCachedUser();
-                    return cachedUser && cachedUser.email ? cachedUser.email : null;
-                }
         }
 
-        function getCurrentExtendedProfile() {
-            const uid = getCurrentUserUid();
+        function getCurrentUserEmail() {
+            const firebaseUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+            if (firebaseUser && firebaseUser.email) return firebaseUser.email;
+            const cachedUser = getCachedUser();
+            return cachedUser && cachedUser.email ? cachedUser.email : null;
+        }
+
+        function getCurrentExtendedProfileLocal(uidOverride) {
+            const uid = uidOverride || getCurrentUserUid();
             if (!uid) return null;
 
             try {
@@ -280,8 +283,26 @@
             }
         }
 
-        function enforceSellAccessOrRedirect() {
-            const profile = getCurrentExtendedProfile();
+        async function loadCurrentExtendedProfile(uidOverride) {
+            const uid = uidOverride || getCurrentUserUid();
+            if (!uid) return null;
+
+            if (window.unimartProfileSync && typeof window.unimartProfileSync.getProfileFromCloud === 'function') {
+                try {
+                    const cloudProfile = await window.unimartProfileSync.getProfileFromCloud(uid);
+                    if (cloudProfile) {
+                        return cloudProfile;
+                    }
+                } catch (error) {
+                    console.warn('Failed to load profile from cloud on sell page:', error);
+                }
+            }
+
+            return getCurrentExtendedProfileLocal(uid);
+        }
+
+        function enforceSellAccessOrRedirect(profileOverride) {
+            const profile = profileOverride || currentExtendedProfile || getCurrentExtendedProfileLocal();
 
             if (!profile || profile.agreedToPolicies !== true) {
                 alert('You must agree to marketplace policies before selling. You will be redirected to your profile.');
@@ -298,17 +319,37 @@
             return true;
         }
 
+        async function refreshSellAccess(uidOverride) {
+            const uid = uidOverride || getCurrentUserUid();
+            if (!uid) {
+                canSell = false;
+                sellAccessReady = false;
+                return false;
+            }
+
+            currentExtendedProfile = await loadCurrentExtendedProfile(uid);
+            canSell = enforceSellAccessOrRedirect(currentExtendedProfile);
+            sellAccessReady = true;
+            return canSell;
+        }
+
         function initializeSellAccessGuard() {
-            const runCheck = () => {
-                canSell = enforceSellAccessOrRedirect();
+            const runCheck = async (user) => {
+                if (!user || !user.uid) {
+                    canSell = false;
+                    sellAccessReady = false;
+                    return;
+                }
+
+                await refreshSellAccess(user.uid);
             };
 
             if (typeof firebase !== 'undefined' && firebase.auth) {
-                firebase.auth().onAuthStateChanged(() => {
-                    runCheck();
+                firebase.auth().onAuthStateChanged((user) => {
+                    runCheck(user);
                 });
             } else {
-                runCheck();
+                refreshSellAccess();
             }
         }
 
@@ -354,22 +395,46 @@
             }
         }
 
-        function saveListing(listing) {
-            const existingListings = localStorage.getItem(USER_LISTINGS_KEY);
-            let listings = [];
-
-            if (existingListings) {
-                try {
-                    listings = JSON.parse(existingListings);
-                    if (!Array.isArray(listings)) listings = [];
-                } catch (error) {
-                    listings = [];
+        async function waitForListingService(timeoutMs = 3000) {
+            const start = Date.now();
+            while (Date.now() - start < timeoutMs) {
+                if (window.unimartListingsSync && typeof window.unimartListingsSync.upsertListingToCloud === 'function') {
+                    return true;
                 }
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            return false;
+        }
+
+        async function saveListing(listing) {
+            // Check if Firebase is initialized
+            if (typeof firebase === 'undefined') {
+                console.error('Firebase is not loaded');
+                throw new Error('Firebase is not initialized. Please refresh the page.');
             }
 
-            listings.push(listing);
-            localStorage.setItem(USER_LISTINGS_KEY, JSON.stringify(listings));
-            localStorage.setItem(LEGACY_LISTINGS_KEY, JSON.stringify(listings));
+            // Check if database is available
+            if (typeof firebase.database !== 'function') {
+                console.error('Firebase Realtime Database is not available');
+                throw new Error('Database service is not available. Please check your Firebase configuration.');
+            }
+
+            // Check if listings sync is loaded
+            const serviceReady = await waitForListingService();
+            if (!serviceReady) {
+                console.error('Listings sync service not loaded');
+                throw new Error('Listing service is unavailable. Please refresh the page.');
+            }
+
+            console.log('Attempting to save listing:', listing);
+            const ok = await window.unimartListingsSync.upsertListingToCloud(listing, { timeoutMs: 10000 });
+            
+            if (!ok) {
+                console.error('Failed to save listing to database');
+                throw new Error('Failed to create listing in database. Please check your internet connection and database permissions.');
+            }
+            
+            console.log('Listing saved successfully');
         }
 
         // Condition slider functionality
@@ -489,11 +554,15 @@
         const submitBtn = sellForm.querySelector('.btn-submit');
         let isSubmitting = false;
 
-        sellForm.addEventListener('submit', (e) => {
+        sellForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            if (!sellAccessReady) {
+                await refreshSellAccess();
+            }
+
             if (!canSell) {
-                enforceSellAccessOrRedirect();
+                enforceSellAccessOrRedirect(currentExtendedProfile);
                 return;
             }
             
@@ -524,7 +593,7 @@
                 seller: sellerName,
                 sellerUid: sellerUid,
                 sellerEmail: sellerEmail,
-                sellerPaymentQR: `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=UniMart-Seller-${encodeURIComponent(sellerName)}`,
+                sellerPaymentQR: currentExtendedProfile && currentExtendedProfile.paymentQR ? currentExtendedProfile.paymentQR : '',
                 image: categoryToEmoji(categoryValue),
                 imageUrl: uploadedImages.length > 0 ? uploadedImages[0] : '',
                 images: uploadedImages,
@@ -535,7 +604,21 @@
                 status: 'active'
             };
 
-            saveListing(listing);
+            try {
+                await saveListing(listing);
+            } catch (error) {
+                console.error('Create listing failed:', error);
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Create Listing';
+                submitBtn.style.opacity = '1';
+                submitBtn.style.cursor = 'pointer';
+                
+                // Show more specific error message
+                const errorMessage = error.message || 'Unable to create listing right now. Please try again.';
+                alert(errorMessage);
+                return;
+            }
 
             // Show success message
             alert('Listing created successfully! Redirecting to marketplace...');

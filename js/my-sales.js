@@ -18,69 +18,9 @@ let currentSalesFilter = 'all';
 let currentSalesItemId = null;
 let currentSalesImageIndex = 0;
 let editingImages = [];
+let isMySalesLoading = false;
 
-// Run AGGRESSIVE cleanup immediately when script loads to remove ALL sample items
-(function forceRemoveSampleItems() {
-    const sampleTitlesLower = [
-        'introduction to algorithms',
-        'wireless bluetooth headphones',
-        'wooden desk lamp',
-        'winter jacket',
-        'basketball',
-        'notebook set',
-        'used calculus textbook',
-        'mechanical keyboard',
-        'desk chair',
-        'vintage lamp'
-    ];
-    
-    // Check all possible localStorage keys
-    const keysToCheck = [USER_LISTINGS_KEY, LEGACY_LISTINGS_KEY, 'listings', 'unimartListings'];
-    
-    keysToCheck.forEach((key) => {
-        try {
-            const raw = localStorage.getItem(key);
-            if (!raw) return;
-            
-            let items = JSON.parse(raw);
-            let itemsArray = [];
-            
-            // Handle different storage formats
-            if (Array.isArray(items)) {
-                itemsArray = items;
-            } else if (items && Array.isArray(items.listings)) {
-                itemsArray = items.listings;
-            } else if (items && typeof items === 'object') {
-                itemsArray = [items];
-            }
-            
-            // Filter with case-insensitive comparison
-            const filtered = itemsArray.filter(item => {
-                if (!item || typeof item !== 'object') return false;
-                const title = String(item.title || '').trim().toLowerCase();
-                return !sampleTitlesLower.includes(title);
-            });
-            
-            // Only update if we actually removed items
-            if (filtered.length !== itemsArray.length) {
-                localStorage.setItem(key, JSON.stringify(filtered));
-                console.log(`✓ Removed ${itemsArray.length - filtered.length} sample items from "${key}"`);
-            }
-        } catch (e) {
-            console.warn('Cleanup error for key:', key, e);
-        }
-    });
-    
-    // Force one more check - also add a timestamp to ensure this runs
-    const cleanupTimestamp = localStorage.getItem('lastSampleCleanup');
-    const now = Date.now();
-    
-    // Run aggressive cleanup if never run or more than 1 hour ago
-    if (!cleanupTimestamp || (now - parseInt(cleanupTimestamp)) > 3600000) {
-        console.log('Running forced sample item cleanup...');
-        localStorage.setItem('lastSampleCleanup', String(now));
-    }
-})();
+// Listings now run from cloud database only.
 
 function parseListingsFromKey(key) {
     const raw = localStorage.getItem(key);
@@ -152,7 +92,8 @@ function getCurrentUserIdentity() {
 function normalizeListing(item, index = 0) {
     if (!item || typeof item !== 'object') return null;
 
-    const status = String(item.status || 'active').toLowerCase();
+    const rawStatus = String(item.status || 'active').toLowerCase();
+    const status = rawStatus === 'withdrawed' ? 'withdrawn' : rawStatus;
 
     return {
         id: item.id || Date.now() + index,
@@ -213,62 +154,45 @@ function removeSampleItemsFromStorage() {
     });
 }
 
-function loadAllListingsForStorage() {
-    // First, ensure sample items are removed
-    removeSampleItemsFromStorage();
+async function loadAllListingsForStorage() {
+    if (!window.unimartListingsSync || typeof window.unimartListingsSync.getAllListingsFromCloud !== 'function') {
+        return [];
+    }
 
-    const merged = [
-        ...parseListingsFromKey(USER_LISTINGS_KEY),
-        ...parseListingsFromKey(LEGACY_LISTINGS_KEY)
-    ];
-
-    const deduped = [];
-    const seen = new Set();
-    const sampleTitlesLower = Array.from(SAMPLE_TITLES).map(t => t.toLowerCase());
-
-    merged.forEach((item, index) => {
-        const normalized = normalizeListing(item, index);
-        if (!normalized) return;
-        
-        // Case-insensitive sample title check
-        const titleLower = normalized.title.trim().toLowerCase();
-        if (sampleTitlesLower.includes(titleLower)) return;
-
-        const key = `${normalized.id}-${normalized.title}`;
-        if (seen.has(key)) return;
-        seen.add(key);
-        deduped.push(normalized);
-    });
-
-    return deduped;
+    const all = await window.unimartListingsSync.getAllListingsFromCloud();
+    return all.map((item, index) => normalizeListing(item, index)).filter(Boolean);
 }
 
-function loadMySalesData() {
+async function loadMySalesData() {
     const currentUser = getCurrentUserIdentity();
     console.log('My Sales - Current User:', currentUser);
-    const allListings = loadAllListingsForStorage();
+    const allListings = await loadAllListingsForStorage();
     console.log('My Sales - All Listings:', allListings.length);
     mySalesData = allListings.filter((item) => listingBelongsToCurrentUser(item, currentUser));
     console.log('My Sales - User\'s Listings:', mySalesData.length, mySalesData);
 }
 
-function persistMySalesChanges() {
+async function persistMySalesChanges() {
+    if (!window.unimartListingsSync || typeof window.unimartListingsSync.replaceAllListingsInCloud !== 'function') {
+        throw new Error('Cloud listing service is unavailable.');
+    }
+
     const currentUser = getCurrentUserIdentity();
-    const allListings = loadAllListingsForStorage();
+    const allListings = await loadAllListingsForStorage();
 
     const withoutMine = allListings.filter((item) => !listingBelongsToCurrentUser(item, currentUser));
     const updated = [...withoutMine, ...mySalesData];
-    writeListingsToAllKeys(updated);
+    await window.unimartListingsSync.replaceAllListingsInCloud(updated);
 }
 
 // Initialize page
-document.addEventListener('DOMContentLoaded', () => {
-    refreshMySalesView();
+document.addEventListener('DOMContentLoaded', async () => {
+    await refreshMySalesView();
     setupSalesFilters();
     setupSalesModal();
 
     if (typeof firebase !== 'undefined' && firebase.auth) {
-        firebase.auth().onAuthStateChanged(() => {
+        firebase.auth().onAuthStateChanged(async () => {
             refreshMySalesView();
         });
     }
@@ -286,8 +210,9 @@ window.addEventListener('focus', () => {
     refreshMySalesView();
 });
 
-function refreshMySalesView() {
-    loadMySalesData();
+async function refreshMySalesView() {
+    renderMySalesLoadingState();
+    await loadMySalesData();
     renderSales(mySalesData);
     updateSalesStats();
 }
@@ -328,13 +253,17 @@ function filterSales() {
 // Render sales items
 function renderSales(salesToRender) {
     const grid = document.getElementById('salesGrid');
+    if (!grid) return;
+
+    isMySalesLoading = false;
     grid.innerHTML = '';
 
     if (salesToRender.length === 0) {
         grid.innerHTML = `
             <div class="my-sales-empty-state">
                 <i class="fas fa-inbox"></i>
-                <p>No items found</p>
+                <h3>No sales listings yet</h3>
+                <p>Create your first listing to start selling on UniMart.</p>
                 <a href="sell-item.html" class="my-sales-start-selling-btn">
                     Start Selling
                 </a>
@@ -349,12 +278,39 @@ function renderSales(salesToRender) {
     });
 }
 
+function renderMySalesLoadingState(count = 6) {
+    const grid = document.getElementById('salesGrid');
+    if (!grid) return;
+
+    isMySalesLoading = true;
+    grid.innerHTML = '';
+
+    for (let i = 0; i < count; i += 1) {
+        const card = document.createElement('div');
+        card.className = 'product-card loading-card';
+        card.innerHTML = `
+            <div class="product-image skeleton-block"></div>
+            <div class="product-info">
+                <div class="skeleton-line skeleton-badge"></div>
+                <div class="skeleton-line skeleton-title"></div>
+                <div class="skeleton-line skeleton-price"></div>
+                <div class="skeleton-line skeleton-meta"></div>
+                <div class="skeleton-actions-row">
+                    <div class="skeleton-line skeleton-button"></div>
+                    <div class="skeleton-line skeleton-button"></div>
+                </div>
+            </div>
+        `;
+        grid.appendChild(card);
+    }
+}
+
 // Create sale card
 function createSaleCard(item) {
     const card = document.createElement('div');
     card.className = 'product-card';
-    const statusText = item.status === 'sold' ? 'SOLD' : (item.status === 'withdrawed' ? 'WITHDRAWN' : 'ACTIVE');
-    const statusClass = item.status === 'sold' ? 'status-sold' : (item.status === 'withdrawed' ? 'status-withdrawn' : 'status-active');
+    const statusText = item.status === 'sold' ? 'SOLD' : (item.status === 'withdrawn' ? 'WITHDRAWN' : 'ACTIVE');
+    const statusClass = item.status === 'sold' ? 'status-sold' : (item.status === 'withdrawn' ? 'status-withdrawn' : 'status-active');
 
     let extraInfo = '';
     if (item.status === 'sold') {
@@ -363,7 +319,7 @@ function createSaleCard(item) {
                 <p><strong>Sold:</strong> ${item.soldDate || '-'}</p>
             </div>
         `;
-    } else if (item.status === 'withdrawed') {
+    } else if (item.status === 'withdrawn') {
         extraInfo = `
             <div class="sale-meta-line">
                 <p><strong>Status:</strong> Withdrawn</p>
@@ -529,7 +485,7 @@ function renderEditImagesPreview() {
     });
 }
 
-function saveSalesEdit() {
+async function saveSalesEdit() {
     const item = getSalesItemById(currentSalesItemId);
     if (!item || item.status !== 'active') return;
 
@@ -570,33 +526,33 @@ function saveSalesEdit() {
     item.images = [...editingImages];
     item.imageUrl = editingImages[0] || '';
 
-    persistMySalesChanges();
+    await persistMySalesChanges();
     updateSalesStats();
     filterSales();
     openSalesModal(item.id);
     alert('Listing updated successfully!');
 }
 
-function withdrawCurrentListing() {
+async function withdrawCurrentListing() {
     const item = getSalesItemById(currentSalesItemId);
     if (!item || item.status !== 'active') return;
     if (!confirm('Are you sure you want to withdraw this listing?')) return;
 
-    item.status = 'withdrawed';
-    persistMySalesChanges();
+    item.status = 'withdrawn';
+    await persistMySalesChanges();
     updateSalesStats();
     filterSales();
     closeSalesModal();
-    alert('Listing withdrawed successfully!');
+    alert('Listing withdrawn successfully!');
 }
 
-function markCurrentListingSold() {
+async function markCurrentListingSold() {
     const item = getSalesItemById(currentSalesItemId);
     if (!item || item.status !== 'active') return;
 
     item.status = 'sold';
     item.soldDate = new Date().toISOString().split('T')[0];
-    persistMySalesChanges();
+    await persistMySalesChanges();
     updateSalesStats();
     filterSales();
     closeSalesModal();

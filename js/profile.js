@@ -1,24 +1,51 @@
 // ======================== Profile Page Logic ========================
-// Uses Firebase auth for base user data and localStorage (by uid) for extended profile fields.
+// Uses Firebase auth for base user data and Firebase Realtime Database (by uid) for extended profile fields.
+// Persists across devices and browsers.
 
-// Keyed by Firebase user uid so data follows the logged-in account
-function loadExtendedProfile(uid) {
+// Load extended profile from Firebase cloud database
+async function loadExtendedProfile(uid) {
     if (!uid) return null;
-    try {
-        const raw = localStorage.getItem(`unimart_profile_${uid}`);
-        return raw ? JSON.parse(raw) : null;
-    } catch (e) {
-        console.error('Error loading extended profile:', e);
-        return null;
+    
+    // Try to load from cloud first
+    if (typeof window.unimartProfileSync !== 'undefined') {
+        try {
+            const cloudProfile = await window.unimartProfileSync.getProfileFromCloud(uid);
+            if (cloudProfile) {
+                // Clear any legacy localStorage data
+                window.unimartProfileSync.clearLegacyLocalProfile(uid);
+                return cloudProfile;
+            }
+        } catch (error) {
+            console.warn('Error loading profile from cloud, falling back to default:', error);
+        }
     }
+
+    // Return default profile if cloud is unavailable
+    return {
+        college: '',
+        studentId: '',
+        phone: '',
+        wechat: '',
+        bio: '',
+        paymentQR: null,
+        agreedToPolicies: false
+    };
 }
 
-function saveExtendedProfile(uid, data) {
+// Save extended profile to Firebase cloud database
+async function saveExtendedProfile(uid, data) {
     if (!uid) return;
+    
+    if (typeof window.unimartProfileSync === 'undefined') {
+        console.error('Profile sync not available; profile not saved');
+        return;
+    }
+
     try {
-        localStorage.setItem(`unimart_profile_${uid}`, JSON.stringify(data));
-    } catch (e) {
-        console.error('Error saving extended profile:', e);
+        await window.unimartProfileSync.saveProfileToCloud(uid, data);
+    } catch (error) {
+        console.error('Error saving profile to cloud:', error);
+        throw error;
     }
 }
 
@@ -32,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Wait for auth and then initialize profile with real login data
-    firebaseAuthManager.onAuthStateChanged((user) => {
+    firebaseAuthManager.onAuthStateChanged(async (user) => {
         if (!user) {
             // Auth guard in HTML will redirect, but just in case:
             window.location.href = 'login.html';
@@ -40,15 +67,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         currentFirebaseUser = user;
-        currentExtendedProfile = loadExtendedProfile(user.uid) || {
-            college: '',
-            studentId: '',
-            phone: '',
-            wechat: '',
-            bio: '',
-            paymentQR: null,
-            agreedToPolicies: false
-        };
+        
+        // Load profile from cloud (async operation)
+        try {
+            currentExtendedProfile = await loadExtendedProfile(user.uid);
+        } catch (error) {
+            console.error('Error loading profile during initialization:', error);
+            currentExtendedProfile = {
+                college: '',
+                studentId: '',
+                phone: '',
+                wechat: '',
+                bio: '',
+                paymentQR: null,
+                agreedToPolicies: false
+            };
+        }
 
         initializeProfile();
         setupEventListeners();
@@ -200,16 +234,23 @@ function handleProfileSubmit(e) {
         ...profileData,
         updatedAt: new Date().toISOString()
     };
-    saveExtendedProfile(currentFirebaseUser.uid, currentExtendedProfile);
     
-    // Update display
-    updateProfileDisplay(currentExtendedProfile);
-    
-    // Toggle back to view mode
-    toggleEditMode();
-    
-    // Show success message
-    showNotification('Profile updated successfully!', 'success');
+    // Save to cloud (async)
+    saveExtendedProfile(currentFirebaseUser.uid, currentExtendedProfile)
+        .then(() => {
+            // Update display
+            updateProfileDisplay(currentExtendedProfile);
+            
+            // Toggle back to view mode
+            toggleEditMode();
+            
+            // Show success message
+            showNotification('Profile updated successfully!', 'success');
+        })
+        .catch(error => {
+            console.error('Failed to save profile:', error);
+            showNotification('Failed to save profile. Please try again.', 'error');
+        });
 }
 
 function handleQRUpload(e) {
@@ -238,12 +279,19 @@ function handleQRUpload(e) {
             paymentQR: imageData,
             updatedAt: new Date().toISOString()
         };
-        saveExtendedProfile(currentFirebaseUser.uid, currentExtendedProfile);
         
-        // Update display
-        displayUploadedQR(imageData);
-        
-        showNotification('Profile QR code uploaded successfully!', 'success');
+        // Save to cloud (async)
+        saveExtendedProfile(currentFirebaseUser.uid, currentExtendedProfile)
+            .then(() => {
+                // Update display
+                displayUploadedQR(imageData);
+                
+                showNotification('Profile QR code uploaded successfully!', 'success');
+            })
+            .catch(error => {
+                console.error('Failed to upload QR code:', error);
+                showNotification('Failed to upload QR code. Please try again.', 'error');
+            });
     };
     reader.readAsDataURL(file);
 }
@@ -284,29 +332,52 @@ function handleAgreeToPolicy() {
         agreedToPolicies: true,
         updatedAt: new Date().toISOString()
     };
-    saveExtendedProfile(currentFirebaseUser.uid, currentExtendedProfile);
     
-    // Update form
-    document.getElementById('policyCheckbox').checked = true;
-    
-    // Hide alert
-    const alert = document.querySelector('.alert-warning');
-    alert.style.display = 'none';
-    
-    // Close modal
-    closePoliciesModal();
-    
-    showNotification('You have agreed to the marketplace policies!', 'success');
+    // Save to cloud (async)
+    saveExtendedProfile(currentFirebaseUser.uid, currentExtendedProfile)
+        .then(() => {
+            // Update form
+            document.getElementById('policyCheckbox').checked = true;
+            
+            // Hide alert
+            const alert = document.querySelector('.alert-warning');
+            alert.style.display = 'none';
+            
+            // Close modal
+            closePoliciesModal();
+            
+            showNotification('You have agreed to the marketplace policies!', 'success');
+        })
+        .catch(error => {
+            console.error('Failed to save policy agreement:', error);
+            showNotification('Failed to save agreement. Please try again.', 'error');
+        });
 }
 
 function showNotification(message, type = 'info') {
     // Create notification element
     const notification = document.createElement('div');
+    
+    let bgColor;
+    switch (type) {
+        case 'success':
+            bgColor = '#10b981';
+            break;
+        case 'error':
+            bgColor = '#ef4444';
+            break;
+        case 'warning':
+            bgColor = '#f59e0b';
+            break;
+        default:
+            bgColor = '#3b82f6';
+    }
+    
     notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
-        background: ${type === 'success' ? '#10b981' : '#3b82f6'};
+        background: ${bgColor};
         color: white;
         padding: 16px 24px;
         border-radius: 8px;

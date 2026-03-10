@@ -1,77 +1,10 @@
 const DEFAULT_PRODUCTS = [];
 
-const USER_LISTINGS_KEY = 'unimartListings';
-const LEGACY_LISTINGS_KEY = 'listings';
-const SAMPLE_TITLES = new Set([
-    'Introduction to Algorithms',
-    'Wireless Bluetooth Headphones',
-    'Wooden Desk Lamp',
-    'Winter Jacket',
-    'Basketball',
-    'Notebook Set',
-    'Used Calculus Textbook',
-    'Mechanical Keyboard',
-    'Desk Chair',
-    'Vintage Lamp'
-]);
-
-// Run AGGRESSIVE cleanup immediately when script loads to remove ALL sample items
-(function forceRemoveSampleItems() {
-    const sampleTitlesLower = [
-        'introduction to algorithms',
-        'wireless bluetooth headphones',
-        'wooden desk lamp',
-        'winter jacket',
-        'basketball',
-        'notebook set',
-        'used calculus textbook',
-        'mechanical keyboard',
-        'desk chair',
-        'vintage lamp'
-    ];
-    
-    // Check all possible localStorage keys
-    const keysToCheck = ['unimartListings', 'listings', USER_LISTINGS_KEY, LEGACY_LISTINGS_KEY];
-    
-    keysToCheck.forEach((key) => {
-        try {
-            const raw = localStorage.getItem(key);
-            if (!raw) return;
-            
-            let items = JSON.parse(raw);
-            let itemsArray = [];
-            
-            // Handle different storage formats
-            if (Array.isArray(items)) {
-                itemsArray = items;
-            } else if (items && Array.isArray(items.listings)) {
-                itemsArray = items.listings;
-            } else if (items && typeof items === 'object') {
-                itemsArray = [items];
-            }
-            
-            // Filter with case-insensitive comparison
-            const filtered = itemsArray.filter(item => {
-                if (!item || typeof item !== 'object') return false;
-                const title = String(item.title || '').trim().toLowerCase();
-                return !sampleTitlesLower.includes(title);
-            });
-            
-            // Only update if we actually removed items
-            if (filtered.length !== itemsArray.length) {
-                localStorage.setItem(key, JSON.stringify(filtered));
-                console.log(`✓ Removed ${itemsArray.length - filtered.length} sample items from "${key}"`);
-            }
-        } catch (e) {
-            console.warn('Cleanup error for key:', key, e);
-        }
-    });
-})();
-
 let products = [];
 
 let currentCategory = 'All Items';
 let filteredProducts = [];
+let isMarketplaceLoading = false;
 
 function getCachedUser() {
     try {
@@ -111,21 +44,6 @@ function enforceBuyPolicyOrRedirect() {
     return false;
 }
 
-function parseListingsFromKey(key) {
-    const savedListings = localStorage.getItem(key);
-    if (!savedListings) return [];
-
-    try {
-        const parsedListings = JSON.parse(savedListings);
-        if (Array.isArray(parsedListings)) return parsedListings;
-        if (parsedListings && Array.isArray(parsedListings.listings)) return parsedListings.listings;
-        return [];
-    } catch (error) {
-        console.warn(`Failed to parse listings from key: ${key}`, error);
-        return [];
-    }
-}
-
 function normalizeListing(listing, fallbackIndex = 0) {
     if (!listing || typeof listing !== 'object') {
         return null;
@@ -153,63 +71,28 @@ function normalizeListing(listing, fallbackIndex = 0) {
     };
 }
 
-function removeSampleListingsFromStorage() {
-    // Aggressive cleanup - remove all sample items from storage with case-insensitive matching
-    const sampleTitlesLower = Array.from(SAMPLE_TITLES).map(t => t.toLowerCase());
-    
-    [USER_LISTINGS_KEY, LEGACY_LISTINGS_KEY].forEach((key) => {
-        const parsed = parseListingsFromKey(key);
-        if (!parsed.length) return;
+async function loadMarketplaceProducts() {
+    if (!window.unimartListingsSync || typeof window.unimartListingsSync.getActiveListingsFromCloud !== 'function') {
+        products = [...DEFAULT_PRODUCTS];
+        filteredProducts = [...products];
+        return;
+    }
 
-        const filtered = parsed.filter((listing) => {
-            const title = String(listing?.title || '').trim().toLowerCase();
-            return !sampleTitlesLower.includes(title);
-        });
+    try {
+        const cloudListings = await window.unimartListingsSync.getActiveListingsFromCloud();
+        const normalized = cloudListings.map((listing, index) => normalizeListing(listing, index)).filter(Boolean);
+        products = [...DEFAULT_PRODUCTS, ...normalized];
+    } catch (error) {
+        console.warn('Failed to load cloud listings:', error);
+        products = [...DEFAULT_PRODUCTS];
+    }
 
-        if (filtered.length !== parsed.length) {
-            localStorage.setItem(key, JSON.stringify(filtered));
-            console.log(`Removed ${parsed.length - filtered.length} sample items from ${key}`);
-        }
-    });
-}
-
-function getUserListings() {
-    const merged = [
-        ...parseListingsFromKey(USER_LISTINGS_KEY),
-        ...parseListingsFromKey(LEGACY_LISTINGS_KEY)
-    ];
-
-    const seen = new Set();
-    const normalized = [];
-    const sampleTitlesLower = Array.from(SAMPLE_TITLES).map(t => t.toLowerCase());
-
-    merged.forEach((listing, index) => {
-        const normalizedListing = normalizeListing(listing, index);
-        if (!normalizedListing) return;
-        
-        // Case-insensitive sample title check
-        const titleLower = normalizedListing.title.trim().toLowerCase();
-        if (sampleTitlesLower.includes(titleLower)) return;
-        if (normalizedListing.status !== 'active') return;
-
-        const key = `${normalizedListing.id}-${normalizedListing.title}`;
-        if (seen.has(key)) return;
-        seen.add(key);
-        normalized.push(normalizedListing);
-    });
-
-    return normalized;
-}
-
-function loadMarketplaceProducts() {
-    removeSampleListingsFromStorage();
-    const userListings = getUserListings();
-    products = [...DEFAULT_PRODUCTS, ...userListings];
     filteredProducts = [...products];
 }
 
-function refreshMarketplaceProducts() {
-    loadMarketplaceProducts();
+async function refreshMarketplaceProducts() {
+    renderMarketplaceLoadingState();
+    await loadMarketplaceProducts();
     filterProducts();
 }
 
@@ -218,11 +101,30 @@ function parsePrice(price) {
     return parseFloat(numericPrice) || 0;
 }
 
-// Initialize the page
-document.addEventListener('DOMContentLoaded', () => {
-    loadMarketplaceProducts();
-    updateCategoryCounts(); // Update counts on initial load
+let hasInitializedMarketplace = false;
+
+async function initializeMarketplaceData() {
+    if (hasInitializedMarketplace) return;
+    hasInitializedMarketplace = true;
+
+    renderMarketplaceLoadingState();
+    await loadMarketplaceProducts();
+    updateCategoryCounts();
     renderProducts(products);
+}
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', async () => {
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (user) {
+                await initializeMarketplaceData();
+                await refreshMarketplaceProducts();
+            }
+        });
+    }
+
+    await initializeMarketplaceData();
     setupCategoryFilters();
     setupSearch();
     setupRefresh();
@@ -246,10 +148,19 @@ window.addEventListener('focus', () => {
 // Render products in the grid
 function renderProducts(productsToRender) {
     const grid = document.getElementById('productsGrid');
+    if (!grid) return;
+
+    isMarketplaceLoading = false;
     grid.innerHTML = '';
 
     if (productsToRender.length === 0) {
-        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 48px; color: #6b7280;">No items found</div>';
+        grid.innerHTML = `
+            <div class="marketplace-empty-state">
+                <i class="fas fa-box-open"></i>
+                <h3>No items listed yet</h3>
+                <p>New listings will appear here once sellers publish them.</p>
+            </div>
+        `;
         return;
     }
 
@@ -257,6 +168,29 @@ function renderProducts(productsToRender) {
         const productCard = createProductCard(product);
         grid.appendChild(productCard);
     });
+}
+
+function renderMarketplaceLoadingState(count = 8) {
+    const grid = document.getElementById('productsGrid');
+    if (!grid) return;
+
+    isMarketplaceLoading = true;
+    grid.innerHTML = '';
+
+    for (let i = 0; i < count; i += 1) {
+        const card = document.createElement('div');
+        card.className = 'product-card loading-card';
+        card.innerHTML = `
+            <div class="product-image skeleton-block"></div>
+            <div class="product-info">
+                <div class="skeleton-line skeleton-badge"></div>
+                <div class="skeleton-line skeleton-title"></div>
+                <div class="skeleton-line skeleton-price"></div>
+                <div class="skeleton-line skeleton-button"></div>
+            </div>
+        `;
+        grid.appendChild(card);
+    }
 }
 
 // Create a product card element
@@ -371,9 +305,9 @@ function setupSearch() {
 // Setup refresh button
 function setupRefresh() {
     const refreshBtn = document.querySelector('.btn-refresh');
-    refreshBtn.addEventListener('click', () => {
+    refreshBtn.addEventListener('click', async () => {
         // Refresh the products
-        filterProducts();
+        await refreshMarketplaceProducts();
     });
 }
 

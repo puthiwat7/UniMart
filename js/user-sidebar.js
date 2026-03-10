@@ -1,6 +1,104 @@
 // Shared sidebar user display logic using FirebaseAuthManager
 // This script assumes firebase-config.js and firebase-auth.js have been loaded.
 
+const ADMIN_EMAILS_KEY = 'unimart_admin_emails';
+const DEFAULT_ADMIN_EMAILS = ['puthiwat7@gmail.com'];
+
+function normalizeEmail(email) {
+    return String(email || '').trim().toLowerCase();
+}
+
+function getStoredAdminEmails() {
+    try {
+        const raw = localStorage.getItem(ADMIN_EMAILS_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed.map(normalizeEmail).filter(Boolean) : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function getAdminEmails() {
+    const emails = new Set([...DEFAULT_ADMIN_EMAILS.map(normalizeEmail), ...getStoredAdminEmails()]);
+    return Array.from(emails).filter(Boolean).sort();
+}
+
+function saveAdminEmails(emails) {
+    const merged = new Set([...DEFAULT_ADMIN_EMAILS.map(normalizeEmail), ...(emails || []).map(normalizeEmail)]);
+    localStorage.setItem(ADMIN_EMAILS_KEY, JSON.stringify(Array.from(merged).filter(Boolean).sort()));
+}
+
+function addAdminEmail(email) {
+    const normalized = normalizeEmail(email);
+    if (!normalized) return { ok: false, message: 'Email is required.' };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+        return { ok: false, message: 'Please enter a valid email address.' };
+    }
+
+    const current = getAdminEmails();
+    if (current.includes(normalized)) {
+        return { ok: false, message: 'Email is already an admin.' };
+    }
+
+    saveAdminEmails([...current, normalized]);
+    return { ok: true, message: 'Admin email added.' };
+}
+
+function isAdminEmail(email) {
+    const normalized = normalizeEmail(email);
+    if (!normalized) return false;
+    return getAdminEmails().includes(normalized);
+}
+
+function isCurrentUserAdmin(userLike) {
+    if (!userLike) return false;
+    return isAdminEmail(userLike.email);
+}
+
+function resolveAdminPanelPath() {
+    const path = window.location.pathname || '';
+    return path.includes('/pages/') ? 'admin-panel.html' : 'pages/admin-panel.html';
+}
+
+function ensureAdminNavItem(userLike) {
+    const shouldShow = isCurrentUserAdmin(userLike);
+    const navLists = document.querySelectorAll('.navigation ul');
+
+    navLists.forEach((list) => {
+        if (!(list instanceof HTMLElement)) return;
+
+        const existing = list.querySelector('li[data-admin-nav-item="true"]');
+        if (!shouldShow) {
+            if (existing) existing.remove();
+            return;
+        }
+
+        if (existing) return;
+
+        const li = document.createElement('li');
+        li.setAttribute('data-admin-nav-item', 'true');
+
+        const adminPath = resolveAdminPanelPath();
+        const isActive = (window.location.pathname || '').includes('admin-panel.html');
+        li.innerHTML = `
+            <a href="${adminPath}" class="nav-item ${isActive ? 'active' : ''}">
+                <i class="fas fa-user-shield"></i>
+                <span>Admin Panel</span>
+            </a>
+        `;
+        list.appendChild(li);
+    });
+}
+
+window.unimartAdminAccess = {
+    normalizeEmail,
+    getAdminEmails,
+    addAdminEmail,
+    isAdminEmail,
+    isCurrentUserAdmin
+};
+
 function applyUserToSidebar(userLike) {
     const loginBtn = document.getElementById('loginBtn');
 
@@ -42,11 +140,14 @@ function applyUserToSidebar(userLike) {
                 avatarIcon.style.display = 'block';
             }
         }
+
+        ensureAdminNavItem(userLike);
     } else {
         // Not logged in: hide profile containers, show login button
         if (userProfileCard) userProfileCard.style.display = 'none';
         if (userProfile) userProfile.style.display = 'none';
         if (loginBtn) loginBtn.style.display = 'flex';
+        ensureAdminNavItem(null);
     }
 }
 
@@ -57,9 +158,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cached) {
             const cachedUser = JSON.parse(cached);
             applyUserToSidebar(cachedUser);
+        } else {
+            ensureAdminNavItem(null);
         }
     } catch (e) {
         console.error('Error reading cached user info:', e);
+        ensureAdminNavItem(null);
     }
 
     // 2) Then wire up real-time Firebase auth listener for live updates
