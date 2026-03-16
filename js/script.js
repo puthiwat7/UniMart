@@ -93,6 +93,8 @@ function getConditionPercentage(product) {
 }
 
 async function loadMarketplaceProducts() {
+    window.marketplaceLoadError = null;
+    window.marketplaceLoadWarning = null;
     if (!window.unimartListingsSync || typeof window.unimartListingsSync.getActiveListingsFromCloud !== 'function') {
         products = [...DEFAULT_PRODUCTS];
         filteredProducts = [...products];
@@ -103,9 +105,17 @@ async function loadMarketplaceProducts() {
         const cloudListings = await window.unimartListingsSync.getActiveListingsFromCloud();
         const normalized = cloudListings.map((listing, index) => normalizeListing(listing, index)).filter(Boolean);
         products = [...DEFAULT_PRODUCTS, ...normalized];
+
+        const readState = window.unimartListingsSyncLastReadState || null;
+        if (readState && readState.mode === 'fallback-limited') {
+            const loadedCount = Number(readState.count) || normalized.length;
+            const limit = Number(readState.limit) || loadedCount;
+            window.marketplaceLoadWarning = `Loaded ${loadedCount} recent items (limited to ${limit}) due to a slow network/database response.`;
+        }
     } catch (error) {
         console.warn('Failed to load cloud listings:', error);
-        products = [...DEFAULT_PRODUCTS];
+        window.marketplaceLoadError = error;
+        products = [];
     }
 
     filteredProducts = [...products];
@@ -169,10 +179,36 @@ window.addEventListener('focus', () => {
 // Render products in the grid
 function renderProducts(productsToRender) {
     const grid = document.getElementById('productsGrid');
+    const warningContainer = document.getElementById('marketplaceWarningBanner');
     if (!grid) return;
 
     isMarketplaceLoading = false;
     grid.innerHTML = '';
+
+    if (warningContainer) {
+        if (window.marketplaceLoadWarning) {
+            warningContainer.textContent = window.marketplaceLoadWarning;
+            warningContainer.style.display = 'block';
+        } else {
+            warningContainer.style.display = 'none';
+            warningContainer.textContent = '';
+        }
+    }
+
+
+    if (window.marketplaceLoadError) {
+        grid.innerHTML = `
+            <div class="marketplace-error-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Failed to load items</h3>
+                <p>Could not load marketplace items. Please check your internet connection or try again.<br><span>${window.marketplaceLoadError.message || window.marketplaceLoadError}</span></p>
+                <button id="retryMarketplaceLoad">Retry</button>
+            </div>
+        `;
+        const retryBtn = document.getElementById('retryMarketplaceLoad');
+        if (retryBtn) retryBtn.onclick = () => refreshMarketplaceProducts();
+        return;
+    }
 
     if (productsToRender.length === 0) {
         grid.innerHTML = `

@@ -613,6 +613,68 @@ body {
     opacity: 0.45;
 }
 
+.marketplace-warning-banner {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #f2c878;
+    background: #fff7e6;
+    color: #8a5b00;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.marketplace-error-state {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 56px 20px;
+    border: 1px dashed #f5b27d;
+    border-radius: 14px;
+    color: #7b4f23;
+    background: #fff9f2;
+}
+
+.marketplace-error-state h3 {
+    margin: 10px 0 8px;
+    font-size: 22px;
+    color: #7b4f23;
+}
+
+.marketplace-error-state i {
+    color: #e67e22;
+    font-size: 2.5em;
+    margin-bottom: 12px;
+}
+
+.marketplace-error-state p {
+    margin: 0;
+    color: #8a6239;
+}
+
+.marketplace-error-state p span {
+    display: inline-block;
+    margin-top: 4px;
+    color: #8f8f8f;
+    font-size: 0.9em;
+}
+
+.marketplace-error-state button {
+    margin-top: 1em;
+    padding: 0.5em 1.5em;
+    font-size: 1em;
+    border: 1px solid #b7791f;
+    background: #b7791f;
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.marketplace-error-state button:hover {
+    background: #8f5c18;
+    border-color: #8f5c18;
+}
+
 .loading-card {
     pointer-events: none;
 }

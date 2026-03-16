@@ -2,6 +2,8 @@ const UNIMART_LISTINGS_DB_PATH = 'unimartListingsV1';
 const UNIMART_LISTINGS_META_PATH = 'unimartListingsMeta';
 const UNIMART_LISTINGS_RESET_VERSION = '2026-03-10-reset-01';
 const UNIMART_DEFAULT_TIMEOUT_MS = 10000;
+const UNIMART_RETRY_TIMEOUT_MS = 15000;
+const UNIMART_FALLBACK_LIMIT = 200;
 
 function unimartNormalizeListing(item, index = 0) {
     if (!item || typeof item !== 'object') return null;
@@ -101,6 +103,25 @@ function withTimeout(promise, timeoutMs = UNIMART_DEFAULT_TIMEOUT_MS) {
     });
 }
 
+function setLastReadState(state) {
+    window.unimartListingsSyncLastReadState = {
+        ...state,
+        at: new Date().toISOString()
+    };
+}
+
+function isTimeoutError(error) {
+    const message = String(error && error.message ? error.message : error || '').toLowerCase();
+    return message.includes('timed out');
+}
+
+function parseSnapshotToListings(snapshot) {
+    const value = snapshot.val();
+    if (!value) return [];
+    const list = Array.isArray(value) ? value : Object.values(value);
+    return unimartDedupeListings(list);
+}
+
 async function ensureListingsResetApplied() {
     const metaRef = getListingsMetaRef();
     const listingsRef = getListingsDbRef();
@@ -131,15 +152,42 @@ async function readCloudListings() {
 
     try {
         await ensureListingsResetApplied();
-        const snapshot = await withTimeout(ref.once('value'));
-        const value = snapshot.val();
-        if (!value) return [];
-
-        const list = Array.isArray(value) ? value : Object.values(value);
-        return unimartDedupeListings(list);
+        const snapshot = await withTimeout(ref.once('value'), UNIMART_DEFAULT_TIMEOUT_MS);
+        const listings = parseSnapshotToListings(snapshot);
+        setLastReadState({ mode: 'full', count: listings.length });
+        return listings;
     } catch (error) {
-        console.warn('Failed to read listings from cloud:', error);
-        return [];
+        console.warn('Primary listing read failed:', error);
+
+        try {
+            const retrySnapshot = await withTimeout(ref.once('value'), UNIMART_RETRY_TIMEOUT_MS);
+            const retryListings = parseSnapshotToListings(retrySnapshot);
+            setLastReadState({ mode: 'retry-full', count: retryListings.length });
+            return retryListings;
+        } catch (retryError) {
+            console.warn('Retry listing read failed:', retryError);
+
+            if (!isTimeoutError(error) && !isTimeoutError(retryError)) {
+                setLastReadState({ mode: 'failed', count: 0, reason: String(retryError && retryError.message ? retryError.message : retryError) });
+                console.warn('Failed to read listings from cloud:', retryError);
+                return [];
+            }
+
+            try {
+                const limitedSnapshot = await withTimeout(
+                    ref.orderByKey().limitToLast(UNIMART_FALLBACK_LIMIT).once('value'),
+                    UNIMART_RETRY_TIMEOUT_MS
+                );
+                const limitedListings = parseSnapshotToListings(limitedSnapshot);
+                setLastReadState({ mode: 'fallback-limited', count: limitedListings.length, limit: UNIMART_FALLBACK_LIMIT });
+                console.warn(`Loaded a limited listing set (${limitedListings.length}) after timeout.`);
+                return limitedListings;
+            } catch (limitedError) {
+                setLastReadState({ mode: 'failed', count: 0, reason: String(limitedError && limitedError.message ? limitedError.message : limitedError) });
+                console.warn('Failed to read listings from cloud:', limitedError);
+                return [];
+            }
+        }
     }
 }
 

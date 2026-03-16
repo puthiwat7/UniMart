@@ -2,7 +2,8 @@
   "rules": {
     "unimartListingsV1": {
       ".read": "auth != null",
-      ".write": "auth != null"
+      ".write": "auth != null",
+      ".indexOn": ["listedAt", "updatedAt", "status", "sellerUid"]
     },
     "unimartListingsMeta": {
       ".read": "auth != null",
