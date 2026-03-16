@@ -14,7 +14,7 @@ const SAMPLE_TITLES = new Set([
 ]);
 
 let mySalesData = [];
-let currentSalesFilter = 'all';
+let currentSalesFilter = 'active';
 let currentSalesItemId = null;
 let currentSalesImageIndex = 0;
 let editingImages = [];
@@ -181,7 +181,18 @@ async function persistMySalesChanges() {
     const allListings = await loadAllListingsForStorage();
 
     const withoutMine = allListings.filter((item) => !listingBelongsToCurrentUser(item, currentUser));
-    const updated = [...withoutMine, ...mySalesData];
+
+    // Merge by id so the latest version from mySalesData (e.g., sold/withdrawn)
+    // always overrides any stale active copy from cloud reads.
+    const mergedById = new Map();
+    withoutMine.forEach((item) => {
+        mergedById.set(String(item.id), item);
+    });
+    mySalesData.forEach((item) => {
+        mergedById.set(String(item.id), item);
+    });
+
+    const updated = Array.from(mergedById.values());
     await window.unimartListingsSync.replaceAllListingsInCloud(updated);
 }
 
@@ -213,7 +224,7 @@ window.addEventListener('focus', () => {
 async function refreshMySalesView() {
     renderMySalesLoadingState();
     await loadMySalesData();
-    renderSales(mySalesData);
+    filterSales();
     updateSalesStats();
 }
 
@@ -243,9 +254,7 @@ function setupSalesFilters() {
 function filterSales() {
     let filtered = mySalesData;
 
-    if (currentSalesFilter !== 'all') {
-        filtered = mySalesData.filter(item => item.status === currentSalesFilter);
-    }
+    filtered = mySalesData.filter(item => item.status === currentSalesFilter);
 
     renderSales(filtered);
 }
@@ -345,15 +354,15 @@ function createSaleCard(item) {
     }
 
     card.innerHTML = `
-        <div class="product-image" onclick="openSalesModal(${item.id})">${cardImage}</div>
+        <div class="product-image" onclick='openSalesModal(${JSON.stringify(item.id)})'>${cardImage}</div>
         <div class="product-info">
             <span class="product-badge sale-status-badge ${statusClass}">${statusText}</span>
-            <h3 class="product-title" onclick="openSalesModal(${item.id})">${item.title}</h3>
+            <h3 class="product-title" onclick='openSalesModal(${JSON.stringify(item.id)})'>${item.title}</h3>
             <div class="product-price">${item.price}</div>
             <div class="product-seller">${item.category}</div>
             ${extraInfo}
             <div class="product-actions">
-                <button onclick="openSalesModal(${item.id})">View Details</button>
+                <button onclick='openSalesModal(${JSON.stringify(item.id)})'>View Details</button>
             </div>
         </div>
     `;
@@ -361,7 +370,7 @@ function createSaleCard(item) {
 }
 
 function getSalesItemById(itemId) {
-    return mySalesData.find((item) => item.id === itemId) || null;
+    return mySalesData.find((item) => String(item.id) === String(itemId)) || null;
 }
 
 function getSalesItemImages(item) {

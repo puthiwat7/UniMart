@@ -304,6 +304,12 @@
         function enforceSellAccessOrRedirect(profileOverride) {
             const profile = profileOverride || currentExtendedProfile || getCurrentExtendedProfileLocal();
 
+            if (!profile || !String(profile.fullName || '').trim()) {
+                alert('Please set your display name in profile before listing items. You will be redirected now.');
+                window.location.href = 'profile.html';
+                return false;
+            }
+
             if (!profile || profile.agreedToPolicies !== true) {
                 alert('You must agree to marketplace policies before selling. You will be redirected to your profile.');
                 window.location.href = 'profile.html';
@@ -379,6 +385,13 @@
         }
 
         function getSellerName() {
+            const profileName = currentExtendedProfile && currentExtendedProfile.fullName
+                ? String(currentExtendedProfile.fullName).trim()
+                : '';
+            if (profileName) {
+                return profileName;
+            }
+
             const firebaseUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
             if (firebaseUser && firebaseUser.displayName) {
                 return firebaseUser.displayName;
@@ -598,6 +611,7 @@
                 imageUrl: uploadedImages.length > 0 ? uploadedImages[0] : '',
                 images: uploadedImages,
                 badge,
+                conditionPercentage: Number(conditionSlider.value) || null,
                 description: String(formData.get('description')).trim(),
                 listedAt: new Date().toISOString(),
                 quantity: Number(formData.get('quantity')) || 1,

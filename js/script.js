@@ -66,9 +66,30 @@ function normalizeListing(listing, fallbackIndex = 0) {
         imageUrl: primaryImageUrl,
         images: imageList.length ? imageList : (primaryImageUrl ? [primaryImageUrl] : []),
         badge: String(listing.badge || 'Used'),
+        conditionPercentage: Number.isFinite(Number(listing.conditionPercentage)) ? Number(listing.conditionPercentage) : null,
         description: String(listing.description || ''),
         status: String(listing.status || 'active').toLowerCase()
     };
+}
+
+function getConditionPercentage(product) {
+    const raw = Number(product?.conditionPercentage);
+    if (Number.isFinite(raw)) {
+        return Math.max(0, Math.min(100, Math.round(raw)));
+    }
+
+    const badge = String(product?.badge || '').toLowerCase();
+    const fallbackMap = {
+        'very poor': 10,
+        poor: 30,
+        fair: 50,
+        good: 70,
+        'like new': 90,
+        'brand new': 100,
+        used: 60
+    };
+
+    return Number.isFinite(fallbackMap[badge]) ? fallbackMap[badge] : null;
 }
 
 async function loadMarketplaceProducts() {
@@ -199,6 +220,7 @@ function createProductCard(product) {
     card.className = 'product-card';
     const isFavorited = checkIfFavorited(product.id);
     const favBtnColor = isFavorited ? '#ef4444' : '#9ca3af';
+    const conditionPercent = getConditionPercentage(product);
     
     // Show uploaded image if available, otherwise show emoji icon
     let cardImage;
@@ -219,9 +241,13 @@ function createProductCard(product) {
             </button>
         </div>
         <div class="product-info">
-            <span class="product-badge">${product.badge}</span>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
+                <span class="product-badge" style="margin-bottom: 0;">${product.badge}</span>
+                ${conditionPercent !== null ? `<span class="product-badge" style="margin-bottom: 0; background-color: #ecfdf5; color: #047857;">${conditionPercent}%</span>` : ''}
+            </div>
             <h3 class="product-title">${product.title}</h3>
             <div class="product-price">${product.price}</div>
+            <div class="product-seller">Sold by ${product.seller || 'Campus Seller'}</div>
             <div class="product-actions">
                 <button onclick="handleViewDetails(${product.id})">View Details</button>
             </div>

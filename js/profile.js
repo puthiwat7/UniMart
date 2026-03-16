@@ -22,6 +22,7 @@ async function loadExtendedProfile(uid) {
 
     // Return default profile if cloud is unavailable
     return {
+        fullName: '',
         college: '',
         studentId: '',
         phone: '',
@@ -96,7 +97,8 @@ function initializeProfile() {
     const profile = currentExtendedProfile;
     
     // Update profile display
-    document.getElementById('profileName').textContent = user.displayName || 'User';
+    const resolvedName = (profile.fullName || user.displayName || '').trim();
+    document.getElementById('profileName').textContent = resolvedName || 'User';
     document.getElementById('profileEmail').textContent = user.email || '';
 
     // Show avatar photo if user has one
@@ -126,6 +128,7 @@ function initializeProfile() {
 }
 
 function updateProfileDisplay(profile) {
+    document.getElementById('displayFullName').textContent = profile.fullName || 'Not set';
     document.getElementById('displayCollege').textContent = profile.college || 'Not set';
     document.getElementById('displayStudentID').textContent = profile.studentId || 'Not set';
     document.getElementById('displayPhone').textContent = profile.phone || 'Not set';
@@ -140,6 +143,7 @@ function updateProfileDisplay(profile) {
 }
 
 function updateFormValues(profile) {
+    document.getElementById('fullName').value = profile.fullName || '';
     document.getElementById('college').value = profile.college || '';
     document.getElementById('studentId').value = profile.studentId || '';
     document.getElementById('phone').value = profile.phone || '';
@@ -215,6 +219,7 @@ function handleProfileSubmit(e) {
     e.preventDefault();
 
     const profileData = {
+        fullName: document.getElementById('fullName').value.trim(),
         college: document.getElementById('college').value,
         studentId: document.getElementById('studentId').value,
         phone: document.getElementById('phone').value,
@@ -223,6 +228,11 @@ function handleProfileSubmit(e) {
     };
 
     // Validate required fields
+    if (!profileData.fullName) {
+        alert('Please enter your display name');
+        return;
+    }
+
     if (!profileData.college) {
         alert('Please select a college');
         return;

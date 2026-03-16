@@ -149,16 +149,20 @@
                         <div class="profile-view" id="profileView">
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label>College *</label>
-                                    <p id="displayCollege" class="display-value">Not set</p>
+                                    <label>Display Name *</label>
+                                    <p id="displayFullName" class="display-value">Not set</p>
                                 </div>
                                 <div class="form-group">
-                                    <label>Student ID</label>
-                                    <p id="displayStudentID" class="display-value">Not set</p>
+                                    <label>College *</label>
+                                    <p id="displayCollege" class="display-value">Not set</p>
                                 </div>
                             </div>
 
                             <div class="form-row">
+                                <div class="form-group">
+                                    <label>Student ID</label>
+                                    <p id="displayStudentID" class="display-value">Not set</p>
+                                </div>
                                 <div class="form-group">
                                     <label><i class="fas fa-phone"></i> Phone Number</label>
                                     <p id="displayPhone" class="display-value">Not set</p>
@@ -179,6 +183,10 @@
                         <form class="profile-edit" id="profileForm" style="display: none;">
                             <div class="form-row">
                                 <div class="form-group">
+                                    <label for="fullName">Display Name *</label>
+                                    <input type="text" id="fullName" name="fullName" placeholder="How your name appears on listings" required>
+                                </div>
+                                <div class="form-group">
                                     <label for="college">College *</label>
                                     <select id="college" name="college" required>
                                         <option value="">Select your college</option>
@@ -190,13 +198,13 @@
                                         <option value="Shaw">Shaw</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <div class="form-row">
                                 <div class="form-group">
                                     <label for="studentId">Student ID</label>
                                     <input type="text" id="studentId" name="studentId" placeholder="Your student ID">
                                 </div>
-                            </div>
-
-                            <div class="form-row">
                                 <div class="form-group">
                                     <label for="phone"><i class="fas fa-phone"></i> Phone Number</label>
                                     <input type="tel" id="phone" name="phone" placeholder="Your phone number">

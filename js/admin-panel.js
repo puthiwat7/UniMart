@@ -122,7 +122,12 @@ async function persistAllChanges() {
         throw new Error('Cloud listing service is unavailable.');
     }
 
-    await window.unimartListingsSync.replaceAllListingsInCloud(adminListings);
+    const mergedById = new Map();
+    adminListings.forEach((item) => {
+        mergedById.set(String(item.id), item);
+    });
+
+    await window.unimartListingsSync.replaceAllListingsInCloud(Array.from(mergedById.values()));
 }
 
 async function refreshAdminView() {
@@ -199,10 +204,10 @@ function createAdminSaleCard(item) {
     }
 
     card.innerHTML = `
-        <div class="product-image" onclick="openAdminModal(${item.id})">${cardImage}</div>
+        <div class="product-image" onclick='openAdminModal(${JSON.stringify(item.id)})'>${cardImage}</div>
         <div class="product-info">
             <span class="product-badge sale-status-badge ${statusClass}">${statusText}</span>
-            <h3 class="product-title" onclick="openAdminModal(${item.id})">${item.title}</h3>
+            <h3 class="product-title" onclick='openAdminModal(${JSON.stringify(item.id)})'>${item.title}</h3>
             <div class="product-price">${item.price}</div>
             <div class="product-seller">${item.category}</div>
             <div class="admin-owner-line">${item.seller} ${item.sellerEmail ? `(${item.sellerEmail})` : ''}</div>
@@ -210,7 +215,7 @@ function createAdminSaleCard(item) {
                 <p><strong>Listed:</strong> ${String(item.listedDate).split('T')[0]}</p>
             </div>
             <div class="product-actions">
-                <button onclick="openAdminModal(${item.id})">Manage Item</button>
+                <button onclick='openAdminModal(${JSON.stringify(item.id)})'>Manage Item</button>
             </div>
         </div>
     `;
@@ -219,7 +224,7 @@ function createAdminSaleCard(item) {
 }
 
 function getItemById(itemId) {
-    return adminListings.find((item) => item.id === itemId) || null;
+    return adminListings.find((item) => String(item.id) === String(itemId)) || null;
 }
 
 function getItemImages(item) {

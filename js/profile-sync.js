@@ -59,6 +59,7 @@ function normalizeProfile(profile, uid) {
     if (!profile || typeof profile !== 'object') {
         return {
             uid,
+            fullName: '',
             college: '',
             studentId: '',
             phone: '',
@@ -72,6 +73,7 @@ function normalizeProfile(profile, uid) {
 
     return {
         uid,
+        fullName: String(profile.fullName || profile.name || ''),
         college: String(profile.college || ''),
         studentId: String(profile.studentId || ''),
         phone: String(profile.phone || ''),
