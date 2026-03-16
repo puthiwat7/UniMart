@@ -20,5 +20,8 @@
       "IMPLEMENTATION_SUMMARY.md",
       "FILE_INDEX.md"
     ]
+  },
+  "dataconnect": {
+    "source": "dataconnect"
   }
 }

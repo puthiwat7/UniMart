@@ -113,7 +113,22 @@ function isFavorited(productId) {
 // Render favorites
 async function renderFavorites() {
     const grid = document.getElementById('favoritesGrid');
-    const favorites = getFavorites();
+    let favorites = getFavorites();
+
+    // Filter out non-active items (sold/withdrawn) and update the stored favorites list
+    const activeFavorites = [];
+    for (const product of favorites) {
+        const updatedProduct = await getUpdatedProduct(product);
+        if (String(updatedProduct.status || 'active').toLowerCase() === 'active') {
+            activeFavorites.push(product);
+        }
+    }
+
+    // If some items were removed (because they are no longer active), save the updated list
+    if (activeFavorites.length !== favorites.length) {
+        saveFavorites(activeFavorites);
+        favorites = activeFavorites;
+    }
 
     grid.innerHTML = '';
 
