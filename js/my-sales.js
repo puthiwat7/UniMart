@@ -19,6 +19,10 @@ let currentSalesItemId = null;
 let currentSalesImageIndex = 0;
 let editingImages = [];
 let isMySalesLoading = false;
+let mySalesLoadError = null;
+let mySalesLoadWarning = null;
+let mySalesPageSize = 12;
+let mySalesCurrentPage = 1;
 
 // Listings now run from cloud database only.
 
@@ -155,12 +159,31 @@ function removeSampleItemsFromStorage() {
 }
 
 async function loadAllListingsForStorage() {
+    mySalesLoadError = null;
+    mySalesLoadWarning = null;
+
     if (!window.unimartListingsSync || typeof window.unimartListingsSync.getAllListingsFromCloud !== 'function') {
+        mySalesLoadError = new Error('Cloud listing service is unavailable.');
         return [];
     }
 
-    const all = await window.unimartListingsSync.getAllListingsFromCloud();
-    return all.map((item, index) => normalizeListing(item, index)).filter(Boolean);
+    try {
+        const all = await window.unimartListingsSync.getAllListingsFromCloud();
+        const normalized = all.map((item, index) => normalizeListing(item, index)).filter(Boolean);
+
+        const readState = window.unimartListingsSyncLastReadState || null;
+        if (readState && readState.mode === 'fallback-limited') {
+            const loadedCount = Number(readState.count) || normalized.length;
+            const limit = Number(readState.limit) || loadedCount;
+            mySalesLoadWarning = `Loaded ${loadedCount} recent listings (limited to ${limit}) due to a slow network/database response.`;
+        }
+
+        return normalized;
+    } catch (error) {
+        console.warn('Failed to load listings for My Sales:', error);
+        mySalesLoadError = error;
+        return [];
+    }
 }
 
 async function loadMySalesData() {
@@ -228,6 +251,70 @@ async function refreshMySalesView() {
     updateSalesStats();
 }
 
+function getMySalesPageItems(items) {
+    const totalItems = items.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / mySalesPageSize));
+    mySalesCurrentPage = Math.max(1, Math.min(mySalesCurrentPage, totalPages));
+    const start = (mySalesCurrentPage - 1) * mySalesPageSize;
+    return items.slice(start, start + mySalesPageSize);
+}
+
+function renderMySalesPagination(totalItems) {
+    const pagination = document.getElementById('mySalesPagination');
+    if (!pagination) return;
+
+    const totalPages = Math.max(1, Math.ceil(totalItems / mySalesPageSize));
+    mySalesCurrentPage = Math.max(1, Math.min(mySalesCurrentPage, totalPages));
+
+    if (totalItems === 0) {
+        pagination.style.display = 'none';
+        pagination.innerHTML = '';
+        return;
+    }
+
+    pagination.style.display = 'flex';
+    pagination.innerHTML = `
+        <div class="pagination-left">
+            <label for="mySalesPageSize">Items per page</label>
+            <select id="mySalesPageSize">
+                <option value="8" ${mySalesPageSize === 8 ? 'selected' : ''}>8</option>
+                <option value="12" ${mySalesPageSize === 12 ? 'selected' : ''}>12</option>
+                <option value="24" ${mySalesPageSize === 24 ? 'selected' : ''}>24</option>
+            </select>
+        </div>
+        <div class="pagination-right">
+            <button type="button" id="mySalesPrevPage" ${mySalesCurrentPage <= 1 ? 'disabled' : ''}>Previous</button>
+            <span>Page ${mySalesCurrentPage} of ${totalPages}</span>
+            <button type="button" id="mySalesNextPage" ${mySalesCurrentPage >= totalPages ? 'disabled' : ''}>Next</button>
+        </div>
+    `;
+
+    const pageSizeSelect = document.getElementById('mySalesPageSize');
+    if (pageSizeSelect) {
+        pageSizeSelect.addEventListener('change', (e) => {
+            mySalesPageSize = Number(e.target.value) || 12;
+            mySalesCurrentPage = 1;
+            filterSales();
+        });
+    }
+
+    const prevBtn = document.getElementById('mySalesPrevPage');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            mySalesCurrentPage = Math.max(1, mySalesCurrentPage - 1);
+            filterSales();
+        });
+    }
+
+    const nextBtn = document.getElementById('mySalesNextPage');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            mySalesCurrentPage = Math.min(totalPages, mySalesCurrentPage + 1);
+            filterSales();
+        });
+    }
+}
+
 // Update sales statistics
 function updateSalesStats() {
     const totalSales = mySalesData.filter(item => item.status === 'sold').length;
@@ -245,6 +332,7 @@ function setupSalesFilters() {
             filterBtns.forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
             currentSalesFilter = e.target.dataset.filter;
+            mySalesCurrentPage = 1;
             filterSales();
         });
     });
@@ -262,12 +350,44 @@ function filterSales() {
 // Render sales items
 function renderSales(salesToRender) {
     const grid = document.getElementById('salesGrid');
+    const statusBanner = document.getElementById('mySalesStatusBanner');
+    const pagination = document.getElementById('mySalesPagination');
     if (!grid) return;
 
     isMySalesLoading = false;
     grid.innerHTML = '';
 
+    if (statusBanner) {
+        if (mySalesLoadWarning) {
+            statusBanner.textContent = mySalesLoadWarning;
+            statusBanner.style.display = 'block';
+        } else {
+            statusBanner.textContent = '';
+            statusBanner.style.display = 'none';
+        }
+    }
+
+    if (mySalesLoadError) {
+        if (pagination) {
+            pagination.style.display = 'none';
+            pagination.innerHTML = '';
+        }
+        grid.innerHTML = `
+            <div class="my-sales-empty-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Failed to load your listings</h3>
+                <p>${mySalesLoadError.message || mySalesLoadError}</p>
+                <button type="button" class="state-action-btn" onclick="refreshMySalesView()">Retry</button>
+            </div>
+        `;
+        return;
+    }
+
     if (salesToRender.length === 0) {
+        if (pagination) {
+            pagination.style.display = 'none';
+            pagination.innerHTML = '';
+        }
         grid.innerHTML = `
             <div class="my-sales-empty-state">
                 <i class="fas fa-inbox"></i>
@@ -281,18 +401,26 @@ function renderSales(salesToRender) {
         return;
     }
 
-    salesToRender.forEach(item => {
+    const currentPageSales = getMySalesPageItems(salesToRender);
+    currentPageSales.forEach(item => {
         const card = createSaleCard(item);
         grid.appendChild(card);
     });
+
+    renderMySalesPagination(salesToRender.length);
 }
 
 function renderMySalesLoadingState(count = 6) {
     const grid = document.getElementById('salesGrid');
+    const pagination = document.getElementById('mySalesPagination');
     if (!grid) return;
 
     isMySalesLoading = true;
     grid.innerHTML = '';
+    if (pagination) {
+        pagination.style.display = 'none';
+        pagination.innerHTML = '';
+    }
 
     for (let i = 0; i < count; i += 1) {
         const card = document.createElement('div');

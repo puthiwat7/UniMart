@@ -5,6 +5,8 @@ let products = [];
 let currentCategory = 'All Items';
 let filteredProducts = [];
 let isMarketplaceLoading = false;
+let marketplacePageSize = 12;
+let marketplaceCurrentPage = 1;
 
 function getCachedUser() {
     try {
@@ -132,6 +134,70 @@ function parsePrice(price) {
     return parseFloat(numericPrice) || 0;
 }
 
+function getMarketplacePageItems(items) {
+    const totalItems = items.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / marketplacePageSize));
+    marketplaceCurrentPage = Math.max(1, Math.min(marketplaceCurrentPage, totalPages));
+    const start = (marketplaceCurrentPage - 1) * marketplacePageSize;
+    return items.slice(start, start + marketplacePageSize);
+}
+
+function renderMarketplacePagination(totalItems) {
+    const pagination = document.getElementById('marketplacePagination');
+    if (!pagination) return;
+
+    const totalPages = Math.max(1, Math.ceil(totalItems / marketplacePageSize));
+    marketplaceCurrentPage = Math.max(1, Math.min(marketplaceCurrentPage, totalPages));
+
+    if (totalItems === 0) {
+        pagination.style.display = 'none';
+        pagination.innerHTML = '';
+        return;
+    }
+
+    pagination.style.display = 'flex';
+    pagination.innerHTML = `
+        <div class="pagination-left">
+            <label for="marketplacePageSize">Items per page</label>
+            <select id="marketplacePageSize">
+                <option value="8" ${marketplacePageSize === 8 ? 'selected' : ''}>8</option>
+                <option value="12" ${marketplacePageSize === 12 ? 'selected' : ''}>12</option>
+                <option value="24" ${marketplacePageSize === 24 ? 'selected' : ''}>24</option>
+            </select>
+        </div>
+        <div class="pagination-right">
+            <button type="button" id="marketplacePrevPage" ${marketplaceCurrentPage <= 1 ? 'disabled' : ''}>Previous</button>
+            <span>Page ${marketplaceCurrentPage} of ${totalPages}</span>
+            <button type="button" id="marketplaceNextPage" ${marketplaceCurrentPage >= totalPages ? 'disabled' : ''}>Next</button>
+        </div>
+    `;
+
+    const pageSizeSelect = document.getElementById('marketplacePageSize');
+    if (pageSizeSelect) {
+        pageSizeSelect.addEventListener('change', (e) => {
+            marketplacePageSize = Number(e.target.value) || 12;
+            marketplaceCurrentPage = 1;
+            renderProducts(filteredProducts);
+        });
+    }
+
+    const prevBtn = document.getElementById('marketplacePrevPage');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            marketplaceCurrentPage = Math.max(1, marketplaceCurrentPage - 1);
+            renderProducts(filteredProducts);
+        });
+    }
+
+    const nextBtn = document.getElementById('marketplaceNextPage');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            marketplaceCurrentPage = Math.min(totalPages, marketplaceCurrentPage + 1);
+            renderProducts(filteredProducts);
+        });
+    }
+}
+
 let hasInitializedMarketplace = false;
 
 async function initializeMarketplaceData() {
@@ -180,6 +246,7 @@ window.addEventListener('focus', () => {
 function renderProducts(productsToRender) {
     const grid = document.getElementById('productsGrid');
     const warningContainer = document.getElementById('marketplaceWarningBanner');
+    const pagination = document.getElementById('marketplacePagination');
     if (!grid) return;
 
     isMarketplaceLoading = false;
@@ -197,6 +264,10 @@ function renderProducts(productsToRender) {
 
 
     if (window.marketplaceLoadError) {
+        if (pagination) {
+            pagination.style.display = 'none';
+            pagination.innerHTML = '';
+        }
         grid.innerHTML = `
             <div class="marketplace-error-state">
                 <i class="fas fa-exclamation-triangle"></i>
@@ -211,6 +282,10 @@ function renderProducts(productsToRender) {
     }
 
     if (productsToRender.length === 0) {
+        if (pagination) {
+            pagination.style.display = 'none';
+            pagination.innerHTML = '';
+        }
         grid.innerHTML = `
             <div class="marketplace-empty-state">
                 <i class="fas fa-box-open"></i>
@@ -221,18 +296,27 @@ function renderProducts(productsToRender) {
         return;
     }
 
-    productsToRender.forEach(product => {
+    const currentPageProducts = getMarketplacePageItems(productsToRender);
+
+    currentPageProducts.forEach(product => {
         const productCard = createProductCard(product);
         grid.appendChild(productCard);
     });
+
+    renderMarketplacePagination(productsToRender.length);
 }
 
 function renderMarketplaceLoadingState(count = 8) {
     const grid = document.getElementById('productsGrid');
+    const pagination = document.getElementById('marketplacePagination');
     if (!grid) return;
 
     isMarketplaceLoading = true;
     grid.innerHTML = '';
+    if (pagination) {
+        pagination.style.display = 'none';
+        pagination.innerHTML = '';
+    }
 
     for (let i = 0; i < count; i += 1) {
         const card = document.createElement('div');
@@ -304,6 +388,7 @@ function setupCategoryFilters() {
             // Get category name
             const categoryName = card.querySelector('span').textContent;
             currentCategory = categoryName;
+            marketplaceCurrentPage = 1;
 
             // Filter products
             filterProducts();
@@ -360,6 +445,7 @@ function updateCategoryCounts() {
 function setupSearch() {
     const searchInput = document.querySelector('.search-box input');
     searchInput.addEventListener('input', () => {
+        marketplaceCurrentPage = 1;
         filterProducts();
     });
 }

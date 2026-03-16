@@ -675,6 +675,74 @@ body {
     border-color: #8f5c18;
 }
 
+.state-action-btn {
+    margin-top: 12px;
+    padding: 10px 16px;
+    border: 1px solid var(--primary-blue);
+    background: var(--primary-blue);
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.state-action-btn:hover {
+    background: var(--dark-blue);
+    border-color: var(--dark-blue);
+}
+
+.pagination-controls {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.pagination-left,
+.pagination-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #4b5563;
+}
+
+.pagination-controls select,
+.pagination-controls button {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    padding: 6px 10px;
+    font-size: 14px;
+}
+
+.pagination-controls button {
+    cursor: pointer;
+    color: #1f2937;
+}
+
+.pagination-controls button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+@media (max-width: 768px) {
+    .pagination-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pagination-left,
+    .pagination-right {
+        justify-content: space-between;
+    }
+}
+
 .loading-card {
     pointer-events: none;
 }

@@ -19,6 +19,10 @@ let currentItemId = null;
 let currentImageIndex = 0;
 let editingImages = [];
 let accessGranted = false;
+let adminLoadError = null;
+let adminLoadWarning = null;
+let adminPageSize = 12;
+let adminCurrentPage = 1;
 
 function getCachedUser() {
     try {
@@ -109,12 +113,31 @@ function removeSampleItemsFromStorage() {
 }
 
 async function loadAllListings() {
+    adminLoadError = null;
+    adminLoadWarning = null;
+
     if (!window.unimartListingsSync || typeof window.unimartListingsSync.getAllListingsFromCloud !== 'function') {
+        adminLoadError = new Error('Cloud listing service is unavailable.');
         return [];
     }
 
-    const all = await window.unimartListingsSync.getAllListingsFromCloud();
-    return all.map((item, index) => normalizeListing(item, index)).filter(Boolean);
+    try {
+        const all = await window.unimartListingsSync.getAllListingsFromCloud();
+        const normalized = all.map((item, index) => normalizeListing(item, index)).filter(Boolean);
+
+        const readState = window.unimartListingsSyncLastReadState || null;
+        if (readState && readState.mode === 'fallback-limited') {
+            const loadedCount = Number(readState.count) || normalized.length;
+            const limit = Number(readState.limit) || loadedCount;
+            adminLoadWarning = `Loaded ${loadedCount} recent listings (limited to ${limit}) due to a slow network/database response.`;
+        }
+
+        return normalized;
+    } catch (error) {
+        console.warn('Failed to load listings for Admin Panel:', error);
+        adminLoadError = error;
+        return [];
+    }
 }
 
 async function persistAllChanges() {
@@ -131,9 +154,104 @@ async function persistAllChanges() {
 }
 
 async function refreshAdminView() {
+    renderAdminLoadingState();
     adminListings = await loadAllListings();
     renderAdminSales(adminListings);
     updateAdminStats();
+}
+
+function getAdminPageItems(items) {
+    const totalItems = items.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / adminPageSize));
+    adminCurrentPage = Math.max(1, Math.min(adminCurrentPage, totalPages));
+    const start = (adminCurrentPage - 1) * adminPageSize;
+    return items.slice(start, start + adminPageSize);
+}
+
+function renderAdminPagination(totalItems) {
+    const pagination = document.getElementById('adminPagination');
+    if (!pagination) return;
+
+    const totalPages = Math.max(1, Math.ceil(totalItems / adminPageSize));
+    adminCurrentPage = Math.max(1, Math.min(adminCurrentPage, totalPages));
+
+    if (totalItems === 0) {
+        pagination.style.display = 'none';
+        pagination.innerHTML = '';
+        return;
+    }
+
+    pagination.style.display = 'flex';
+    pagination.innerHTML = `
+        <div class="pagination-left">
+            <label for="adminPageSize">Items per page</label>
+            <select id="adminPageSize">
+                <option value="8" ${adminPageSize === 8 ? 'selected' : ''}>8</option>
+                <option value="12" ${adminPageSize === 12 ? 'selected' : ''}>12</option>
+                <option value="24" ${adminPageSize === 24 ? 'selected' : ''}>24</option>
+            </select>
+        </div>
+        <div class="pagination-right">
+            <button type="button" id="adminPrevPage" ${adminCurrentPage <= 1 ? 'disabled' : ''}>Previous</button>
+            <span>Page ${adminCurrentPage} of ${totalPages}</span>
+            <button type="button" id="adminNextPage" ${adminCurrentPage >= totalPages ? 'disabled' : ''}>Next</button>
+        </div>
+    `;
+
+    const pageSizeSelect = document.getElementById('adminPageSize');
+    if (pageSizeSelect) {
+        pageSizeSelect.addEventListener('change', (e) => {
+            adminPageSize = Number(e.target.value) || 12;
+            adminCurrentPage = 1;
+            filterAdminSales();
+        });
+    }
+
+    const prevBtn = document.getElementById('adminPrevPage');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            adminCurrentPage = Math.max(1, adminCurrentPage - 1);
+            filterAdminSales();
+        });
+    }
+
+    const nextBtn = document.getElementById('adminNextPage');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            adminCurrentPage = Math.min(totalPages, adminCurrentPage + 1);
+            filterAdminSales();
+        });
+    }
+}
+
+function renderAdminLoadingState(count = 6) {
+    const grid = document.getElementById('adminSalesGrid');
+    const pagination = document.getElementById('adminPagination');
+    if (!grid) return;
+
+    grid.innerHTML = '';
+    if (pagination) {
+        pagination.style.display = 'none';
+        pagination.innerHTML = '';
+    }
+    for (let i = 0; i < count; i += 1) {
+        const card = document.createElement('div');
+        card.className = 'product-card loading-card';
+        card.innerHTML = `
+            <div class="product-image skeleton-block"></div>
+            <div class="product-info">
+                <div class="skeleton-line skeleton-badge"></div>
+                <div class="skeleton-line skeleton-title"></div>
+                <div class="skeleton-line skeleton-price"></div>
+                <div class="skeleton-line skeleton-meta"></div>
+                <div class="skeleton-actions-row">
+                    <div class="skeleton-line skeleton-button"></div>
+                    <div class="skeleton-line skeleton-button"></div>
+                </div>
+            </div>
+        `;
+        grid.appendChild(card);
+    }
 }
 
 function updateAdminStats() {
@@ -153,6 +271,7 @@ function setupFilters() {
             filterBtns.forEach((b) => b.classList.remove('active'));
             e.currentTarget.classList.add('active');
             currentFilter = e.currentTarget.dataset.filter;
+            adminCurrentPage = 1;
             filterAdminSales();
         });
     });
@@ -170,9 +289,41 @@ function filterAdminSales() {
 
 function renderAdminSales(salesToRender) {
     const grid = document.getElementById('adminSalesGrid');
+    const statusBanner = document.getElementById('adminSalesStatusBanner');
+    const pagination = document.getElementById('adminPagination');
     grid.innerHTML = '';
 
+    if (statusBanner) {
+        if (adminLoadWarning) {
+            statusBanner.textContent = adminLoadWarning;
+            statusBanner.style.display = 'block';
+        } else {
+            statusBanner.textContent = '';
+            statusBanner.style.display = 'none';
+        }
+    }
+
+    if (adminLoadError) {
+        if (pagination) {
+            pagination.style.display = 'none';
+            pagination.innerHTML = '';
+        }
+        grid.innerHTML = `
+            <div class="my-sales-empty-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Failed to load listings</h3>
+                <p>${adminLoadError.message || adminLoadError}</p>
+                <button type="button" class="state-action-btn" onclick="refreshAdminView()">Retry</button>
+            </div>
+        `;
+        return;
+    }
+
     if (!salesToRender.length) {
+        if (pagination) {
+            pagination.style.display = 'none';
+            pagination.innerHTML = '';
+        }
         grid.innerHTML = `
             <div class="my-sales-empty-state">
                 <i class="fas fa-inbox"></i>
@@ -182,10 +333,13 @@ function renderAdminSales(salesToRender) {
         return;
     }
 
-    salesToRender.forEach((item) => {
+    const currentPageSales = getAdminPageItems(salesToRender);
+    currentPageSales.forEach((item) => {
         const card = createAdminSaleCard(item);
         grid.appendChild(card);
     });
+
+    renderAdminPagination(salesToRender.length);
 }
 
 function createAdminSaleCard(item) {

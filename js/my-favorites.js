@@ -25,6 +25,12 @@ function getCurrentExtendedProfile() {
     }
 }
 
+let favoritesListingsById = new Map();
+let favoritesLoadError = null;
+let favoritesLoadWarning = null;
+let favoritesPageSize = 12;
+let favoritesCurrentPage = 1;
+
 function enforceBuyPolicyOrRedirect() {
     const profile = getCurrentExtendedProfile();
     if (profile && profile.agreedToPolicies === true) {
@@ -45,17 +51,44 @@ async function getAllListings() {
     return window.unimartListingsSync.getAllListingsFromCloud();
 }
 
+async function refreshFavoritesListingCache() {
+    favoritesLoadError = null;
+    favoritesLoadWarning = null;
+    favoritesListingsById = new Map();
+
+    if (!window.unimartListingsSync || typeof window.unimartListingsSync.getAllListingsFromCloud !== 'function') {
+        favoritesLoadError = new Error('Cloud listing service is unavailable.');
+        return;
+    }
+
+    try {
+        const listings = await window.unimartListingsSync.getAllListingsFromCloud();
+        listings.forEach((item) => {
+            if (!item || typeof item !== 'object' || item.id === undefined || item.id === null) return;
+            favoritesListingsById.set(String(item.id), item);
+        });
+
+        const readState = window.unimartListingsSyncLastReadState || null;
+        if (readState && readState.mode === 'fallback-limited') {
+            const loadedCount = Number(readState.count) || favoritesListingsById.size;
+            const limit = Number(readState.limit) || loadedCount;
+            favoritesLoadWarning = `Loaded ${loadedCount} recent listings (limited to ${limit}) due to a slow network/database response.`;
+        }
+    } catch (error) {
+        console.warn('Failed to load listings for Favorites:', error);
+        favoritesLoadError = error;
+    }
+}
+
 // Get product status from listings
 async function getProductStatus(productId) {
-    const listings = await getAllListings();
-    const listing = listings.find((l) => l.id === productId);
+    const listing = favoritesListingsById.get(String(productId));
     return listing ? (listing.status || 'active').toLowerCase() : 'active';
 }
 
 // Get updated product data (to reflect edits)
 async function getUpdatedProduct(product) {
-    const listings = await getAllListings();
-    const listing = listings.find(l => l.id === product.id);
+    const listing = favoritesListingsById.get(String(product.id));
     
     if (listing) {
         // Merge listing data with favorite data
@@ -110,14 +143,114 @@ function isFavorited(productId) {
     return favorites.some(fav => fav.id === productId);
 }
 
+function getFavoritesPageItems(items) {
+    const totalItems = items.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / favoritesPageSize));
+    favoritesCurrentPage = Math.max(1, Math.min(favoritesCurrentPage, totalPages));
+    const start = (favoritesCurrentPage - 1) * favoritesPageSize;
+    return items.slice(start, start + favoritesPageSize);
+}
+
+function renderFavoritesPagination(totalItems) {
+    const pagination = document.getElementById('favoritesPagination');
+    if (!pagination) return;
+
+    const totalPages = Math.max(1, Math.ceil(totalItems / favoritesPageSize));
+    favoritesCurrentPage = Math.max(1, Math.min(favoritesCurrentPage, totalPages));
+
+    if (totalItems === 0) {
+        pagination.style.display = 'none';
+        pagination.innerHTML = '';
+        return;
+    }
+
+    pagination.style.display = 'flex';
+    pagination.innerHTML = `
+        <div class="pagination-left">
+            <label for="favoritesPageSize">Items per page</label>
+            <select id="favoritesPageSize">
+                <option value="8" ${favoritesPageSize === 8 ? 'selected' : ''}>8</option>
+                <option value="12" ${favoritesPageSize === 12 ? 'selected' : ''}>12</option>
+                <option value="24" ${favoritesPageSize === 24 ? 'selected' : ''}>24</option>
+            </select>
+        </div>
+        <div class="pagination-right">
+            <button type="button" id="favoritesPrevPage" ${favoritesCurrentPage <= 1 ? 'disabled' : ''}>Previous</button>
+            <span>Page ${favoritesCurrentPage} of ${totalPages}</span>
+            <button type="button" id="favoritesNextPage" ${favoritesCurrentPage >= totalPages ? 'disabled' : ''}>Next</button>
+        </div>
+    `;
+
+    const pageSizeSelect = document.getElementById('favoritesPageSize');
+    if (pageSizeSelect) {
+        pageSizeSelect.addEventListener('change', (e) => {
+            favoritesPageSize = Number(e.target.value) || 12;
+            favoritesCurrentPage = 1;
+            renderFavorites();
+        });
+    }
+
+    const prevBtn = document.getElementById('favoritesPrevPage');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            favoritesCurrentPage = Math.max(1, favoritesCurrentPage - 1);
+            renderFavorites();
+        });
+    }
+
+    const nextBtn = document.getElementById('favoritesNextPage');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            favoritesCurrentPage = Math.min(totalPages, favoritesCurrentPage + 1);
+            renderFavorites();
+        });
+    }
+}
+
 // Render favorites
 async function renderFavorites() {
     const grid = document.getElementById('favoritesGrid');
+    const statusBanner = document.getElementById('favoritesStatusBanner');
+    const pagination = document.getElementById('favoritesPagination');
     const favorites = getFavorites();
 
+    if (!grid) return;
+
+    renderFavoritesLoadingState();
+    await refreshFavoritesListingCache();
     grid.innerHTML = '';
 
+    if (statusBanner) {
+        if (favoritesLoadWarning) {
+            statusBanner.textContent = favoritesLoadWarning;
+            statusBanner.style.display = 'block';
+        } else {
+            statusBanner.textContent = '';
+            statusBanner.style.display = 'none';
+        }
+    }
+
+    if (favoritesLoadError) {
+        if (pagination) {
+            pagination.style.display = 'none';
+            pagination.innerHTML = '';
+        }
+        grid.innerHTML = `
+            <div class="my-sales-empty-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Failed to load favorites</h3>
+                <p>${favoritesLoadError.message || favoritesLoadError}</p>
+                <button type="button" class="state-action-btn" onclick="renderFavorites()">Retry</button>
+            </div>
+        `;
+        return;
+    }
+
     if (favorites.length === 0) {
+        if (pagination) {
+            pagination.style.display = 'none';
+            pagination.innerHTML = '';
+        }
         grid.innerHTML = `
             <div class="my-sales-empty-state">
                 <i class="fas fa-heart"></i>
@@ -131,9 +264,42 @@ async function renderFavorites() {
         return;
     }
 
-    for (const product of favorites) {
+    const pageFavorites = getFavoritesPageItems(favorites);
+    for (const product of pageFavorites) {
         const updatedProduct = await getUpdatedProduct(product);
         const card = createFavoriteCard(updatedProduct);
+        grid.appendChild(card);
+    }
+
+    renderFavoritesPagination(favorites.length);
+}
+
+function renderFavoritesLoadingState(count = 6) {
+    const grid = document.getElementById('favoritesGrid');
+    const pagination = document.getElementById('favoritesPagination');
+    if (!grid) return;
+
+    grid.innerHTML = '';
+    if (pagination) {
+        pagination.style.display = 'none';
+        pagination.innerHTML = '';
+    }
+    for (let i = 0; i < count; i += 1) {
+        const card = document.createElement('div');
+        card.className = 'product-card loading-card';
+        card.innerHTML = `
+            <div class="product-image skeleton-block"></div>
+            <div class="product-info">
+                <div class="skeleton-line skeleton-badge"></div>
+                <div class="skeleton-line skeleton-title"></div>
+                <div class="skeleton-line skeleton-price"></div>
+                <div class="skeleton-line skeleton-meta"></div>
+                <div class="skeleton-actions-row">
+                    <div class="skeleton-line skeleton-button"></div>
+                    <div class="skeleton-line skeleton-button"></div>
+                </div>
+            </div>
+        `;
         grid.appendChild(card);
     }
 }
