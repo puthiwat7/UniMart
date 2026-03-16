@@ -194,6 +194,14 @@ async function persistMySalesChanges() {
 
     const updated = Array.from(mergedById.values());
     await window.unimartListingsSync.replaceAllListingsInCloud(updated);
+
+    // Also update local storage so other tabs/pages (and legacy code paths) can pick up changes.
+    // Some parts of the UI listen for storage events on these keys to refresh listings.
+    try {
+        writeListingsToAllKeys(updated);
+    } catch (error) {
+        console.warn('Failed to update local storage after persisting listings:', error);
+    }
 }
 
 // Initialize page

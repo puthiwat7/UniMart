@@ -1,5 +1,10 @@
 const DEFAULT_PRODUCTS = [];
 
+// Local storage keys used by the legacy listing cache.
+// These are updated by the My Sales page when listings change.
+const USER_LISTINGS_KEY = 'unimartListings';
+const LEGACY_LISTINGS_KEY = 'listings';
+
 let products = [];
 
 let currentCategory = 'All Items';
