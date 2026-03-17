@@ -137,12 +137,7 @@ function parsePrice(price) {
     return parseFloat(numericPrice) || 0;
 }
 
-let hasInitializedMarketplace = false;
-
 async function initializeMarketplaceData() {
-    if (hasInitializedMarketplace) return;
-    hasInitializedMarketplace = true;
-
     renderMarketplaceLoadingState();
     await loadMarketplaceProducts();
     updateCategoryCounts();

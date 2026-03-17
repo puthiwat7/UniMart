@@ -21,6 +21,38 @@ let editingImages = [];
 let originalEditData = null;
 let isMySalesLoading = false;
 
+// Image compression utility
+async function compressImage(file) {
+    if (!window.imageCompression) {
+        console.warn('Image compression library not loaded, using original file');
+        return file;
+    }
+
+    const options = {
+        maxSizeMB: 0.5, // Max 0.5MB
+        maxWidthOrHeight: 1024, // Max 1024px
+        useWebWorker: true, // Use web worker for performance
+        preserveExif: false, // Don't preserve EXIF data
+        fileType: 'image/jpeg', // Convert to JPEG for better compression
+        initialQuality: 0.8 // Start with 80% quality
+    };
+
+    try {
+        const compressedFile = await window.imageCompression(file, options);
+        console.log(`Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+        return compressedFile;
+    } catch (error) {
+        console.error('Image compression failed:', error);
+        return file; // Return original file if compression fails
+    }
+}
+
+// Compress multiple images
+async function compressImages(files) {
+    const compressionPromises = files.map(file => compressImage(file));
+    return await Promise.all(compressionPromises);
+}
+
 // Listings now run from cloud database only.
 
 function parseListingsFromKey(key) {
@@ -207,15 +239,29 @@ async function persistMySalesChanges() {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', async () => {
-    await refreshMySalesView();
-    setupSalesFilters();
-    setupSalesModal();
-
+    // Wait for Firebase auth to be ready before loading data
     if (typeof firebase !== 'undefined' && firebase.auth) {
-        firebase.auth().onAuthStateChanged(async () => {
-            refreshMySalesView();
+        await new Promise((resolve) => {
+            const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                unsubscribe(); // Unsubscribe after first call
+                resolve(user);
+            });
         });
     }
+
+    await refreshMySalesView();
+    setupSalesFilters();
+
+    const refreshSalesBtn = document.getElementById('refreshSalesBtn');
+    if (refreshSalesBtn) {
+        refreshSalesBtn.addEventListener('click', async () => {
+            await refreshMySalesView();
+        });
+    }
+
+    setupSalesModal();
+
+    // No need for additional onAuthStateChanged since we already waited
 });
 
 // Refresh my-sales when page becomes visible (e.g., after listing a new item)
@@ -239,11 +285,13 @@ async function refreshMySalesView() {
 
 // Update sales statistics
 function updateSalesStats() {
+    const itemsSelling = mySalesData.length;
     const totalSales = mySalesData.filter(item => item.status === 'sold').length;
-    const activeListings = mySalesData.filter(item => item.status === 'active').length;
+
+    const itemsSellingEl = document.getElementById('itemsSelling');
+    if (itemsSellingEl) itemsSellingEl.textContent = itemsSelling;
 
     document.getElementById('totalSales').textContent = totalSales;
-    document.getElementById('activeListing').textContent = activeListings;
 }
 
 // Setup sales filter buttons
@@ -727,20 +775,45 @@ function setupSalesModal() {
     if (saveEditBtn) saveEditBtn.addEventListener('click', saveSalesEdit);
 
     if (editImagesInput) {
-        editImagesInput.addEventListener('change', (e) => {
+        editImagesInput.addEventListener('change', async (e) => {
             const files = Array.from(e.target.files || []);
             if (!files.length) return;
 
-            files.forEach((file) => {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    if (event.target && typeof event.target.result === 'string') {
-                        editingImages.push(event.target.result);
-                        renderEditImagesPreview();
-                    }
-                };
-                reader.readAsDataURL(file);
-            });
+            try {
+                // Show loading state
+                const originalCursor = document.body.style.cursor;
+                document.body.style.cursor = 'wait';
+
+                // Compress images
+                const compressedFiles = await compressImages(files);
+
+                // Convert to data URLs for preview
+                const compressionPromises = compressedFiles.map((file) => {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            if (event.target && typeof event.target.result === 'string') {
+                                resolve(event.target.result);
+                            } else {
+                                resolve(null);
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                });
+
+                const compressedDataUrls = await Promise.all(compressionPromises);
+                compressedDataUrls.filter(Boolean).forEach((dataUrl) => {
+                    editingImages.push(dataUrl);
+                });
+
+                renderEditImagesPreview();
+            } catch (error) {
+                console.error('Error processing images:', error);
+                alert('Failed to process images. Please try again.');
+            } finally {
+                document.body.style.cursor = '';
+            }
 
             e.target.value = '';
         });

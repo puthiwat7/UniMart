@@ -12,6 +12,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
+    <!-- Image Compression Library -->
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+
     <!-- Firebase Config & Auth -->
     <script src="../js/firebase-config.js"></script>
     <script src="../js/firebase-auth.js"></script>
@@ -361,6 +364,38 @@
 
         initializeSellAccessGuard();
 
+        // Image compression utility
+        async function compressImage(file) {
+            if (!window.imageCompression) {
+                console.warn('Image compression library not loaded, using original file');
+                return file;
+            }
+
+            const options = {
+                maxSizeMB: 0.5, // Max 0.5MB
+                maxWidthOrHeight: 1024, // Max 1024px
+                useWebWorker: true, // Use web worker for performance
+                preserveExif: false, // Don't preserve EXIF data
+                fileType: 'image/jpeg', // Convert to JPEG for better compression
+                initialQuality: 0.8 // Start with 80% quality
+            };
+
+            try {
+                const compressedFile = await window.imageCompression(file, options);
+                console.log(`Compressed ${file.name}: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+                return compressedFile;
+            } catch (error) {
+                console.error('Image compression failed:', error);
+                return file; // Return original file if compression fails
+            }
+        }
+
+        // Compress multiple images
+        async function compressImages(files) {
+            const compressionPromises = files.map(file => compressImage(file));
+            return await Promise.all(compressionPromises);
+        }
+
         function toTitleCase(value) {
             return value
                 .split(' ')
@@ -492,63 +527,83 @@
 
         uploadArea.addEventListener('click', () => imageInput.click());
 
-        imageInput.addEventListener('change', (e) => {
+        imageInput.addEventListener('change', async (e) => {
             const files = Array.from(e.target.files);
-            
-            // Append new images to existing ones
-            files.forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const imageContainer = document.createElement('div');
-                    imageContainer.style.position = 'relative';
-                    imageContainer.style.display = 'inline-block';
-                    
-                    const img = document.createElement('img');
-                    img.src = event.target.result;
-                    img.style.width = '100px';
-                    img.style.height = '100px';
-                    img.style.objectFit = 'cover';
-                    img.style.margin = '4px';
-                    img.style.borderRadius = '8px';
-                    img.style.border = '2px solid #e5e7eb';
-                    
-                    // Add remove button
-                    const removeBtn = document.createElement('button');
-                    removeBtn.type = 'button';
-                    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-                    removeBtn.style.position = 'absolute';
-                    removeBtn.style.top = '8px';
-                    removeBtn.style.right = '8px';
-                    removeBtn.style.background = '#ef4444';
-                    removeBtn.style.color = 'white';
-                    removeBtn.style.border = 'none';
-                    removeBtn.style.borderRadius = '50%';
-                    removeBtn.style.width = '24px';
-                    removeBtn.style.height = '24px';
-                    removeBtn.style.cursor = 'pointer';
-                    removeBtn.style.fontSize = '12px';
-                    removeBtn.style.display = 'flex';
-                    removeBtn.style.alignItems = 'center';
-                    removeBtn.style.justifyContent = 'center';
-                    
-                    removeBtn.addEventListener('click', () => {
-                        const imgIndex = uploadedImages.indexOf(event.target.result);
-                        if (imgIndex > -1) {
-                            uploadedImages.splice(imgIndex, 1);
-                        }
-                        imageContainer.remove();
-                        updateUploadText();
+            if (!files.length) return;
+
+            try {
+                // Show loading state
+                const originalCursor = document.body.style.cursor;
+                document.body.style.cursor = 'wait';
+                uploadText.textContent = 'Compressing images...';
+
+                // Compress images
+                const compressedFiles = await compressImages(files);
+
+                // Convert to data URLs for preview
+                for (const file of compressedFiles) {
+                    const reader = new FileReader();
+                    await new Promise((resolve) => {
+                        reader.onload = (event) => {
+                            const imageContainer = document.createElement('div');
+                            imageContainer.style.position = 'relative';
+                            imageContainer.style.display = 'inline-block';
+
+                            const img = document.createElement('img');
+                            img.src = event.target.result;
+                            img.style.width = '100px';
+                            img.style.height = '100px';
+                            img.style.objectFit = 'cover';
+                            img.style.margin = '4px';
+                            img.style.borderRadius = '8px';
+                            img.style.border = '2px solid #e5e7eb';
+
+                            // Add remove button
+                            const removeBtn = document.createElement('button');
+                            removeBtn.type = 'button';
+                            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                            removeBtn.style.position = 'absolute';
+                            removeBtn.style.top = '8px';
+                            removeBtn.style.right = '8px';
+                            removeBtn.style.background = '#ef4444';
+                            removeBtn.style.color = 'white';
+                            removeBtn.style.border = 'none';
+                            removeBtn.style.borderRadius = '50%';
+                            removeBtn.style.width = '24px';
+                            removeBtn.style.height = '24px';
+                            removeBtn.style.cursor = 'pointer';
+                            removeBtn.style.fontSize = '12px';
+                            removeBtn.style.display = 'flex';
+                            removeBtn.style.alignItems = 'center';
+                            removeBtn.style.justifyContent = 'center';
+
+                            removeBtn.addEventListener('click', () => {
+                                const imgIndex = uploadedImages.indexOf(event.target.result);
+                                if (imgIndex > -1) {
+                                    uploadedImages.splice(imgIndex, 1);
+                                }
+                                imageContainer.remove();
+                                updateUploadText();
+                            });
+
+                            imageContainer.appendChild(img);
+                            imageContainer.appendChild(removeBtn);
+                            imagePreview.appendChild(imageContainer);
+                            uploadedImages.push(event.target.result);
+
+                            updateUploadText();
+                            resolve();
+                        };
+                        reader.readAsDataURL(file);
                     });
-                    
-                    imageContainer.appendChild(img);
-                    imageContainer.appendChild(removeBtn);
-                    imagePreview.appendChild(imageContainer);
-                    uploadedImages.push(event.target.result);
-                    
-                    updateUploadText();
-                };
-                reader.readAsDataURL(file);
-            });
+                }
+            } catch (error) {
+                console.error('Error processing images:', error);
+                alert('Failed to process images. Please try again.');
+            } finally {
+                document.body.style.cursor = '';
+                updateUploadText();
+            }
 
             // Reset the file input so the same file can be selected again if needed
             imageInput.value = '';

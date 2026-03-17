@@ -203,6 +203,12 @@ function createFavoriteCard(product) {
 // Initialize page
 document.addEventListener('DOMContentLoaded', async () => {
     await renderFavorites();
+
+    const refreshFavoritesBtn = document.getElementById('refreshFavoritesBtn');
+    if (refreshFavoritesBtn) {
+        refreshFavoritesBtn.addEventListener('click', renderFavorites);
+    }
+
     checkAuthStatus();
     setupClearFavoritesButton();
     setupProductModal();

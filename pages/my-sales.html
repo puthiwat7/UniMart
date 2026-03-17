@@ -12,6 +12,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
+    <!-- Image Compression Library -->
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+
     <!-- Firebase Config & Auth -->
     <script src="../js/firebase-config.js"></script>
     <script src="../js/firebase-auth.js"></script>
@@ -108,20 +111,28 @@
         <!-- Main Content -->
         <main class="main-content">
             <!-- Header with Stats and Filter -->
-            <div class="orders-header">
+            <div class="sales-header">
                 <div class="orders-header-content">
                     <h1>My Sales</h1>
                     <p>Items you're selling</p>
                 </div>
-                <div class="sales-stats">
-                    <div class="stat-box">
-                        <div class="stat-number" id="totalSales">0</div>
-                        <div class="stat-label">Total Sales</div>
+
+                <div class="sales-header-row">
+                    <div class="sales-stats-row">
+                        <div class="stat-item">
+                            <div class="stat-label">Items Selling</div>
+                            <div class="stat-value" id="itemsSelling">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Total Sales</div>
+                            <div class="stat-value" id="totalSales">0</div>
+                        </div>
                     </div>
-                    <div class="stat-box">
-                        <div class="stat-number" id="activeListing">0</div>
-                        <div class="stat-label">Active Listings</div>
-                    </div>
+
+                    <button class="btn-refresh btn-refresh-subtle" id="refreshSalesBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Refresh</span>
+                    </button>
                 </div>
             </div>
 
