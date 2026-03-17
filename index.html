@@ -7,18 +7,18 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase SDKs (Compat version for script tag compatibility) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <!-- Firebase SDKs (Compat version for script tag compatibility) - Defer loading -->
+    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
-    <!-- Firebase Config & Auth -->
-    <script src="js/firebase-config.js"></script>
-    <script src="js/firebase-auth.js"></script>
-    <script src="js/analytics.js"></script>
+    <!-- Firebase Config & Auth - Defer loading -->
+    <script defer src="js/firebase-config.js"></script>
+    <script defer src="js/firebase-auth.js"></script>
+    <script defer src="js/analytics.js"></script>
     
-    <!-- Auth Guard -->
+    <!-- Auth Guard - Wait for Firebase to load -->
     <script>
         // Handle Chrome extension message passing to prevent async listener errors
         if (window.chrome && chrome.runtime) {
@@ -28,21 +28,23 @@
             });
         }
         
-        // Wait for Firebase to be ready, then check authentication. Is there a better way to do this without risking?
-        setTimeout(() => {
-            try {
+        // Wait for Firebase to be ready, then check authentication
+        function initializeAuthGuard() {
+            if (typeof firebase !== 'undefined' && firebase.auth) {
                 firebase.auth().onAuthStateChanged((user) => {
                     if (!user) {
                         // User not logged in, redirect to login page
                         window.location.href = 'pages/login.html';
                     }
                 });
-            } catch (error) {
-                console.error('Firebase not initialized:', error);
-                // Fallback redirect
-                window.location.href = 'pages/login.html';
+            } else {
+                // Firebase not loaded yet, retry
+                setTimeout(initializeAuthGuard, 100);
             }
-        }, 100);
+        }
+        
+        // Start auth guard initialization
+        initializeAuthGuard();
     </script>
 </head>
 <body>
@@ -374,8 +376,8 @@
         </div>
     </div>
 
-    <script src="js/listings-sync.js"></script>
-    <script src="js/script.js"></script>
-    <script src="js/user-sidebar.js"></script>
+    <script defer src="js/listings-sync.js"></script>
+    <script defer src="js/script.js"></script>
+    <script defer src="js/user-sidebar.js"></script>
 </body>
 </html>

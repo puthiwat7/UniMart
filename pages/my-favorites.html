@@ -7,30 +7,33 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Firebase SDKs (Compat version for script tag compatibility) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <!-- Firebase SDKs (Compat version for script tag compatibility) - Defer loading -->
+    <script defer src="https://www.gstatic.com.firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com.firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
-    <!-- Firebase Config & Auth -->
-    <script src="../js/firebase-config.js"></script>
-    <script src="../js/firebase-auth.js"></script>
+    <!-- Firebase Config & Auth - Defer loading -->
+    <script defer src="../js/firebase-config.js"></script>
+    <script defer src="../js/firebase-auth.js"></script>
 
-    <!-- Auth Guard -->
+    <!-- Auth Guard - Wait for Firebase to load -->
     <script>
         // Protect this page: redirect to login if not authenticated
-        setTimeout(() => {
-            try {
+        function initializeAuthGuard() {
+            if (typeof firebase !== 'undefined' && firebase.auth) {
                 firebase.auth().onAuthStateChanged((user) => {
                     if (!user) {
                         window.location.href = 'login.html';
                     }
                 });
-            } catch (error) {
-                console.error('Firebase not initialized:', error);
-                window.location.href = 'login.html';
+            } else {
+                // Firebase not loaded yet, retry
+                setTimeout(initializeAuthGuard, 100);
             }
-        }, 100);
+        }
+        
+        // Start auth guard initialization
+        initializeAuthGuard();
     </script>
 </head>
 <body>
@@ -249,8 +252,8 @@
         </div>
     </div>
 
-    <script src="../js/user-sidebar.js"></script>
-    <script src="../js/listings-sync.js"></script>
-    <script src="../js/my-favorites.js"></script>
+    <script defer src="../js/user-sidebar.js"></script>
+    <script defer src="../js/listings-sync.js"></script>
+    <script defer src="../js/my-favorites.js"></script>
 </body>
 </html>

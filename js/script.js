@@ -97,9 +97,21 @@ function getConditionPercentage(product) {
     return Number.isFinite(fallbackMap[badge]) ? fallbackMap[badge] : null;
 }
 
+const CACHE_KEY = 'unimart_marketplace_cache';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 async function loadMarketplaceProducts() {
     window.marketplaceLoadError = null;
     window.marketplaceLoadWarning = null;
+
+    // Try to load from cache first
+    const cached = loadFromCache();
+    if (cached) {
+        products = cached.products;
+        filteredProducts = [...products];
+        return;
+    }
+
     if (!window.unimartListingsSync || typeof window.unimartListingsSync.getActiveListingsFromCloud !== 'function') {
         products = [...DEFAULT_PRODUCTS];
         filteredProducts = [...products];
@@ -110,6 +122,9 @@ async function loadMarketplaceProducts() {
         const cloudListings = await window.unimartListingsSync.getActiveListingsFromCloud();
         const normalized = cloudListings.map((listing, index) => normalizeListing(listing, index)).filter(Boolean);
         products = [...DEFAULT_PRODUCTS, ...normalized];
+
+        // Cache the results
+        saveToCache(products);
 
         const readState = window.unimartListingsSyncLastReadState || null;
         if (readState && readState.mode === 'fallback-limited') {
@@ -124,6 +139,38 @@ async function loadMarketplaceProducts() {
     }
 
     filteredProducts = [...products];
+}
+
+function loadFromCache() {
+    try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (!cached) return null;
+
+        const data = JSON.parse(cached);
+        const now = Date.now();
+
+        if (now - data.timestamp > CACHE_DURATION) {
+            localStorage.removeItem(CACHE_KEY);
+            return null;
+        }
+
+        return data;
+    } catch (error) {
+        console.warn('Failed to load from cache:', error);
+        return null;
+    }
+}
+
+function saveToCache(products) {
+    try {
+        const data = {
+            products,
+            timestamp: Date.now()
+        };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+    } catch (error) {
+        console.warn('Failed to save to cache:', error);
+    }
 }
 
 async function refreshMarketplaceProducts() {
@@ -141,28 +188,40 @@ async function initializeMarketplaceData() {
     renderMarketplaceLoadingState();
     await loadMarketplaceProducts();
     updateCategoryCounts();
-    renderProducts(products);
+    filterProducts();
 }
 
-// Initialize the page
-document.addEventListener('DOMContentLoaded', async () => {
-    if (typeof firebase !== 'undefined' && firebase.auth) {
-        firebase.auth().onAuthStateChanged(async (user) => {
-            if (user) {
-                await initializeMarketplaceData();
-                await refreshMarketplaceProducts();
-            }
-        });
+// Initialize the page - Wait for Firebase and DOM
+async function initializeApp() {
+    // Wait for Firebase to be available
+    while (typeof firebase === 'undefined' || !firebase.auth) {
+        await new Promise(resolve => setTimeout(resolve, 50));
     }
 
+    // Setup Firebase auth listener
+    firebase.auth().onAuthStateChanged(async (user) => {
+        if (user) {
+            await initializeMarketplaceData();
+            await refreshMarketplaceProducts();
+        }
+    });
+
+    // Initialize even without auth for public content
     await initializeMarketplaceData();
     setupCategoryFilters();
     setupSearch();
     setupRefresh();
     setupScrollToTop();
-    setupProductModal(); // Setup product detail modal
-    setupPaymentModal(); // Setup payment modal
-});
+    setupProductModal();
+    setupPaymentModal();
+}
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
+}
 
 // Refresh marketplace when page becomes visible (e.g., after navigating back from sell-item)
 document.addEventListener('visibilitychange', () => {
@@ -176,14 +235,26 @@ window.addEventListener('focus', () => {
     refreshMarketplaceProducts();
 });
 
-// Render products in the grid
-function renderProducts(productsToRender) {
+let currentPage = 1;
+const ITEMS_PER_PAGE = 20;
+
+function renderProducts(productsToRender, page = 1) {
     const grid = document.getElementById('productsGrid');
     const warningContainer = document.getElementById('marketplaceWarningBanner');
     if (!grid) return;
 
     isMarketplaceLoading = false;
-    grid.innerHTML = '';
+
+    // Calculate pagination
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const paginatedProducts = productsToRender.slice(startIndex, endIndex);
+    const totalPages = Math.ceil(productsToRender.length / ITEMS_PER_PAGE);
+
+    // Clear grid but keep existing content for pagination
+    if (page === 1) {
+        grid.innerHTML = '';
+    }
 
     if (warningContainer) {
         if (window.marketplaceLoadWarning) {
@@ -194,7 +265,6 @@ function renderProducts(productsToRender) {
             warningContainer.textContent = '';
         }
     }
-
 
     if (window.marketplaceLoadError) {
         grid.innerHTML = `
@@ -221,10 +291,36 @@ function renderProducts(productsToRender) {
         return;
     }
 
-    productsToRender.forEach(product => {
+    // Render products for current page
+    paginatedProducts.forEach(product => {
         const productCard = createProductCard(product);
         grid.appendChild(productCard);
     });
+
+    // Add load more button if there are more pages
+    if (page < totalPages && !document.getElementById('loadMoreBtn')) {
+        const loadMoreBtn = document.createElement('div');
+        loadMoreBtn.id = 'loadMoreBtn';
+        loadMoreBtn.className = 'load-more-container';
+        loadMoreBtn.innerHTML = `
+            <button class="btn-load-more" onclick="loadNextPage()">
+                <i class="fas fa-plus"></i>
+                Load More Items
+            </button>
+        `;
+        grid.appendChild(loadMoreBtn);
+    } else if (page >= totalPages) {
+        // Remove load more button if we've loaded all pages
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        if (loadMoreBtn) loadMoreBtn.remove();
+    }
+
+    currentPage = page;
+}
+
+function loadNextPage() {
+    const nextPage = currentPage + 1;
+    renderProducts(filteredProducts, nextPage);
 }
 
 function renderMarketplaceLoadingState(count = 8) {
@@ -262,7 +358,7 @@ function createProductCard(product) {
     let cardImage;
     if (product.imageUrl || (product.images && product.images.length > 0)) {
         const imgSrc = product.imageUrl || product.images[0];
-        cardImage = `<img src="${imgSrc}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">`;
+        cardImage = `<img src="${imgSrc}" alt="${product.title}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">`;
     } else if (product.image) {
         cardImage = product.image;
     } else {
@@ -313,6 +409,7 @@ function setupCategoryFilters() {
 
 // Filter products based on current category and search
 function filterProducts() {
+    currentPage = 1; // Reset pagination when filtering
     const searchInput = document.querySelector('.search-box input').value.toLowerCase();
     
     filteredProducts = products.filter(product => {
@@ -322,31 +419,39 @@ function filterProducts() {
         return matchCategory && matchSearch;
     });
 
-    renderProducts(filteredProducts);
+    renderProducts(filteredProducts, 1);
     updateCategoryCounts();
 }
 
-// Update category counts based on filtered products
+// Update category counts based on filtered products - Optimized single pass
 function updateCategoryCounts() {
     const categoryCards = document.querySelectorAll('.category-card');
     const searchInput = document.querySelector('.search-box input').value.toLowerCase();
+    
+    // Create a map for efficient counting
+    const categoryCounts = new Map();
+    let totalCount = 0;
+    
+    products.forEach(product => {
+        const matchesSearch = !searchInput || 
+            product.title.toLowerCase().includes(searchInput) || 
+            product.seller.toLowerCase().includes(searchInput);
+        
+        if (matchesSearch) {
+            const category = product.category;
+            categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1);
+            totalCount++;
+        }
+    });
     
     categoryCards.forEach(card => {
         const categoryName = card.querySelector('span').textContent;
         let count = 0;
         
         if (categoryName === 'All Items') {
-            count = products.filter(p => 
-                p.title.toLowerCase().includes(searchInput) || 
-                p.seller.toLowerCase().includes(searchInput)
-            ).length;
+            count = totalCount;
         } else {
-            count = products.filter(p => 
-                p.category === categoryName && (
-                    p.title.toLowerCase().includes(searchInput) || 
-                    p.seller.toLowerCase().includes(searchInput)
-                )
-            ).length;
+            count = categoryCounts.get(categoryName) || 0;
         }
         
         const countSpan = card.querySelector('.count');
