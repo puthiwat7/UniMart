@@ -18,6 +18,7 @@ let currentSalesFilter = 'active';
 let currentSalesItemId = null;
 let currentSalesImageIndex = 0;
 let editingImages = [];
+let originalEditData = null;
 let isMySalesLoading = false;
 
 // Listings now run from cloud database only.
@@ -276,14 +277,30 @@ function renderSales(salesToRender) {
     grid.innerHTML = '';
 
     if (salesToRender.length === 0) {
+        const emptyMessages = {
+            active: {
+                title: 'No active listings',
+                description: 'You don\'t have any active listings. Create your first listing to start selling.',
+                action: 'Start Selling'
+            },
+            sold: {
+                title: 'No sold items yet',
+                description: 'Items you mark as sold will appear here.',
+                action: null
+            },
+            withdrawn: {
+                title: 'No withdrawn listings',
+                description: 'Items you withdraw will appear here.',
+                action: null
+            }
+        };
+        const msg = emptyMessages[currentSalesFilter] || emptyMessages.active;
         grid.innerHTML = `
             <div class="my-sales-empty-state">
                 <i class="fas fa-inbox"></i>
-                <h3>No sales listings yet</h3>
-                <p>Create your first listing to start selling on UniMart.</p>
-                <a href="sell-item.html" class="my-sales-start-selling-btn">
-                    Start Selling
-                </a>
+                <h3>${msg.title}</h3>
+                <p>${msg.description}</p>
+                ${msg.action ? `<a href="sell-item.html" class="my-sales-start-selling-btn">${msg.action}</a>` : ''}
             </div>
         `;
         return;
@@ -461,6 +478,17 @@ function openSalesEditPanel() {
     editingImages = [...getSalesItemImages(item)];
     renderEditImagesPreview();
 
+    // Store original data for change detection
+    originalEditData = {
+        title: item.title,
+        price: String(item.price).replace(/[^\d.]/g, ''),
+        description: item.description || '',
+        category: item.category || 'Other',
+        condition: item.badge || 'Used',
+        quantity: item.quantity || 1,
+        images: [...editingImages]
+    };
+
     document.getElementById('salesViewPanel').style.display = 'none';
     document.getElementById('salesEditPanel').style.display = 'block';
 }
@@ -534,46 +562,127 @@ async function saveSalesEdit() {
         return;
     }
 
-    item.title = title;
-    item.price = `¥${priceValue.toFixed(2)}`;
-    item.description = description;
-    item.category = category;
-    item.badge = condition;
-    item.quantity = Math.floor(quantityValue);
-    item.images = [...editingImages];
-    item.imageUrl = editingImages[0] || '';
+    // Check if any changes were made
+    const currentData = {
+        title,
+        price: priceValue.toString(),
+        description,
+        category,
+        condition,
+        quantity: quantityValue,
+        images: editingImages
+    };
 
-    await persistMySalesChanges();
-    updateSalesStats();
-    filterSales();
-    openSalesModal(item.id);
-    alert('Listing updated successfully!');
+    const hasChanges = !originalEditData ||
+        currentData.title !== originalEditData.title ||
+        currentData.price !== originalEditData.price ||
+        currentData.description !== originalEditData.description ||
+        currentData.category !== originalEditData.category ||
+        currentData.condition !== originalEditData.condition ||
+        currentData.quantity !== originalEditData.quantity ||
+        JSON.stringify(currentData.images) !== JSON.stringify(originalEditData.images);
+
+    if (!hasChanges) {
+        alert('No changes detected.');
+        return;
+    }
+
+    // Disable save button to prevent multiple clicks
+    const saveBtn = document.getElementById('salesSaveEditBtn');
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+    }
+
+    try {
+        item.title = title;
+        item.price = `¥${priceValue.toFixed(2)}`;
+        item.description = description;
+        item.category = category;
+        item.badge = condition;
+        item.quantity = Math.floor(quantityValue);
+        item.images = [...editingImages];
+        item.imageUrl = editingImages[0] || '';
+
+        await persistMySalesChanges();
+        updateSalesStats();
+        filterSales();
+        closeSalesEditPanel();
+        openSalesModal(item.id);
+        alert('Listing updated successfully!');
+    } catch (error) {
+        console.error('Error updating listing:', error);
+        alert('Failed to update listing. Please try again.');
+    } finally {
+        // Re-enable save button
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save Changes';
+        }
+    }
 }
 
 async function withdrawCurrentListing() {
     const item = getSalesItemById(currentSalesItemId);
     if (!item || item.status !== 'active') return;
-    if (!confirm('Are you sure you want to withdraw this listing?')) return;
+    if (!confirm('Are you sure you want to withdraw this listing? It will be removed from the marketplace.')) return;
 
-    item.status = 'withdrawn';
-    await persistMySalesChanges();
-    updateSalesStats();
-    filterSales();
-    closeSalesModal();
-    alert('Listing withdrawn successfully!');
+    // Disable withdraw button to prevent multiple clicks
+    const withdrawBtn = document.getElementById('salesWithdrawBtn');
+    if (withdrawBtn) {
+        withdrawBtn.disabled = true;
+        withdrawBtn.textContent = 'Withdrawing...';
+    }
+
+    try {
+        item.status = 'withdrawn';
+        await persistMySalesChanges();
+        updateSalesStats();
+        filterSales();
+        closeSalesModal();
+        alert('Listing withdrawn successfully!');
+    } catch (error) {
+        console.error('Error withdrawing listing:', error);
+        alert('Failed to withdraw listing. Please try again.');
+    } finally {
+        // Re-enable withdraw button
+        if (withdrawBtn) {
+            withdrawBtn.disabled = false;
+            withdrawBtn.textContent = 'Withdraw';
+        }
+    }
 }
 
 async function markCurrentListingSold() {
     const item = getSalesItemById(currentSalesItemId);
     if (!item || item.status !== 'active') return;
+    if (!confirm('Are you sure you want to mark this listing as sold? It will be removed from the marketplace.')) return;
 
-    item.status = 'sold';
-    item.soldDate = new Date().toISOString().split('T')[0];
-    await persistMySalesChanges();
-    updateSalesStats();
-    filterSales();
-    closeSalesModal();
-    alert('Listing marked as sold!');
+    // Disable mark sold button to prevent multiple clicks
+    const markSoldBtn = document.getElementById('salesMarkSoldBtn');
+    if (markSoldBtn) {
+        markSoldBtn.disabled = true;
+        markSoldBtn.textContent = 'Marking as Sold...';
+    }
+
+    try {
+        item.status = 'sold';
+        item.soldDate = new Date().toISOString().split('T')[0];
+        await persistMySalesChanges();
+        updateSalesStats();
+        filterSales();
+        closeSalesModal();
+        alert('Listing marked as sold!');
+    } catch (error) {
+        console.error('Error marking listing as sold:', error);
+        alert('Failed to mark listing as sold. Please try again.');
+    } finally {
+        // Re-enable mark sold button
+        if (markSoldBtn) {
+            markSoldBtn.disabled = false;
+            markSoldBtn.textContent = 'Mark as Sold';
+        }
+    }
 }
 
 function setupSalesModal() {
