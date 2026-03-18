@@ -222,6 +222,43 @@ async function upsertListingToCloud(listing, options = {}) {
         });
 }
 
+async function updateListingStatusInCloud(listingId, newStatus, additionalData = {}) {
+    const ref = getListingsDbRef();
+    if (!ref || !listingId) return false;
+
+    try {
+        await ensureListingsResetApplied();
+        const updateData = {
+            status: newStatus,
+            updatedAt: new Date().toISOString(),
+            ...additionalData
+        };
+        await withTimeout(ref.child(listingId).update(updateData));
+        return true;
+    } catch (error) {
+        console.warn('Failed to update listing status in cloud:', error);
+        return false;
+    }
+}
+
+async function updateListingInCloud(listingId, updateData) {
+    const ref = getListingsDbRef();
+    if (!ref || !listingId) return false;
+
+    try {
+        await ensureListingsResetApplied();
+        const fullUpdateData = {
+            ...updateData,
+            updatedAt: new Date().toISOString()
+        };
+        await withTimeout(ref.child(listingId).update(fullUpdateData));
+        return true;
+    } catch (error) {
+        console.warn('Failed to update listing in cloud:', error);
+        return false;
+    }
+}
+
 async function writeCloudListings(listings) {
     const ref = getListingsDbRef();
     if (!ref) return false;
@@ -277,6 +314,31 @@ async function hydrateLocalFromCloud() {
     return readCloudListings();
 }
 
+function setupRealtimeListingsListener(callback) {
+    const ref = getListingsDbRef();
+    if (!ref) {
+        console.warn('Cannot setup realtime listener: database unavailable');
+        return null;
+    }
+
+    console.log('Setting up realtime listings listener');
+    const listener = ref.on('value', (snapshot) => {
+        try {
+            const listings = parseSnapshotToListings(snapshot);
+            callback(listings);
+        } catch (error) {
+            console.warn('Error in realtime listings listener:', error);
+        }
+    }, (error) => {
+        console.warn('Realtime listings listener error:', error);
+    });
+
+    // Return unsubscribe function
+    return () => {
+        ref.off('value', listener);
+    };
+}
+
 window.unimartListingsSync = {
     ensureListingsResetApplied,
     getAllListingsFromCloud,
@@ -284,8 +346,11 @@ window.unimartListingsSync = {
     readCloudListings,
     saveListingToCloud,
     upsertListingToCloud,
+    updateListingStatusInCloud,
+    updateListingInCloud,
     writeCloudListings,
     replaceAllListingsInCloud,
     clearAllListingsInCloud,
-    hydrateLocalFromCloud
+    hydrateLocalFromCloud,
+    setupRealtimeListingsListener
 };

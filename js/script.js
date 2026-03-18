@@ -10,6 +10,7 @@ let products = [];
 let currentCategory = 'All Items';
 let filteredProducts = [];
 let isMarketplaceLoading = false;
+let realtimeUnsubscribe = null;
 
 function getCachedUser() {
     try {
@@ -104,14 +105,6 @@ async function loadMarketplaceProducts() {
     window.marketplaceLoadError = null;
     window.marketplaceLoadWarning = null;
 
-    // Try to load from cache first
-    const cached = loadFromCache();
-    if (cached) {
-        products = cached.products;
-        filteredProducts = [...products];
-        return;
-    }
-
     if (!window.unimartListingsSync || typeof window.unimartListingsSync.getActiveListingsFromCloud !== 'function') {
         products = [...DEFAULT_PRODUCTS];
         filteredProducts = [...products];
@@ -123,7 +116,7 @@ async function loadMarketplaceProducts() {
         const normalized = cloudListings.map((listing, index) => normalizeListing(listing, index)).filter(Boolean);
         products = [...DEFAULT_PRODUCTS, ...normalized];
 
-        // Cache the results
+        // Cache the results (still useful for offline fallback)
         saveToCache(products);
 
         const readState = window.unimartListingsSyncLastReadState || null;
@@ -189,6 +182,45 @@ async function initializeMarketplaceData() {
     await loadMarketplaceProducts();
     updateCategoryCounts();
     filterProducts();
+    
+    // Setup real-time listener for live updates
+    setupRealtimeMarketplaceSync();
+}
+
+function setupRealtimeMarketplaceSync() {
+    // Clean up existing listener
+    if (realtimeUnsubscribe) {
+        realtimeUnsubscribe();
+        realtimeUnsubscribe = null;
+    }
+
+    if (!window.unimartListingsSync || typeof window.unimartListingsSync.setupRealtimeListingsListener !== 'function') {
+        console.warn('Realtime sync not available');
+        return;
+    }
+
+    realtimeUnsubscribe = window.unimartListingsSync.setupRealtimeListingsListener((allListings) => {
+        try {
+            // Filter to active listings only
+            const activeListings = allListings.filter((item) => String(item.status || 'active').toLowerCase() === 'active');
+            const normalized = activeListings.map((listing, index) => normalizeListing(listing, index)).filter(Boolean);
+            
+            // Update products array
+            products = [...DEFAULT_PRODUCTS, ...normalized];
+            filteredProducts = [...products];
+            
+            // Update UI
+            updateCategoryCounts();
+            filterProducts();
+            
+            // Cache the updated data
+            saveToCache(products);
+            
+            console.log('Marketplace updated with realtime data:', products.length, 'items');
+        } catch (error) {
+            console.warn('Error processing realtime marketplace update:', error);
+        }
+    });
 }
 
 // Initialize the page - Wait for Firebase and DOM
@@ -226,13 +258,23 @@ if (document.readyState === 'loading') {
 // Refresh marketplace when page becomes visible (e.g., after navigating back from sell-item)
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
-        refreshMarketplaceProducts();
+        // With realtime sync, we don't need to manually refresh
+        // The listener will automatically update the UI
     }
 });
 
 // Also refresh when window gains focus (for better reliability)
 window.addEventListener('focus', () => {
-    refreshMarketplaceProducts();
+    // With realtime sync, we don't need to manually refresh
+    // The listener will automatically update the UI
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    if (realtimeUnsubscribe) {
+        realtimeUnsubscribe();
+        realtimeUnsubscribe = null;
+    }
 });
 
 let currentPage = 1;

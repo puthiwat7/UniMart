@@ -19,7 +19,7 @@ let currentSalesItemId = null;
 let currentSalesImageIndex = 0;
 let editingImages = [];
 let originalEditData = null;
-let isMySalesLoading = false;
+let mySalesRealtimeUnsubscribe = null;
 
 // Image compression utility
 async function compressImage(file) {
@@ -276,11 +276,52 @@ window.addEventListener('focus', () => {
     refreshMySalesView();
 });
 
+// Cleanup realtime listener on page unload
+window.addEventListener('beforeunload', () => {
+    if (mySalesRealtimeUnsubscribe) {
+        mySalesRealtimeUnsubscribe();
+        mySalesRealtimeUnsubscribe = null;
+    }
+});
+
 async function refreshMySalesView() {
     renderMySalesLoadingState();
     await loadMySalesData();
     filterSales();
     updateSalesStats();
+    setupMySalesRealtimeSync();
+}
+
+function setupMySalesRealtimeSync() {
+    // Clean up existing listener
+    if (mySalesRealtimeUnsubscribe) {
+        mySalesRealtimeUnsubscribe();
+        mySalesRealtimeUnsubscribe = null;
+    }
+
+    if (!window.unimartListingsSync || typeof window.unimartListingsSync.setupRealtimeListingsListener !== 'function') {
+        console.warn('Realtime sync not available for My Sales');
+        return;
+    }
+
+    const currentUser = getCurrentUserIdentity();
+    mySalesRealtimeUnsubscribe = window.unimartListingsSync.setupRealtimeListingsListener((allListings) => {
+        try {
+            // Filter to user's listings only
+            const userListings = allListings.filter((item) => listingBelongsToCurrentUser(item, currentUser));
+            
+            // Update mySalesData
+            mySalesData = userListings.map((item, index) => normalizeListing(item, index)).filter(Boolean);
+            
+            // Update UI
+            filterSales();
+            updateSalesStats();
+            
+            console.log('My Sales updated with realtime data:', mySalesData.length, 'items');
+        } catch (error) {
+            console.warn('Error processing realtime My Sales update:', error);
+        }
+    });
 }
 
 // Update sales statistics
@@ -643,16 +684,26 @@ async function saveSalesEdit() {
     }
 
     try {
-        item.title = title;
-        item.price = `¥${priceValue.toFixed(2)}`;
-        item.description = description;
-        item.category = category;
-        item.badge = condition;
-        item.quantity = Math.floor(quantityValue);
-        item.images = [...editingImages];
-        item.imageUrl = editingImages[0] || '';
-
-        await persistMySalesChanges();
+        // Update local state first for immediate UI feedback
+        const updatedData = {
+            title,
+            price: `¥${priceValue.toFixed(2)}`,
+            description,
+            category,
+            badge: condition,
+            quantity: Math.floor(quantityValue),
+            images: [...editingImages],
+            imageUrl: editingImages[0] || ''
+        };
+        
+        Object.assign(item, updatedData);
+        
+        // Update Firestore directly
+        const success = await window.unimartListingsSync.updateListingInCloud(item.id, updatedData);
+        if (!success) {
+            throw new Error('Failed to update listing in database');
+        }
+        
         updateSalesStats();
         filterSales();
         closeSalesEditPanel();
@@ -661,6 +712,7 @@ async function saveSalesEdit() {
     } catch (error) {
         console.error('Error updating listing:', error);
         alert('Failed to update listing. Please try again.');
+        // Note: We don't revert local state here as the modal will close anyway
     } finally {
         // Re-enable save button
         if (saveBtn) {
@@ -683,8 +735,15 @@ async function withdrawCurrentListing() {
     }
 
     try {
+        // Update the local state first for immediate UI feedback
         item.status = 'withdrawn';
-        await persistMySalesChanges();
+        
+        // Update Firestore directly
+        const success = await window.unimartListingsSync.updateListingStatusInCloud(item.id, 'withdrawn');
+        if (!success) {
+            throw new Error('Failed to update listing status in database');
+        }
+        
         updateSalesStats();
         filterSales();
         closeSalesModal();
@@ -692,6 +751,8 @@ async function withdrawCurrentListing() {
     } catch (error) {
         console.error('Error withdrawing listing:', error);
         alert('Failed to withdraw listing. Please try again.');
+        // Revert local state on failure
+        item.status = 'active';
     } finally {
         // Re-enable withdraw button
         if (withdrawBtn) {
@@ -714,9 +775,20 @@ async function markCurrentListingSold() {
     }
 
     try {
+        // Update the local state first for immediate UI feedback
         item.status = 'sold';
         item.soldDate = new Date().toISOString().split('T')[0];
-        await persistMySalesChanges();
+        
+        // Update Firestore directly
+        const success = await window.unimartListingsSync.updateListingStatusInCloud(
+            item.id, 
+            'sold', 
+            { soldDate: item.soldDate }
+        );
+        if (!success) {
+            throw new Error('Failed to update listing status in database');
+        }
+        
         updateSalesStats();
         filterSales();
         closeSalesModal();
@@ -724,6 +796,9 @@ async function markCurrentListingSold() {
     } catch (error) {
         console.error('Error marking listing as sold:', error);
         alert('Failed to mark listing as sold. Please try again.');
+        // Revert local state on failure
+        item.status = 'active';
+        delete item.soldDate;
     } finally {
         // Re-enable mark sold button
         if (markSoldBtn) {
