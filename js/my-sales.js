@@ -326,13 +326,14 @@ function setupMySalesRealtimeSync() {
 
 // Update sales statistics
 function updateSalesStats() {
-    const itemsSelling = mySalesData.length;
-    const totalSales = mySalesData.filter(item => item.status === 'sold').length;
+    const activeListings = mySalesData.filter(item => item.status === 'active').length;
+    const itemsSold = mySalesData.filter(item => item.status === 'sold').length;
 
-    const itemsSellingEl = document.getElementById('itemsSelling');
-    if (itemsSellingEl) itemsSellingEl.textContent = itemsSelling;
+    const activeListingsEl = document.getElementById('activeListings');
+    if (activeListingsEl) activeListingsEl.textContent = activeListings;
 
-    document.getElementById('totalSales').textContent = totalSales;
+    const itemsSoldEl = document.getElementById('itemsSold');
+    if (itemsSoldEl) itemsSoldEl.textContent = itemsSold;
 }
 
 // Setup sales filter buttons
