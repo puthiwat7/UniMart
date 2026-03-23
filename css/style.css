@@ -2201,8 +2201,8 @@ body {
 .modal-body {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    padding: 40px;
+    gap: 48px;
+    padding: 48px;
 }
 
 /* Image Carousel */
@@ -2281,18 +2281,31 @@ body {
 .modal-details-section {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 28px;
+}
+
+.modal-view-content {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.modal-header-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .modal-details-section h2 {
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 700;
     color: var(--text-color);
     margin: 0;
+    line-height: 1.2;
 }
 
 .modal-price {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 700;
     color: var(--primary-blue);
 }
@@ -2322,14 +2335,16 @@ body {
 .modal-section {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
 .modal-section h4 {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     color: var(--text-color);
     margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .modal-section label {
@@ -2340,10 +2355,36 @@ body {
 }
 
 .modal-section p {
-    font-size: 14px;
+    font-size: 15px;
     color: var(--dark-gray);
-    line-height: 1.5;
+    line-height: 1.6;
     margin: 0;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.detail-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--dark-gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-color);
 }
 
 .modal-select {
@@ -2454,6 +2495,75 @@ body {
     margin-top: 12px;
 }
 
+.modal-actions-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 8px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-action-edit {
+    background: white;
+    color: var(--primary-blue);
+    border: 1.5px solid var(--primary-blue);
+}
+
+.btn-action-edit:hover {
+    background: var(--primary-blue);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 95, 193, 0.2);
+}
+
+.btn-action-withdraw {
+    background: white;
+    color: #dc2626;
+    border: 1.5px solid #fca5a5;
+}
+
+.btn-action-withdraw:hover {
+    background: #fee2e2;
+    border-color: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+}
+
+.btn-action-sold {
+    background: #10b981;
+    color: white;
+    border: 1.5px solid #10b981;
+}
+
+.btn-action-sold:hover {
+    background: #059669;
+    border-color: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.btn-action:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .btn-order {
     flex: 2;
     padding: 14px 20px;
@@ -2486,18 +2596,20 @@ body {
 
 .btn-save {
     flex: 1;
-    padding: 14px 20px;
+    padding: 12px 16px;
     background: white;
     color: var(--text-color);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
+}
     gap: 8px;
 }
 
@@ -2522,8 +2634,8 @@ body {
 @media (max-width: 768px) {
     .modal-body {
         grid-template-columns: 1fr;
-        gap: 24px;
-        padding: 20px;
+        gap: 32px;
+        padding: 32px 24px;
     }
 
     .modal-content {
@@ -2532,15 +2644,23 @@ body {
     }
 
     .modal-details-section h2 {
-        font-size: 24px;
+        font-size: 28px;
     }
 
     .modal-price {
-        font-size: 28px;
+        font-size: 24px;
     }
 
     .carousel-image {
         font-size: 80px;
+    }
+
+    .modal-actions-footer {
+        flex-direction: column;
+    }
+
+    .btn-action {
+        width: 100%;
     }
 }
 
@@ -2552,8 +2672,8 @@ body {
     }
 
     .modal-body {
-        gap: 14px;
-        padding: 14px;
+        gap: 24px;
+        padding: 20px 16px;
     }
 
     .modal-close {
@@ -2564,11 +2684,26 @@ body {
     }
 
     .modal-details-section h2 {
-        font-size: 20px;
+        font-size: 22px;
     }
 
     .modal-price {
-        font-size: 24px;
+        font-size: 20px;
+    }
+
+    .details-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modal-actions-footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-action {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 13px;
     }
 
     .product-actions {

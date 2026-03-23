@@ -181,34 +181,47 @@
                     </div>
 
                     <div class="modal-details-section">
-                        <div id="salesViewPanel">
-                            <h2 id="salesModalTitle">Product Title</h2>
-                            <div class="modal-price" id="salesModalPrice">¥0.00</div>
+                        <div id="salesViewPanel" class="modal-view-content">
+                            <div class="modal-header-content">
+                                <h2 id="salesModalTitle">Product Title</h2>
+                                <div class="modal-price" id="salesModalPrice">¥0.00</div>
+                            </div>
 
                             <div class="modal-section">
-                                <h4><i class="fas fa-info-circle" style="color: var(--primary-blue); margin-right: 6px;"></i>Description</h4>
+                                <h4>Description</h4>
                                 <p id="salesModalDescription">No description available</p>
                             </div>
 
                             <div class="modal-section">
-                                <h4><i class="fas fa-list" style="color: var(--primary-blue); margin-right: 6px;"></i>Details</h4>
-                                <p><strong>Category:</strong> <span id="salesModalCategory">-</span></p>
-                                <p><strong>Quantity:</strong> <span id="salesModalQuantity">1</span></p>
-                                <p><strong>Status:</strong> <span id="salesModalStatus">ACTIVE</span></p>
+                                <h4>Details</h4>
+                                <div class="details-grid">
+                                    <div class="detail-item">
+                                        <span class="detail-label">Category</span>
+                                        <span class="detail-value" id="salesModalCategory">-</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Quantity</span>
+                                        <span class="detail-value" id="salesModalQuantity">1</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Status</span>
+                                        <span class="detail-value" id="salesModalStatus">ACTIVE</span>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="modal-actions">
-                                <button class="btn-order" id="salesEditBtn" style="background-color: #3b82f6;">
+                            <div class="modal-actions-footer">
+                                <button class="btn-action btn-action-edit" id="salesEditBtn">
                                     <i class="fas fa-pen"></i>
-                                    Edit
+                                    <span>Edit</span>
                                 </button>
-                                <button class="btn-save" id="salesWithdrawBtn" style="background-color: #ef4444; color: #fff;">
+                                <button class="btn-action btn-action-withdraw" id="salesWithdrawBtn">
                                     <i class="fas fa-ban"></i>
-                                    Withdraw
+                                    <span>Withdraw</span>
                                 </button>
-                                <button class="btn-save" id="salesMarkSoldBtn" style="background-color: #10b981; color: #fff;">
+                                <button class="btn-action btn-action-sold" id="salesMarkSoldBtn">
                                     <i class="fas fa-check-circle"></i>
-                                    Mark as Sold
+                                    <span>Mark as Sold</span>
                                 </button>
                             </div>
                         </div>
