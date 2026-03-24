@@ -1161,9 +1161,9 @@ body {
 
     /* Modal improvements */
     .modal-content {
-        width: 95%;
+        width: calc(100% - 48px);
         max-width: none;
-        max-height: calc(100vh - 32px);
+        max-height: calc(100dvh - 48px);
         margin: 16px;
     }
 
@@ -1351,10 +1351,10 @@ body {
 
     /* Modal on very small screens */
     .modal-content {
-        width: calc(100vw - 16px);
-        max-height: calc(100vh - 16px);
-        margin: 8px;
-        border-radius: 12px;
+        width: calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+        margin: calc(env(safe-area-inset-top, 0px) + 8px) 16px calc(env(safe-area-inset-bottom, 0px) + 8px);
+        max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px);
+        border-radius: 16px;
     }
 
     .modal-body {
@@ -2925,8 +2925,9 @@ body {
     }
 
     .modal-content {
-        width: 95%;
-        max-height: calc(100vh - 24px);
+        width: calc(100% - 48px);
+        margin: 16px;
+        max-height: calc(100dvh - 48px);
     }
 
     .modal-details-section h2 {
@@ -2952,9 +2953,10 @@ body {
 
 @media (max-width: 480px) {
     .modal-content {
-        width: calc(100vw - 12px);
-        max-height: calc(100vh - 12px);
-        border-radius: 12px;
+        width: calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+        margin: calc(env(safe-area-inset-top, 0px) + 8px) 16px calc(env(safe-area-inset-bottom, 0px) + 8px);
+        max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px);
+        border-radius: 16px;
     }
 
     .modal-body {
@@ -2963,8 +2965,8 @@ body {
     }
 
     .modal-close {
-        top: 10px;
-        right: 10px;
+        top: 12px;
+        right: 12px;
         width: 34px;
         height: 34px;
     }
@@ -3979,8 +3981,9 @@ body {
 
 @media (max-width: 480px) {
     .payment-modal-content {
-        width: calc(100vw - 12px);
-        max-height: calc(100vh - 12px);
+        width: calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+        margin: calc(env(safe-area-inset-top, 0px) + 8px) 16px calc(env(safe-area-inset-bottom, 0px) + 8px);
+        max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px);
         border-radius: 12px;
     }
 
