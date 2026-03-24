@@ -666,7 +666,7 @@
                 imageUrl: uploadedImages.length > 0 ? uploadedImages[0] : '',
                 images: uploadedImages,
                 badge,
-                conditionPercentage: Number(conditionSlider.value) || null,
+                condition: Number(conditionSlider.value) || 75,
                 description: String(formData.get('description')).trim(),
                 listedAt: new Date().toISOString(),
                 quantity: Number(formData.get('quantity')) || 1,
@@ -719,5 +719,31 @@
             }
         });
     </script>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="../index.html" class="bottom-nav-item" data-page="marketplace">
+            <i class="fas fa-store"></i>
+            <span>Marketplace</span>
+        </a>
+        <a href="sell-item.html" class="bottom-nav-item active" data-page="sell">
+            <i class="fas fa-plus"></i>
+            <span>Sell</span>
+        </a>
+        <a href="my-sales.html" class="bottom-nav-item" data-page="sales">
+            <i class="fas fa-chart-line"></i>
+            <span>Sales</span>
+        </a>
+        <a href="my-favorites.html" class="bottom-nav-item" data-page="favorites">
+            <i class="fas fa-heart"></i>
+            <span>Favorites</span>
+        </a>
+        <a href="profile.html" class="bottom-nav-item" data-page="profile">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <script defer src="../js/bottom-nav.js"></script>
 </body>
 </html>

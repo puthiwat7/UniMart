@@ -141,6 +141,7 @@ function normalizeListing(item, index = 0) {
         imageUrl: item.imageUrl || (Array.isArray(item.images) && item.images[0]) || '',
         images: Array.isArray(item.images) ? item.images.filter(Boolean) : [],
         badge: String(item.badge || 'Used'),
+        condition: Number.isFinite(Number(item.condition)) ? Number(item.condition) : (Number.isFinite(Number(item.conditionPercentage)) ? Number(item.conditionPercentage) : null),
         description: String(item.description || ''),
         quantity: Number(item.quantity) || 1,
         seller: String(item.seller || 'Campus Seller'),
@@ -360,13 +361,14 @@ function setupMySalesRealtimeSync() {
 
 // Update sales statistics
 function updateSalesStats() {
-    const itemsSelling = mySalesData.length;
-    const totalSales = mySalesData.filter(item => item.status === 'sold').length;
+    const activeListings = mySalesData.filter(item => item.status === 'active').length;
+    const itemsSold = mySalesData.filter(item => item.status === 'sold').length;
 
-    const itemsSellingEl = document.getElementById('itemsSelling');
-    if (itemsSellingEl) itemsSellingEl.textContent = itemsSelling;
+    const activeListingsEl = document.getElementById('activeListings');
+    if (activeListingsEl) activeListingsEl.textContent = activeListings;
 
-    document.getElementById('totalSales').textContent = totalSales;
+    const itemsSoldEl = document.getElementById('itemsSold');
+    if (itemsSoldEl) itemsSoldEl.textContent = itemsSold;
 }
 
 // Setup sales filter buttons
@@ -621,7 +623,21 @@ function openSalesEditPanel() {
     document.getElementById('editPrice').value = String(item.price).replace(/[^\d.]/g, '');
     document.getElementById('editDescription').value = item.description || '';
     document.getElementById('editCategory').value = item.category || 'Other';
-    document.getElementById('editCondition').value = item.badge || 'Used';
+    
+    // Map condition number to select value
+    const conditionValue = Number(item.condition) || Number(item.conditionPercentage) || 75;
+    const conditionMap = {
+        10: 'Very Poor',
+        30: 'Poor', 
+        50: 'Fair',
+        60: 'Used',
+        70: 'Good',
+        90: 'Like New',
+        100: 'Brand New'
+    };
+    const selectValue = conditionMap[conditionValue] || 'Used';
+    document.getElementById('editCondition').value = selectValue;
+    
     document.getElementById('editQuantity').value = item.quantity || 1;
 
     editingImages = [...getSalesItemImages(item)];
@@ -633,7 +649,7 @@ function openSalesEditPanel() {
         price: String(item.price).replace(/[^\d.]/g, ''),
         description: item.description || '',
         category: item.category || 'Other',
-        condition: item.badge || 'Used',
+        condition: conditionMap[Number(item.condition) || Number(item.conditionPercentage) || 75] || 'Used', // Map to select value
         quantity: item.quantity || 1,
         images: [...editingImages]
     };
@@ -687,8 +703,20 @@ async function saveSalesEdit() {
     const priceValue = Number(document.getElementById('editPrice').value);
     const description = document.getElementById('editDescription').value.trim();
     const category = document.getElementById('editCategory').value;
-    const condition = document.getElementById('editCondition').value;
+    const conditionSelect = document.getElementById('editCondition').value;
     const quantityValue = Number(document.getElementById('editQuantity').value);
+
+    // Map select value to number
+    const conditionMap = {
+        'Very Poor': 10,
+        'Poor': 30,
+        'Fair': 50,
+        'Used': 60,
+        'Good': 70,
+        'Like New': 90,
+        'Brand New': 100
+    };
+    const condition = conditionMap[conditionSelect] || 60;
 
     if (!title) {
         alert('Title is required.');
@@ -717,7 +745,7 @@ async function saveSalesEdit() {
         price: priceValue.toString(),
         description,
         category,
-        condition,
+        condition: conditionSelect, // Use select value for comparison
         quantity: quantityValue,
         images: editingImages
     };
@@ -750,7 +778,8 @@ async function saveSalesEdit() {
             price: `¥${priceValue.toFixed(2)}`,
             description,
             category,
-            badge: condition,
+            badge: conditionSelect, // Keep badge as string for display
+            condition: condition, // Save condition as number
             quantity: Math.floor(quantityValue),
             images: [...editingImages],
             imageUrl: editingImages[0] || ''

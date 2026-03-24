@@ -429,7 +429,21 @@ function openAdminEditPanel() {
     document.getElementById('adminEditPrice').value = String(item.price).replace(/[^\d.]/g, '');
     document.getElementById('adminEditDescription').value = item.description || '';
     document.getElementById('adminEditCategory').value = item.category || 'Other';
-    document.getElementById('adminEditCondition').value = item.badge || 'Used';
+    
+    // Map condition number to select value
+    const conditionValue = Number(item.condition) || Number(item.conditionPercentage) || 75;
+    const conditionMap = {
+        10: 'Very Poor',
+        30: 'Poor', 
+        50: 'Fair',
+        60: 'Used',
+        70: 'Good',
+        90: 'Like New',
+        100: 'Brand New'
+    };
+    const selectValue = conditionMap[conditionValue] || 'Used';
+    document.getElementById('adminEditCondition').value = selectValue;
+    
     document.getElementById('adminEditQuantity').value = item.quantity || 1;
 
     editingImages = [...getItemImages(item)];
@@ -484,8 +498,20 @@ async function saveAdminEdit() {
     const priceValue = Number(document.getElementById('adminEditPrice').value);
     const description = document.getElementById('adminEditDescription').value.trim();
     const category = document.getElementById('adminEditCategory').value;
-    const condition = document.getElementById('adminEditCondition').value;
+    const conditionSelect = document.getElementById('adminEditCondition').value;
     const quantityValue = Number(document.getElementById('adminEditQuantity').value);
+
+    // Map select value to number
+    const conditionMap = {
+        'Very Poor': 10,
+        'Poor': 30,
+        'Fair': 50,
+        'Used': 60,
+        'Good': 70,
+        'Like New': 90,
+        'Brand New': 100
+    };
+    const condition = conditionMap[conditionSelect] || 60;
 
     if (!title) return alert('Title is required.');
     if (!Number.isFinite(priceValue) || priceValue <= 0) return alert('Please enter a valid price.');
@@ -497,7 +523,8 @@ async function saveAdminEdit() {
     item.price = `¥${priceValue.toFixed(2)}`;
     item.description = description;
     item.category = category;
-    item.badge = condition;
+    item.badge = conditionSelect; // Keep badge as string
+    item.condition = condition; // Save condition as number
     item.quantity = Math.floor(quantityValue);
     item.images = [...editingImages];
     item.imageUrl = editingImages[0] || '';

@@ -117,18 +117,17 @@
             <div class="sales-header">
                 <div class="orders-header-content">
                     <h1>My Sales</h1>
-                    <p>Items you're selling</p>
                 </div>
 
                 <div class="sales-header-row">
                     <div class="sales-stats-row">
                         <div class="stat-item">
-                            <div class="stat-label">Items Selling</div>
-                            <div class="stat-value" id="itemsSelling">0</div>
+                            <div class="stat-label">Active Listings</div>
+                            <div class="stat-value" id="activeListings">0</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-label">Total Sales</div>
-                            <div class="stat-value" id="totalSales">0</div>
+                            <div class="stat-label">Items Sold</div>
+                            <div class="stat-value" id="itemsSold">0</div>
                         </div>
                     </div>
 
@@ -184,34 +183,47 @@
                     </div>
 
                     <div class="modal-details-section">
-                        <div id="salesViewPanel">
-                            <h2 id="salesModalTitle">Product Title</h2>
-                            <div class="modal-price" id="salesModalPrice">¥0.00</div>
+                        <div id="salesViewPanel" class="modal-view-content">
+                            <div class="modal-header-content">
+                                <h2 id="salesModalTitle">Product Title</h2>
+                                <div class="modal-price" id="salesModalPrice">¥0.00</div>
+                            </div>
 
                             <div class="modal-section">
-                                <h4><i class="fas fa-info-circle" style="color: var(--primary-blue); margin-right: 6px;"></i>Description</h4>
+                                <h4>Description</h4>
                                 <p id="salesModalDescription">No description available</p>
                             </div>
 
                             <div class="modal-section">
-                                <h4><i class="fas fa-list" style="color: var(--primary-blue); margin-right: 6px;"></i>Details</h4>
-                                <p><strong>Category:</strong> <span id="salesModalCategory">-</span></p>
-                                <p><strong>Quantity:</strong> <span id="salesModalQuantity">1</span></p>
-                                <p><strong>Status:</strong> <span id="salesModalStatus">ACTIVE</span></p>
+                                <h4>Details</h4>
+                                <div class="details-grid">
+                                    <div class="detail-item">
+                                        <span class="detail-label">Category</span>
+                                        <span class="detail-value" id="salesModalCategory">-</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Quantity</span>
+                                        <span class="detail-value" id="salesModalQuantity">1</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Status</span>
+                                        <span class="detail-value" id="salesModalStatus">ACTIVE</span>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="modal-actions">
-                                <button class="btn-order" id="salesEditBtn" style="background-color: #3b82f6;">
+                            <div class="modal-actions-footer">
+                                <button class="btn-action btn-action-edit" id="salesEditBtn">
                                     <i class="fas fa-pen"></i>
-                                    Edit
+                                    <span>Edit</span>
                                 </button>
-                                <button class="btn-save" id="salesWithdrawBtn" style="background-color: #ef4444; color: #fff;">
+                                <button class="btn-action btn-action-withdraw" id="salesWithdrawBtn">
                                     <i class="fas fa-ban"></i>
-                                    Withdraw
+                                    <span>Withdraw</span>
                                 </button>
-                                <button class="btn-save" id="salesMarkSoldBtn" style="background-color: #10b981; color: #fff;">
+                                <button class="btn-action btn-action-sold" id="salesMarkSoldBtn">
                                     <i class="fas fa-check-circle"></i>
-                                    Mark as Sold
+                                    <span>Mark as Sold</span>
                                 </button>
                             </div>
                         </div>
@@ -290,5 +302,31 @@
     <script defer src="../js/user-sidebar.js"></script>
     <script defer src="../js/listings-sync.js"></script>
     <script defer src="../js/my-sales.js"></script>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="../index.html" class="bottom-nav-item" data-page="marketplace">
+            <i class="fas fa-store"></i>
+            <span>Marketplace</span>
+        </a>
+        <a href="sell-item.html" class="bottom-nav-item" data-page="sell">
+            <i class="fas fa-plus"></i>
+            <span>Sell</span>
+        </a>
+        <a href="my-sales.html" class="bottom-nav-item active" data-page="sales">
+            <i class="fas fa-chart-line"></i>
+            <span>Sales</span>
+        </a>
+        <a href="my-favorites.html" class="bottom-nav-item" data-page="favorites">
+            <i class="fas fa-heart"></i>
+            <span>Favorites</span>
+        </a>
+        <a href="profile.html" class="bottom-nav-item" data-page="profile">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <script defer src="../js/bottom-nav.js"></script>
 </body>
 </html>

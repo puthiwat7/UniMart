@@ -27,6 +27,7 @@ function unimartNormalizeListing(item, index = 0) {
         imageUrl: item.imageUrl || images[0] || '',
         images,
         badge: String(item.badge || 'Used'),
+        condition: Number.isFinite(Number(item.condition)) ? Number(item.condition) : (Number.isFinite(Number(item.conditionPercentage)) ? Number(item.conditionPercentage) : null),
         description: String(item.description || ''),
         quantity: Number(item.quantity) || 1,
         status,

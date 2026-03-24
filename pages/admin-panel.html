@@ -174,40 +174,61 @@
                     </div>
 
                     <div class="modal-details-section">
-                        <div id="adminViewPanel">
-                            <h2 id="adminModalTitle">Product Title</h2>
-                            <div class="modal-price" id="adminModalPrice">¥0.00</div>
-
-                            <div class="modal-section">
-                                <h4><i class="fas fa-user" style="color: var(--primary-blue); margin-right: 6px;"></i>Seller</h4>
-                                <p><strong>Name:</strong> <span id="adminModalSellerName">-</span></p>
-                                <p><strong>Email:</strong> <span id="adminModalSellerEmail">-</span></p>
+                        <div id="adminViewPanel" class="modal-view-content">
+                            <div class="modal-header-content">
+                                <h2 id="adminModalTitle">Product Title</h2>
+                                <div class="modal-price" id="adminModalPrice">¥0.00</div>
                             </div>
 
                             <div class="modal-section">
-                                <h4><i class="fas fa-info-circle" style="color: var(--primary-blue); margin-right: 6px;"></i>Description</h4>
+                                <h4>Seller</h4>
+                                <div class="details-grid">
+                                    <div class="detail-item">
+                                        <span class="detail-label">Name</span>
+                                        <span class="detail-value" id="adminModalSellerName">-</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Email</span>
+                                        <span class="detail-value" id="adminModalSellerEmail">-</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal-section">
+                                <h4>Description</h4>
                                 <p id="adminModalDescription">No description available</p>
                             </div>
 
                             <div class="modal-section">
-                                <h4><i class="fas fa-list" style="color: var(--primary-blue); margin-right: 6px;"></i>Details</h4>
-                                <p><strong>Category:</strong> <span id="adminModalCategory">-</span></p>
-                                <p><strong>Quantity:</strong> <span id="adminModalQuantity">1</span></p>
-                                <p><strong>Status:</strong> <span id="adminModalStatus">ACTIVE</span></p>
+                                <h4>Details</h4>
+                                <div class="details-grid">
+                                    <div class="detail-item">
+                                        <span class="detail-label">Category</span>
+                                        <span class="detail-value" id="adminModalCategory">-</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Quantity</span>
+                                        <span class="detail-value" id="adminModalQuantity">1</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Status</span>
+                                        <span class="detail-value" id="adminModalStatus">ACTIVE</span>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="modal-actions">
-                                <button class="btn-order" id="adminEditBtn" style="background-color: #3b82f6;">
+                            <div class="modal-actions-footer">
+                                <button class="btn-action btn-action-edit" id="adminEditBtn">
                                     <i class="fas fa-pen"></i>
-                                    Edit
+                                    <span>Edit</span>
                                 </button>
-                                <button class="btn-save" id="adminWithdrawBtn" style="background-color: #ef4444; color: #fff;">
+                                <button class="btn-action btn-action-withdraw" id="adminWithdrawBtn">
                                     <i class="fas fa-ban"></i>
-                                    Withdraw
+                                    <span>Withdraw</span>
                                 </button>
-                                <button class="btn-save" id="adminMarkSoldBtn" style="background-color: #10b981; color: #fff;">
+                                <button class="btn-action btn-action-sold" id="adminMarkSoldBtn">
                                     <i class="fas fa-check-circle"></i>
-                                    Mark as Sold
+                                    <span>Mark as Sold</span>
                                 </button>
                             </div>
                         </div>
