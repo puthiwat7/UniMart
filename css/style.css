@@ -793,6 +793,33 @@ body {
     word-break: break-word;
 }
 
+.sales-stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.stat-box {
+    min-width: 118px;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 10px 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    line-height: 1.1;
+}
+
+.stat-number-loading {
+    color: #9ca3af;
+}
+
 .admin-access-section {
     margin: 20px 48px 0;
     background: #fff;
@@ -831,6 +858,18 @@ body {
     cursor: pointer;
 }
 
+@media (max-width: 900px) {
+    .sales-stats {
+        justify-content: flex-start;
+        width: 100%;
+    }
+
+    .stat-box {
+        flex: 1 1 calc(33.333% - 8px);
+        min-width: 0;
+    }
+}
+
 .admin-email-list {
     list-style: none;
     margin: 0;
@@ -857,6 +896,21 @@ body {
     font-weight: 700;
     border-radius: 999px;
     padding: 2px 8px;
+}
+
+.admin-remove-btn {
+    border: 1px solid #ef4444;
+    background: #fff;
+    color: #ef4444;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 4px 10px;
+    cursor: pointer;
+}
+
+.admin-remove-btn:hover {
+    background: #fee2e2;
 }
 
 .favorites-empty-hint {

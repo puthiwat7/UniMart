@@ -45,6 +45,29 @@ function addAdminEmail(email) {
     return { ok: true, message: 'Admin email added.' };
 }
 
+function isDefaultAdminEmail(email) {
+    const normalized = normalizeEmail(email);
+    if (!normalized) return false;
+    return DEFAULT_ADMIN_EMAILS.map(normalizeEmail).includes(normalized);
+}
+
+function removeAdminEmail(email) {
+    const normalized = normalizeEmail(email);
+    if (!normalized) return { ok: false, message: 'Email is required.' };
+
+    const current = getAdminEmails();
+    if (!current.includes(normalized)) {
+        return { ok: false, message: 'Email is not in the admin list.' };
+    }
+    if (isDefaultAdminEmail(normalized)) {
+        return { ok: false, message: 'Default admin accounts cannot be removed.' };
+    }
+
+    const next = current.filter((emailItem) => emailItem !== normalized);
+    saveAdminEmails(next);
+    return { ok: true, message: 'Admin email removed.' };
+}
+
 function isAdminEmail(email) {
     const normalized = normalizeEmail(email);
     if (!normalized) return false;
@@ -95,6 +118,8 @@ window.unimartAdminAccess = {
     normalizeEmail,
     getAdminEmails,
     addAdminEmail,
+    removeAdminEmail,
+    isDefaultAdminEmail,
     isAdminEmail,
     isCurrentUserAdmin
 };

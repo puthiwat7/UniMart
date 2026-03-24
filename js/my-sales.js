@@ -20,6 +20,10 @@ let currentSalesImageIndex = 0;
 let editingImages = [];
 let originalEditData = null;
 let mySalesRealtimeUnsubscribe = null;
+let isMySalesLoading = false;
+let mySalesLoadError = null;
+let mySalesLoadWarning = null;
+let cachedAllListings = null;
 
 // Image compression utility
 async function compressImage(file) {
@@ -188,12 +192,37 @@ function removeSampleItemsFromStorage() {
 }
 
 async function loadAllListingsForStorage() {
+    mySalesLoadError = null;
+    mySalesLoadWarning = null;
+
     if (!window.unimartListingsSync || typeof window.unimartListingsSync.getAllListingsFromCloud !== 'function') {
+        mySalesLoadError = new Error('Cloud listing service is unavailable.');
+        cachedAllListings = [];
         return [];
     }
 
-    const all = await window.unimartListingsSync.getAllListingsFromCloud();
-    return all.map((item, index) => normalizeListing(item, index)).filter(Boolean);
+    try {
+        const all = await window.unimartListingsSync.getAllListingsFromCloud();
+        const normalized = all.map((item, index) => normalizeListing(item, index)).filter(Boolean);
+        const readState = window.unimartListingsSyncLastReadState || null;
+
+        if (readState && readState.mode === 'failed') {
+            mySalesLoadError = new Error(readState.reason || 'Could not load listings from the database.');
+            cachedAllListings = [];
+            return [];
+        }
+        if (readState && readState.mode === 'fallback-limited') {
+            mySalesLoadWarning = `Showing ${readState.count} recent listings (limited to ${readState.limit}) due to a slow network response. Some of your listings may not appear.`;
+        }
+
+        cachedAllListings = normalized;
+        return normalized;
+    } catch (error) {
+        console.warn('Failed to load listings for My Sales:', error);
+        mySalesLoadError = error;
+        cachedAllListings = [];
+        return [];
+    }
 }
 
 async function loadMySalesData() {
@@ -211,7 +240,7 @@ async function persistMySalesChanges() {
     }
 
     const currentUser = getCurrentUserIdentity();
-    const allListings = await loadAllListingsForStorage();
+    const allListings = cachedAllListings !== null ? cachedAllListings : await loadAllListingsForStorage();
 
     const withoutMine = allListings.filter((item) => !listingBelongsToCurrentUser(item, currentUser));
 
@@ -227,6 +256,7 @@ async function persistMySalesChanges() {
 
     const updated = Array.from(mergedById.values());
     await window.unimartListingsSync.replaceAllListingsInCloud(updated);
+    cachedAllListings = null; // Invalidate cache after write so next action fetches fresh data
 
     // Also update local storage so other tabs/pages (and legacy code paths) can pick up changes.
     // Some parts of the UI listen for storage events on these keys to refresh listings.
@@ -285,6 +315,7 @@ window.addEventListener('beforeunload', () => {
 });
 
 async function refreshMySalesView() {
+    cachedAllListings = null; // Force fresh fetch on refresh
     renderMySalesLoadingState();
     await loadMySalesData();
     filterSales();
@@ -307,6 +338,9 @@ function setupMySalesRealtimeSync() {
     const currentUser = getCurrentUserIdentity();
     mySalesRealtimeUnsubscribe = window.unimartListingsSync.setupRealtimeListingsListener((allListings) => {
         try {
+            // Clear any previous load error since we now have live data
+            mySalesLoadError = null;
+
             // Filter to user's listings only
             const userListings = allListings.filter((item) => listingBelongsToCurrentUser(item, currentUser));
             
@@ -363,6 +397,32 @@ function renderSales(salesToRender) {
     if (!grid) return;
 
     isMySalesLoading = false;
+
+    const statusBanner = document.getElementById('mySalesStatusBanner');
+    if (statusBanner) {
+        if (mySalesLoadWarning) {
+            statusBanner.textContent = mySalesLoadWarning;
+            statusBanner.style.display = 'block';
+        } else {
+            statusBanner.style.display = 'none';
+            statusBanner.textContent = '';
+        }
+    }
+
+    if (mySalesLoadError) {
+        grid.innerHTML = `
+            <div class="marketplace-error-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Failed to load your listings</h3>
+                <p>Could not load your listings. Please check your connection and try again.<br><span>${mySalesLoadError.message || mySalesLoadError}</span></p>
+                <button id="retrySalesLoad">Retry</button>
+            </div>
+        `;
+        const retryBtn = document.getElementById('retrySalesLoad');
+        if (retryBtn) retryBtn.onclick = () => refreshMySalesView();
+        return;
+    }
+
     grid.innerHTML = '';
 
     if (salesToRender.length === 0) {
