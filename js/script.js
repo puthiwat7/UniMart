@@ -249,6 +249,7 @@ async function initializeApp() {
     // Initialize even without auth for public content
     await initializeMarketplaceData();
     setupCategoryFilters();
+    setupCategoryDropdown();
     setupSearch();
     setupRefresh();
     setupScrollToTop();
@@ -451,10 +452,78 @@ function setupCategoryFilters() {
             const categoryName = card.querySelector('span').textContent;
             currentCategory = categoryName;
 
+            // Update dropdown if visible
+            setCategoryDropdownValue(currentCategory);
+
             // Filter products
             filterProducts();
         });
     });
+}
+
+function mapCategoryValueToLabel(value) {
+    const map = {
+        all: 'All Items',
+        textbooks: 'Textbooks',
+        electronics: 'Electronics',
+        furniture: 'Furniture',
+        clothing: 'Clothing',
+        sports: 'Sports',
+        stationery: 'Stationery',
+        kitchen: 'Kitchen',
+        vehicles: 'Vehicles',
+        other: 'Other'
+    };
+    return map[value] || 'All Items';
+}
+
+function mapCategoryLabelToValue(label) {
+    const normalized = String(label).trim().toLowerCase();
+    const map = {
+        'all items': 'all',
+        textbooks: 'textbooks',
+        electronics: 'electronics',
+        furniture: 'furniture',
+        clothing: 'clothing',
+        sports: 'sports',
+        stationery: 'stationery',
+        kitchen: 'kitchen',
+        vehicles: 'vehicles',
+        other: 'other'
+    };
+    return map[normalized] || 'all';
+}
+
+function setCategoryDropdownValue(categoryLabel) {
+    const categorySelect = document.getElementById('categorySelect');
+    if (!categorySelect) return;
+
+    const value = mapCategoryLabelToValue(categoryLabel);
+    categorySelect.value = value;
+}
+
+function setupCategoryDropdown() {
+    const categorySelect = document.getElementById('categorySelect');
+    if (!categorySelect) return;
+
+    categorySelect.addEventListener('change', (e) => {
+        const selectedCategory = e.target.value;
+        currentCategory = mapCategoryValueToLabel(selectedCategory);
+
+        // Sync pills active state for desktop fallback
+        const categoryCards = document.querySelectorAll('.category-card');
+        categoryCards.forEach(c => c.classList.remove('active'));
+        const targetCard = Array.from(categoryCards).find(card => card.querySelector('span').textContent === currentCategory);
+        if (targetCard) {
+            targetCard.classList.add('active');
+        }
+
+        // Apply filtering using existing logic
+        filterProducts();
+    });
+
+    // Set initial dropdown based on current category (e.g., when page loads with active pill set)
+    setCategoryDropdownValue(currentCategory);
 }
 
 // Filter products based on current category and search
