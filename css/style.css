@@ -11,6 +11,8 @@
     --dark-gray: #6b7280;
     --text-color: #1f2937;
     --border-color: #e5e7eb;
+    --danger-red: #dc2626;
+    --danger-red-dark: #b91c1c;
 }
 
 body {
@@ -351,6 +353,27 @@ body {
     background-color: var(--dark-blue);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(74, 95, 193, 0.3);
+}
+
+.btn-clear-favorites {
+    padding: 10px 24px;
+    background-color: var(--danger-red);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-clear-favorites:hover {
+    background-color: var(--danger-red-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
 /* ======================== Categories ======================== */
@@ -2725,6 +2748,22 @@ body {
         font-size: 28px;
     }
 
+    .favorites-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .favorites-header .orders-header-content {
+        width: 100%;
+    }
+
+    .btn-refresh,
+    .btn-clear-favorites {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
     .orders-tabs {
         padding: 16px 24px;
     }
@@ -2769,6 +2808,16 @@ body {
     .sales-header .orders-header-content h1,
     .favorites-header .orders-header-content h1 {
         font-size: 20px;
+    }
+
+    .favorites-header {
+        gap: 16px;
+    }
+
+    .btn-refresh,
+    .btn-clear-favorites {
+        padding: 8px 12px;
+        font-size: 12px;
     }
 
     .orders-header-content p {
