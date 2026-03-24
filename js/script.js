@@ -124,7 +124,10 @@ async function loadMarketplaceProducts() {
     }
 
     try {
-        const cloudListings = await window.unimartListingsSync.getActiveListingsFromCloud();
+        const cloudListings = await window.unimartListingsSync.getActiveListingsFromCloud({
+            limit: 160,
+            cacheTtlMs: 45000
+        });
         const normalized = cloudListings.map((listing, index) => normalizeListing(listing, index)).filter(Boolean);
         products = [...DEFAULT_PRODUCTS, ...normalized];
 
@@ -213,9 +216,7 @@ function setupRealtimeMarketplaceSync() {
 
     realtimeUnsubscribe = window.unimartListingsSync.setupRealtimeListingsListener((allListings) => {
         try {
-            // Filter to active listings only
-            const activeListings = allListings.filter((item) => String(item.status || 'active').toLowerCase() === 'active');
-            const normalized = activeListings.map((listing, index) => normalizeListing(listing, index)).filter(Boolean);
+            const normalized = allListings.map((listing, index) => normalizeListing(listing, index)).filter(Boolean);
             
             // Update products array
             products = [...DEFAULT_PRODUCTS, ...normalized];
@@ -232,6 +233,9 @@ function setupRealtimeMarketplaceSync() {
         } catch (error) {
             console.warn('Error processing realtime marketplace update:', error);
         }
+    }, {
+        status: 'active',
+        limit: 160
     });
 }
 
@@ -241,14 +245,6 @@ async function initializeApp() {
     while (typeof firebase === 'undefined' || !firebase.auth) {
         await new Promise(resolve => setTimeout(resolve, 50));
     }
-
-    // Setup Firebase auth listener
-    firebase.auth().onAuthStateChanged(async (user) => {
-        if (user) {
-            await initializeMarketplaceData();
-            await refreshMarketplaceProducts();
-        }
-    });
 
     // Initialize even without auth for public content
     await initializeMarketplaceData();
@@ -894,8 +890,6 @@ function logout() {
 window.addEventListener('DOMContentLoaded', () => {
     checkAuthStatus();
 });
-
-window.addEventListener('focus', refreshMarketplaceProducts);
 
 window.addEventListener('storage', (event) => {
     if (event.key === USER_LISTINGS_KEY || event.key === LEGACY_LISTINGS_KEY) {

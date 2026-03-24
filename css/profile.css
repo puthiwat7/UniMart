@@ -781,9 +781,12 @@
     }
 
     .modal {
-        width: calc(100vw - 12px);
-        max-width: calc(100vw - 12px);
-        max-height: calc(100vh - 12px);
+        top: calc(env(safe-area-inset-top, 0px) + 8px);
+        left: calc(env(safe-area-inset-left, 0px) + 16px);
+        transform: none;
+        width: calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+        max-width: calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+        max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px);
         border-radius: 10px;
     }
 

@@ -36,26 +36,36 @@ function enforceBuyPolicyOrRedirect() {
     return false;
 }
 
-// Get all listings from cloud database
-async function getAllListings() {
-    if (!window.unimartListingsSync || typeof window.unimartListingsSync.getAllListingsFromCloud !== 'function') {
+async function getListingsByIds(ids) {
+    if (!window.unimartListingsSync) return [];
+
+    if (typeof window.unimartListingsSync.getListingsByIdsFromCloud === 'function') {
+        return window.unimartListingsSync.getListingsByIdsFromCloud(ids, {
+            cacheTtlMs: 60000,
+            timeoutMs: 10000
+        });
+    }
+
+    if (typeof window.unimartListingsSync.getAllListingsFromCloud !== 'function') {
         return [];
     }
 
-    return window.unimartListingsSync.getAllListingsFromCloud();
+    const all = await window.unimartListingsSync.getAllListingsFromCloud({ limit: 300 });
+    const idSet = new Set((Array.isArray(ids) ? ids : []).map((id) => String(id)));
+    return all.filter((item) => idSet.has(String(item.id)));
 }
 
 // Get product status from listings
 async function getProductStatus(productId) {
-    const listings = await getAllListings();
-    const listing = listings.find((l) => l.id === productId);
+    const listings = await getListingsByIds([productId]);
+    const listing = listings.find((l) => String(l.id) === String(productId));
     return listing ? (listing.status || 'active').toLowerCase() : 'active';
 }
 
 // Get updated product data (to reflect edits)
 async function getUpdatedProduct(product) {
-    const listings = await getAllListings();
-    const listing = listings.find(l => l.id === product.id);
+    const listings = await getListingsByIds([product.id]);
+    const listing = listings.find((l) => String(l.id) === String(product.id));
     
     if (listing) {
         // Merge listing data with favorite data
@@ -115,10 +125,26 @@ async function renderFavorites() {
     const grid = document.getElementById('favoritesGrid');
     let favorites = getFavorites();
 
+    const listingIds = favorites.map((item) => item.id);
+    const cloudListings = await getListingsByIds(listingIds);
+    const listingMap = new Map(cloudListings.map((item) => [String(item.id), item]));
+
     // Filter out non-active items (sold/withdrawn) and update the stored favorites list
     const activeFavorites = [];
     for (const product of favorites) {
-        const updatedProduct = await getUpdatedProduct(product);
+        const cloudListing = listingMap.get(String(product.id));
+        const updatedProduct = cloudListing
+            ? {
+                ...product,
+                title: cloudListing.title || product.title,
+                price: cloudListing.price || product.price,
+                category: cloudListing.category || product.category,
+                badge: cloudListing.badge || product.badge,
+                image: cloudListing.image || product.image,
+                seller: cloudListing.seller || product.seller,
+                status: (cloudListing.status || 'active').toLowerCase()
+            }
+            : { ...product, status: 'active' };
         if (String(updatedProduct.status || 'active').toLowerCase() === 'active') {
             activeFavorites.push(product);
         }
@@ -147,7 +173,19 @@ async function renderFavorites() {
     }
 
     for (const product of favorites) {
-        const updatedProduct = await getUpdatedProduct(product);
+        const cloudListing = listingMap.get(String(product.id));
+        const updatedProduct = cloudListing
+            ? {
+                ...product,
+                title: cloudListing.title || product.title,
+                price: cloudListing.price || product.price,
+                category: cloudListing.category || product.category,
+                badge: cloudListing.badge || product.badge,
+                image: cloudListing.image || product.image,
+                seller: cloudListing.seller || product.seller,
+                status: (cloudListing.status || 'active').toLowerCase()
+            }
+            : { ...product, status: 'active' };
         const card = createFavoriteCard(updatedProduct);
         grid.appendChild(card);
     }

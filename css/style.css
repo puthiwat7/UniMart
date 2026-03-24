@@ -816,6 +816,33 @@ body {
     word-break: break-word;
 }
 
+.sales-stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.stat-box {
+    min-width: 118px;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 10px 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    line-height: 1.1;
+}
+
+.stat-number-loading {
+    color: #9ca3af;
+}
+
 .admin-access-section {
     margin: 20px 48px 0;
     background: #fff;
@@ -854,6 +881,18 @@ body {
     cursor: pointer;
 }
 
+@media (max-width: 900px) {
+    .sales-stats {
+        justify-content: flex-start;
+        width: 100%;
+    }
+
+    .stat-box {
+        flex: 1 1 calc(33.333% - 8px);
+        min-width: 0;
+    }
+}
+
 .admin-email-list {
     list-style: none;
     margin: 0;
@@ -880,6 +919,21 @@ body {
     font-weight: 700;
     border-radius: 999px;
     padding: 2px 8px;
+}
+
+.admin-remove-btn {
+    border: 1px solid #ef4444;
+    background: #fff;
+    color: #ef4444;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 4px 10px;
+    cursor: pointer;
+}
+
+.admin-remove-btn:hover {
+    background: #fee2e2;
 }
 
 .favorites-empty-hint {
@@ -1107,9 +1161,9 @@ body {
 
     /* Modal improvements */
     .modal-content {
-        width: 95%;
+        width: calc(100% - 48px);
         max-width: none;
-        max-height: calc(100vh - 32px);
+        max-height: calc(100dvh - 48px);
         margin: 16px;
     }
 
@@ -1297,10 +1351,10 @@ body {
 
     /* Modal on very small screens */
     .modal-content {
-        width: calc(100vw - 16px);
-        max-height: calc(100vh - 16px);
-        margin: 8px;
-        border-radius: 12px;
+        width: calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+        margin: calc(env(safe-area-inset-top, 0px) + 8px) 16px calc(env(safe-area-inset-bottom, 0px) + 8px);
+        max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px);
+        border-radius: 16px;
     }
 
     .modal-body {
@@ -2871,8 +2925,9 @@ body {
     }
 
     .modal-content {
-        width: 95%;
-        max-height: calc(100vh - 24px);
+        width: calc(100% - 48px);
+        margin: 16px;
+        max-height: calc(100dvh - 48px);
     }
 
     .modal-details-section h2 {
@@ -2898,9 +2953,10 @@ body {
 
 @media (max-width: 480px) {
     .modal-content {
-        width: calc(100vw - 12px);
-        max-height: calc(100vh - 12px);
-        border-radius: 12px;
+        width: calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+        margin: calc(env(safe-area-inset-top, 0px) + 8px) 16px calc(env(safe-area-inset-bottom, 0px) + 8px);
+        max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px);
+        border-radius: 16px;
     }
 
     .modal-body {
@@ -2909,8 +2965,8 @@ body {
     }
 
     .modal-close {
-        top: 10px;
-        right: 10px;
+        top: 12px;
+        right: 12px;
         width: 34px;
         height: 34px;
     }
@@ -3925,8 +3981,9 @@ body {
 
 @media (max-width: 480px) {
     .payment-modal-content {
-        width: calc(100vw - 12px);
-        max-height: calc(100vh - 12px);
+        width: calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+        margin: calc(env(safe-area-inset-top, 0px) + 8px) 16px calc(env(safe-area-inset-bottom, 0px) + 8px);
+        max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px);
         border-radius: 12px;
     }
 

@@ -19,6 +19,42 @@ let currentItemId = null;
 let currentImageIndex = 0;
 let editingImages = [];
 let accessGranted = false;
+let isAdminLoading = false;
+let adminLoadError = null;
+let adminLoadWarning = null;
+
+function normalizeStatus(value) {
+    const rawStatus = String(value || 'active').toLowerCase();
+    return rawStatus === 'withdrawed' ? 'withdrawn' : rawStatus;
+}
+
+function getAdminStatElements() {
+    return {
+        total: document.getElementById('adminTotalListings'),
+        active: document.getElementById('adminActiveListings'),
+        sold: document.getElementById('adminSoldListings')
+    };
+}
+
+function setAdminStatValue(element, value, isLoading = false) {
+    if (!element) return;
+    element.textContent = value;
+    element.classList.toggle('stat-number-loading', isLoading);
+}
+
+function renderAdminStatsLoadingState() {
+    const stats = getAdminStatElements();
+    setAdminStatValue(stats.total, '...', true);
+    setAdminStatValue(stats.active, '...', true);
+    setAdminStatValue(stats.sold, '...', true);
+}
+
+function renderAdminStatsErrorState() {
+    const stats = getAdminStatElements();
+    setAdminStatValue(stats.total, '-', false);
+    setAdminStatValue(stats.active, '-', false);
+    setAdminStatValue(stats.sold, '-', false);
+}
 
 function getCachedUser() {
     try {
@@ -109,41 +145,79 @@ function removeSampleItemsFromStorage() {
 }
 
 async function loadAllListings() {
+    adminLoadError = null;
+    adminLoadWarning = null;
+
     if (!window.unimartListingsSync || typeof window.unimartListingsSync.getAllListingsFromCloud !== 'function') {
+        adminLoadError = new Error('Cloud listing service is unavailable.');
         return [];
     }
 
-    const all = await window.unimartListingsSync.getAllListingsFromCloud();
-    return all.map((item, index) => normalizeListing(item, index)).filter(Boolean);
+    try {
+        const all = await window.unimartListingsSync.getAllListingsFromCloud({
+            limit: 500,
+            cacheTtlMs: 30000
+        });
+        const normalized = all.map((item, index) => normalizeListing(item, index)).filter(Boolean);
+        const readState = window.unimartListingsSyncLastReadState || null;
+
+        if (readState && readState.mode === 'failed') {
+            adminLoadError = new Error(readState.reason || 'Could not load listings from the database.');
+            return [];
+        }
+
+        if (readState && readState.mode === 'fallback-limited') {
+            adminLoadWarning = `Showing ${readState.count} recent listings (limited to ${readState.limit}) due to a slow network response.`;
+        }
+
+        return normalized;
+    } catch (error) {
+        console.warn('Failed to load listings for Admin Panel:', error);
+        adminLoadError = error;
+        return [];
+    }
 }
 
-async function persistAllChanges() {
-    if (!window.unimartListingsSync || typeof window.unimartListingsSync.replaceAllListingsInCloud !== 'function') {
+async function persistAllChanges(item) {
+    if (!item || !item.id) {
+        throw new Error('Invalid listing payload.');
+    }
+
+    if (!window.unimartListingsSync || typeof window.unimartListingsSync.updateListingInCloud !== 'function') {
         throw new Error('Cloud listing service is unavailable.');
     }
 
-    const mergedById = new Map();
-    adminListings.forEach((item) => {
-        mergedById.set(String(item.id), item);
-    });
+    const { id, ...payload } = item;
 
-    await window.unimartListingsSync.replaceAllListingsInCloud(Array.from(mergedById.values()));
+    await window.unimartListingsSync.updateListingInCloud(id, payload);
 }
 
 async function refreshAdminView() {
+    renderAdminLoadingState();
+    renderAdminStatsLoadingState();
+
     adminListings = await loadAllListings();
     renderAdminSales(adminListings);
+
+    if (adminLoadError) {
+        renderAdminStatsErrorState();
+        return;
+    }
+
     updateAdminStats();
 }
 
 function updateAdminStats() {
-    const total = adminListings.length;
-    const active = adminListings.filter((item) => item.status === 'active').length;
-    const sold = adminListings.filter((item) => item.status === 'sold').length;
+    const stats = getAdminStatElements();
+    if (!stats.total || !stats.active || !stats.sold) return;
 
-    document.getElementById('adminTotalListings').textContent = total;
-    document.getElementById('adminActiveListings').textContent = active;
-    document.getElementById('adminSoldListings').textContent = sold;
+    const total = adminListings.length;
+    const active = adminListings.filter((item) => normalizeStatus(item.status) === 'active').length;
+    const sold = adminListings.filter((item) => normalizeStatus(item.status) === 'sold').length;
+
+    setAdminStatValue(stats.total, String(total), false);
+    setAdminStatValue(stats.active, String(active), false);
+    setAdminStatValue(stats.sold, String(sold), false);
 }
 
 function setupFilters() {
@@ -170,6 +244,35 @@ function filterAdminSales() {
 
 function renderAdminSales(salesToRender) {
     const grid = document.getElementById('adminSalesGrid');
+    const statusBanner = document.getElementById('adminSalesStatusBanner');
+    if (!grid) return;
+
+    isAdminLoading = false;
+
+    if (statusBanner) {
+        if (adminLoadWarning) {
+            statusBanner.textContent = adminLoadWarning;
+            statusBanner.style.display = 'block';
+        } else {
+            statusBanner.textContent = '';
+            statusBanner.style.display = 'none';
+        }
+    }
+
+    if (adminLoadError) {
+        grid.innerHTML = `
+            <div class="marketplace-error-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Failed to load admin listings</h3>
+                <p>Could not load listings from the database. Please try again.<br><span>${adminLoadError.message || adminLoadError}</span></p>
+                <button id="retryAdminLoad">Retry</button>
+            </div>
+        `;
+        const retryBtn = document.getElementById('retryAdminLoad');
+        if (retryBtn) retryBtn.onclick = () => refreshAdminView();
+        return;
+    }
+
     grid.innerHTML = '';
 
     if (!salesToRender.length) {
@@ -186,6 +289,32 @@ function renderAdminSales(salesToRender) {
         const card = createAdminSaleCard(item);
         grid.appendChild(card);
     });
+}
+
+function renderAdminLoadingState(count = 6) {
+    const grid = document.getElementById('adminSalesGrid');
+    if (!grid) return;
+
+    isAdminLoading = true;
+    grid.innerHTML = '';
+
+    for (let i = 0; i < count; i += 1) {
+        const card = document.createElement('div');
+        card.className = 'product-card loading-card';
+        card.innerHTML = `
+            <div class="product-image skeleton-block"></div>
+            <div class="product-info">
+                <div class="skeleton-line skeleton-badge"></div>
+                <div class="skeleton-line skeleton-title"></div>
+                <div class="skeleton-line skeleton-price"></div>
+                <div class="skeleton-line skeleton-meta"></div>
+                <div class="skeleton-actions-row">
+                    <div class="skeleton-line skeleton-button"></div>
+                </div>
+            </div>
+        `;
+        grid.appendChild(card);
+    }
 }
 
 function createAdminSaleCard(item) {
@@ -404,7 +533,7 @@ async function saveAdminEdit() {
     item.images = [...editingImages];
     item.imageUrl = editingImages[0] || '';
 
-    await persistAllChanges();
+    await persistAllChanges(item);
     updateAdminStats();
     filterAdminSales();
     openAdminModal(item.id);
@@ -417,7 +546,7 @@ async function withdrawCurrentListing() {
     if (!confirm('Are you sure you want to withdraw this listing?')) return;
 
     item.status = 'withdrawn';
-    await persistAllChanges();
+    await persistAllChanges(item);
     updateAdminStats();
     filterAdminSales();
     closeAdminModal();
@@ -430,7 +559,7 @@ async function markCurrentListingSold() {
 
     item.status = 'sold';
     item.soldDate = new Date().toISOString().split('T')[0];
-    await persistAllChanges();
+    await persistAllChanges(item);
     updateAdminStats();
     filterAdminSales();
     closeAdminModal();
@@ -504,12 +633,27 @@ function renderAdminEmailList() {
     if (!list || !window.unimartAdminAccess) return;
 
     const emails = window.unimartAdminAccess.getAdminEmails();
+    const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+    const currentEmail = window.unimartAdminAccess.normalizeEmail(currentUser && currentUser.email ? currentUser.email : '');
     list.innerHTML = '';
 
     emails.forEach((email) => {
+        const isDefaultAdmin = typeof window.unimartAdminAccess.isDefaultAdminEmail === 'function'
+            ? window.unimartAdminAccess.isDefaultAdminEmail(email)
+            : false;
+        const isCurrentUserEmail = currentEmail && email === currentEmail;
+
+        let actionHtml = '<span class="admin-tag">Admin</span>';
+        if (!isDefaultAdmin) {
+            actionHtml = `<button type="button" class="admin-remove-btn" data-remove-admin-email="${email}">Remove</button>`;
+        }
+
         const li = document.createElement('li');
         li.className = 'admin-email-item';
-        li.innerHTML = `<span>${email}</span><span class="admin-tag">Admin</span>`;
+        li.innerHTML = `
+            <span>${email}${isCurrentUserEmail ? ' (you)' : ''}</span>
+            ${actionHtml}
+        `;
         list.appendChild(li);
     });
 }
@@ -517,6 +661,7 @@ function renderAdminEmailList() {
 function setupAdminEmailManagement() {
     const input = document.getElementById('newAdminEmail');
     const addBtn = document.getElementById('addAdminEmailBtn');
+    const list = document.getElementById('adminEmailList');
 
     if (!input || !addBtn || !window.unimartAdminAccess) return;
 
@@ -539,6 +684,26 @@ function setupAdminEmailManagement() {
             handleAdd();
         }
     });
+
+    if (list) {
+        list.addEventListener('click', (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) return;
+            const email = target.getAttribute('data-remove-admin-email');
+            if (!email) return;
+
+            if (!confirm(`Remove admin access for ${email}?`)) return;
+
+            const result = window.unimartAdminAccess.removeAdminEmail(email);
+            if (!result.ok) {
+                alert(result.message);
+                return;
+            }
+
+            renderAdminEmailList();
+            alert('Admin removed successfully.');
+        });
+    }
 
     renderAdminEmailList();
 }

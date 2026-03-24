@@ -112,15 +112,15 @@
                 <div class="sales-stats">
                     <div class="stat-box">
                         <div class="stat-number" id="adminTotalListings">0</div>
-                        <div class="stat-label">All Listings</div>
+                        <div class="stat-label">Total Listings</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-number" id="adminActiveListings">0</div>
-                        <div class="stat-label">Active</div>
+                        <div class="stat-label">Active Listings</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-number" id="adminSoldListings">0</div>
-                        <div class="stat-label">Sold</div>
+                        <div class="stat-label">Sold Listings</div>
                     </div>
                 </div>
             </div>
@@ -128,7 +128,7 @@
             <section class="admin-access-section">
                 <h3>Admin Access</h3>
                 <div class="admin-access-row">
-                    <input type="email" id="newAdminEmail" placeholder="Add admin email (e.g. name@example.com)">
+                    <input type="email" id="newAdminEmail" placeholder="Add admin email (e.g. student@example.com)">
                     <button type="button" id="addAdminEmailBtn">Add Admin</button>
                 </div>
                 <ul id="adminEmailList" class="admin-email-list"></ul>
@@ -142,6 +142,8 @@
                     <button class="filter-btn" data-filter="withdrawn">Withdrawn</button>
                 </div>
             </div>
+
+            <div id="adminSalesStatusBanner" class="marketplace-warning-banner" style="display:none;"></div>
 
             <div class="sales-section">
                 <div class="products-grid my-sales-grid" id="adminSalesGrid"></div>
