@@ -24,15 +24,15 @@ body {
 .container {
     display: flex;
     width: 100%;
-    max-width: 1200px;
     min-height: 100vh;
-    margin: 0 auto;
+    margin: 0;
     position: relative;
 }
 
 /* ======================== Sidebar ======================== */
 .sidebar {
-    width: 250px;
+    width: 240px;
+    flex-shrink: 0;
     background-color: #fff;
     border-right: 1px solid var(--border-color);
     padding: 24px 16px;
@@ -246,20 +246,21 @@ body {
 /* ======================== Main Content ======================== */
 .main-content {
     flex: 1;
-    margin-left: 250px;
-    width: calc(100% - 250px);
-    max-width: 1200px;
+    margin-left: 240px;
+    width: calc(100% - 240px);
+    max-width: 100%;
     overflow-y: auto;
     background-color: #fff;
+    padding: 20px;
 }
 
 .header-banner {
     background-color: #4a5fc1;
     color: white;
-    padding: 60px 48px;
+    padding: 40px 32px;
     text-align: center;
     border-radius: 20px;
-    margin: 32px 48px 40px 64px;
+    margin: 24px 20px 24px 20px;
 }
 
 .header-banner h1 {
@@ -384,8 +385,8 @@ body {
 
 /* ======================== Categories ======================== */
 .categories-section {
-    padding: 12px 48px 40px 48px;
-    margin-left: 16px;
+    padding: 12px 20px 40px 20px;
+    margin-left: 0;
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
@@ -507,8 +508,9 @@ body {
 
 
 .products-section {
-    padding: 24px 48px 48px 48px;
-    margin-left: 16px;
+    padding: 24px 20px 48px 20px;
+    margin-left: 0;
+    max-width: 100%;
 }
 
 .products-section h2 {
