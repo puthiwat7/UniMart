@@ -61,6 +61,16 @@ function normalizeListing(listing, fallbackIndex = 0) {
     const imageList = Array.isArray(listing.images) ? listing.images.filter(Boolean) : [];
     const primaryImageUrl = listing.imageUrl || imageList[0] || '';
 
+    const normalizedCondition = Number.isFinite(Number(listing.condition)) ? Number(listing.condition) : (Number.isFinite(Number(listing.conditionPercentage)) ? Number(listing.conditionPercentage) : null);
+    
+    console.log('normalizeListing:', {
+        id: listing.id,
+        originalCondition: listing.condition,
+        originalConditionPercentage: listing.conditionPercentage,
+        normalizedCondition,
+        badge: listing.badge
+    });
+
     return {
         id: listing.id || Date.now() + fallbackIndex,
         title: String(listing.title || 'Untitled Item'),
@@ -72,14 +82,14 @@ function normalizeListing(listing, fallbackIndex = 0) {
         imageUrl: primaryImageUrl,
         images: imageList.length ? imageList : (primaryImageUrl ? [primaryImageUrl] : []),
         badge: String(listing.badge || 'Used'),
-        conditionPercentage: Number.isFinite(Number(listing.conditionPercentage)) ? Number(listing.conditionPercentage) : null,
+        condition: normalizedCondition,
         description: String(listing.description || ''),
         status: String(listing.status || 'active').toLowerCase()
     };
 }
 
 function getConditionPercentage(product) {
-    const raw = Number(product?.conditionPercentage);
+    const raw = Number(product?.condition);
     if (Number.isFinite(raw)) {
         return Math.max(0, Math.min(100, Math.round(raw)));
     }
@@ -95,7 +105,9 @@ function getConditionPercentage(product) {
         used: 60
     };
 
-    return Number.isFinite(fallbackMap[badge]) ? fallbackMap[badge] : null;
+    const fallbackValue = Number.isFinite(fallbackMap[badge]) ? fallbackMap[badge] : null;
+    console.log('getConditionPercentage:', { productId: product?.id, condition: product?.condition, badge: product?.badge, result: fallbackValue });
+    return fallbackValue;
 }
 
 const CACHE_KEY = 'unimart_marketplace_cache';

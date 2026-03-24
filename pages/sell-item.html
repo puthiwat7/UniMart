@@ -666,7 +666,7 @@
                 imageUrl: uploadedImages.length > 0 ? uploadedImages[0] : '',
                 images: uploadedImages,
                 badge,
-                conditionPercentage: Number(conditionSlider.value) || null,
+                condition: Number(conditionSlider.value) || 75,
                 description: String(formData.get('description')).trim(),
                 listedAt: new Date().toISOString(),
                 quantity: Number(formData.get('quantity')) || 1,
