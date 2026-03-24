@@ -195,6 +195,7 @@ function removeSampleItemsFromStorage() {
 async function loadAllListingsForStorage() {
     mySalesLoadError = null;
     mySalesLoadWarning = null;
+    const currentUser = getCurrentUserIdentity();
 
     if (!window.unimartListingsSync || typeof window.unimartListingsSync.getAllListingsFromCloud !== 'function') {
         mySalesLoadError = new Error('Cloud listing service is unavailable.');
@@ -203,7 +204,9 @@ async function loadAllListingsForStorage() {
     }
 
     try {
-        const all = await window.unimartListingsSync.getAllListingsFromCloud();
+        const all = (currentUser.uid && typeof window.unimartListingsSync.getListingsForSellerFromCloud === 'function')
+            ? await window.unimartListingsSync.getListingsForSellerFromCloud(currentUser.uid, { limit: 300, cacheTtlMs: 45000 })
+            : await window.unimartListingsSync.getAllListingsFromCloud({ limit: 300, cacheTtlMs: 45000 });
         const normalized = all.map((item, index) => normalizeListing(item, index)).filter(Boolean);
         const readState = window.unimartListingsSyncLastReadState || null;
 
@@ -337,6 +340,10 @@ function setupMySalesRealtimeSync() {
     }
 
     const currentUser = getCurrentUserIdentity();
+    const realtimeOptions = currentUser.uid
+        ? { sellerUid: currentUser.uid, limit: 300 }
+        : { limit: 300 };
+
     mySalesRealtimeUnsubscribe = window.unimartListingsSync.setupRealtimeListingsListener((allListings) => {
         try {
             // Clear any previous load error since we now have live data
@@ -356,7 +363,7 @@ function setupMySalesRealtimeSync() {
         } catch (error) {
             console.warn('Error processing realtime My Sales update:', error);
         }
-    });
+    }, realtimeOptions);
 }
 
 // Update sales statistics

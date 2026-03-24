@@ -154,7 +154,10 @@ async function loadAllListings() {
     }
 
     try {
-        const all = await window.unimartListingsSync.getAllListingsFromCloud();
+        const all = await window.unimartListingsSync.getAllListingsFromCloud({
+            limit: 500,
+            cacheTtlMs: 30000
+        });
         const normalized = all.map((item, index) => normalizeListing(item, index)).filter(Boolean);
         const readState = window.unimartListingsSyncLastReadState || null;
 
@@ -175,17 +178,18 @@ async function loadAllListings() {
     }
 }
 
-async function persistAllChanges() {
-    if (!window.unimartListingsSync || typeof window.unimartListingsSync.replaceAllListingsInCloud !== 'function') {
+async function persistAllChanges(item) {
+    if (!item || !item.id) {
+        throw new Error('Invalid listing payload.');
+    }
+
+    if (!window.unimartListingsSync || typeof window.unimartListingsSync.updateListingInCloud !== 'function') {
         throw new Error('Cloud listing service is unavailable.');
     }
 
-    const mergedById = new Map();
-    adminListings.forEach((item) => {
-        mergedById.set(String(item.id), item);
-    });
+    const { id, ...payload } = item;
 
-    await window.unimartListingsSync.replaceAllListingsInCloud(Array.from(mergedById.values()));
+    await window.unimartListingsSync.updateListingInCloud(id, payload);
 }
 
 async function refreshAdminView() {
@@ -529,7 +533,7 @@ async function saveAdminEdit() {
     item.images = [...editingImages];
     item.imageUrl = editingImages[0] || '';
 
-    await persistAllChanges();
+    await persistAllChanges(item);
     updateAdminStats();
     filterAdminSales();
     openAdminModal(item.id);
@@ -542,7 +546,7 @@ async function withdrawCurrentListing() {
     if (!confirm('Are you sure you want to withdraw this listing?')) return;
 
     item.status = 'withdrawn';
-    await persistAllChanges();
+    await persistAllChanges(item);
     updateAdminStats();
     filterAdminSales();
     closeAdminModal();
@@ -555,7 +559,7 @@ async function markCurrentListingSold() {
 
     item.status = 'sold';
     item.soldDate = new Date().toISOString().split('T')[0];
-    await persistAllChanges();
+    await persistAllChanges(item);
     updateAdminStats();
     filterAdminSales();
     closeAdminModal();
