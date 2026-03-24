@@ -974,11 +974,6 @@ body {
 
 /* ======================== Responsive ======================== */
 @media (max-width: 768px) {
-    /* DEBUG: Temporary background to confirm media query is working */
-    body {
-        background-color: #ffebee !important; /* Light red background for testing */
-    }
-
     /* Hide sidebar on mobile */
     .sidebar {
         display: none;
@@ -986,39 +981,44 @@ body {
 
     .main-content {
         margin-left: 0;
+        width: 100%;
+        padding: 0;
     }
 
     /* Header adjustments - more compact */
     .header-banner {
-        padding: 24px 20px; /* Even more compact */
-        margin: 12px 20px 16px; /* Reduced margins */
+        padding: 20px 16px; /* Even more compact */
+        margin: 12px 16px 16px; /* Reduced margins */
         border-radius: 12px; /* Smaller radius */
     }
 
     .header-banner h1 {
-        font-size: 24px; /* Smaller title */
+        font-size: 22px; /* Smaller title */
     }
 
     .header-banner p {
-        font-size: 14px; /* Smaller subtitle */
+        font-size: 13px; /* Smaller subtitle */
     }
 
     /* Search bar - primary focus with clean spacing */
     .search-filter-section {
-        padding: 20px; /* Reduced padding */
+        padding: 16px; /* Reduced padding */
         margin-top: 0; /* Remove top margin */
         margin-left: 0; /* Remove left margin */
-        gap: 16px; /* Clean gap */
+        gap: 8px; /* Clean gap */
         flex-direction: column; /* Stack vertically on mobile */
+        display: flex;
     }
 
     .search-box {
         flex: 1;
-        margin-bottom: 12px; /* Reduced space below search */
+        width: 100%;
+        min-width: 0;
+        margin-bottom: 0;
     }
 
     .search-box input {
-        padding: 14px 16px 14px 44px; /* Good touch target */
+        padding: 12px 16px 12px 40px; /* Good touch target */
         font-size: 16px; /* Prevent zoom on iOS */
         width: 100%; /* Full width */
     }
@@ -1028,18 +1028,18 @@ body {
         display: flex;
         gap: 8px;
         width: 100%;
-        align-items: center;
-        justify-content: flex-start;
-        flex-wrap: wrap; /* allow wrap for refresh button placement */
-        margin-bottom: 0; /* No bottom margin */
+        align-items: stretch;
+        flex-wrap: wrap;
+        margin-bottom: 0;
     }
 
     .filter-select {
         flex: 1;
-        min-width: 120px;
-        padding: 10px 12px; /* Better touch target */
-        font-size: 14px; /* Readable */
+        min-width: 100px;
+        padding: 10px 8px; /* Better touch target */
+        font-size: 13px; /* Readable */
         min-height: 40px; /* Touch friendly */
+        max-width: calc(50% - 4px);
     }
 
     /* Refresh button sits full width under filters on mobile */
@@ -1052,22 +1052,30 @@ body {
         border-radius: 8px;
         justify-content: center;
         align-items: center;
-        font-size: 14px;
-        flex-shrink: 0; /* Don't shrink */
+        font-size: 13px;
+        flex-shrink: 0;
+        order: 10;
     }
 
     .btn-refresh span {
-        display: none; /* Hide text, show only icon */
+        display: inline;
+    }
+
+    .btn-refresh i {
+        margin-right: 6px;
     }
 
     /* Categories - horizontal scroll with reduced spacing */
     .categories-section {
-        padding: 12px 20px 16px; /* Reduced padding */
+        padding: 12px 16px 12px; /* Reduced padding */
         display: flex;
         overflow-x: auto;
+        overflow-y: hidden;
         gap: 8px; /* Consistent gap */
         scrollbar-width: none;
         -ms-overflow-style: none;
+        margin-left: 0;
+        align-items: center;
     }
 
     .categories-section::-webkit-scrollbar {
@@ -1078,10 +1086,10 @@ body {
         flex-shrink: 0;
         padding: 8px 12px;
         height: 36px;
-        font-size: 13px; /* Slightly larger for readability */
+        font-size: 12px;
         border-radius: 18px;
         gap: 6px;
-        white-space: nowrap; /* Prevent text wrap */
+        white-space: nowrap;
     }
 
     .category-card.active {
@@ -1185,33 +1193,39 @@ body {
     .filters {
         display: flex;
         gap: 6px;
-        justify-content: flex-start; /* Align to left */
-        align-items: center;
+        justify-content: flex-start;
+        align-items: stretch;
         margin-bottom: 0;
+        flex-wrap: wrap;
     }
 
     .filter-select {
         flex: 1;
-        max-width: 120px; /* Balanced width */
-        padding: 8px 10px;
+        max-width: calc(50% - 3px);
+        padding: 8px 8px;
         font-size: 12px;
-        min-height: 36px; /* Touch friendly */
+        min-height: 36px;
     }
 
     /* Refresh button below filters - full width for small phones */
     .btn-refresh {
         width: 100%;
-        height: 40px;
+        height: 36px;
         padding: 0;
-        font-size: 14px;
+        font-size: 12px;
         min-height: auto;
-        margin-top: 10px;
+        margin-top: 8px;
         margin-left: 0;
         flex-shrink: 0;
+        order: 10;
     }
 
     .btn-refresh span {
-        display: inline; /* Keep label for clarity on 480px */
+        display: inline;
+    }
+
+    .btn-refresh i {
+        margin-right: 4px;
     }
 
     .categories-section {
@@ -1239,7 +1253,12 @@ body {
 
     .products-section {
         margin-left: 0;
-        padding: 0 20px 16px; /* Reduced bottom padding */
+        padding: 16px;
+    }
+
+    .products-section h2 {
+        font-size: 18px;
+        margin-bottom: 12px;
     }
 
     .products-grid {
