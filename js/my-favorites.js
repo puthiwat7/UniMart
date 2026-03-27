@@ -14,20 +14,57 @@ function getCurrentUserUid() {
     return cachedUser && cachedUser.uid ? cachedUser.uid : null;
 }
 
-function getCurrentExtendedProfile() {
+let policyProfile = null;
+let policyProfileLoaded = false;
+
+function isPolicyAgreed(profile) {
+    if (!profile || typeof profile !== 'object') return false;
+    return profile.hasAgreedPolicy === true || profile.agreedToPolicies === true;
+}
+
+async function loadPolicyProfileFromCloud(forceRefresh = false) {
     const uid = getCurrentUserUid();
-    if (!uid) return null;
+    if (!uid) {
+        policyProfileLoaded = false;
+        policyProfile = null;
+        return null;
+    }
+
+    if (!forceRefresh && policyProfileLoaded) {
+        return policyProfile;
+    }
+
+    if (!window.unimartProfileSync || typeof window.unimartProfileSync.getProfileFromCloud !== 'function') {
+        policyProfileLoaded = false;
+        policyProfile = null;
+        return null;
+    }
+
     try {
-        const raw = localStorage.getItem(`unimart_profile_${uid}`);
-        return raw ? JSON.parse(raw) : null;
+        policyProfile = await window.unimartProfileSync.getProfileFromCloud(uid);
+        policyProfileLoaded = true;
+        console.log('User data:', policyProfile);
+        return policyProfile;
     } catch (error) {
+        console.warn('Failed to load policy profile:', error);
+        policyProfileLoaded = false;
+        policyProfile = null;
         return null;
     }
 }
 
-function enforceBuyPolicyOrRedirect() {
-    const profile = getCurrentExtendedProfile();
-    if (profile && profile.agreedToPolicies === true) {
+async function enforceBuyPolicyOrRedirect() {
+    const uid = getCurrentUserUid();
+    if (!uid) {
+        return null;
+    }
+
+    if (!policyProfileLoaded) {
+        await loadPolicyProfileFromCloud(true);
+    }
+
+    const profile = await loadPolicyProfileFromCloud(true);
+    if (profile && isPolicyAgreed(profile)) {
         return true;
     }
 
@@ -240,6 +277,7 @@ function createFavoriteCard(product) {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', async () => {
+    await loadPolicyProfileFromCloud(false);
     await renderFavorites();
 
     const refreshFavoritesBtn = document.getElementById('refreshFavoritesBtn');
@@ -382,9 +420,9 @@ function setupProductModal() {
     // Order button
     const modalOrderBtn = document.getElementById('modalOrderBtn');
     if (modalOrderBtn) {
-        modalOrderBtn.addEventListener('click', () => {
+        modalOrderBtn.addEventListener('click', async () => {
             if (currentProduct) {
-                if (!enforceBuyPolicyOrRedirect()) {
+                if (!(await enforceBuyPolicyOrRedirect())) {
                     return;
                 }
 

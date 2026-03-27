@@ -29,6 +29,7 @@ async function loadExtendedProfile(uid) {
         wechat: '',
         bio: '',
         paymentQR: null,
+        hasAgreedPolicy: false,
         agreedToPolicies: false
     };
 }
@@ -52,6 +53,15 @@ async function saveExtendedProfile(uid, data) {
 
 let currentFirebaseUser = null;
 let currentExtendedProfile = null;
+let unsubscribeProfileRealtime = null;
+
+function isPolicyAgreed(profile) {
+    if (!profile || typeof profile !== 'object') return false;
+    if (typeof window.unimartProfileSync !== 'undefined' && typeof window.unimartProfileSync.hasUserAgreedPolicy === 'function') {
+        return window.unimartProfileSync.hasUserAgreedPolicy(profile);
+    }
+    return profile.hasAgreedPolicy === true || profile.agreedToPolicies === true;
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof firebaseAuthManager === 'undefined') {
@@ -72,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Load profile from cloud (async operation)
         try {
             currentExtendedProfile = await loadExtendedProfile(user.uid);
+            console.log('User data:', currentExtendedProfile);
         } catch (error) {
             console.error('Error loading profile during initialization:', error);
             currentExtendedProfile = {
@@ -81,13 +92,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 wechat: '',
                 bio: '',
                 paymentQR: null,
+                hasAgreedPolicy: false,
                 agreedToPolicies: false
             };
+        }
+
+        if (typeof window.unimartProfileSync !== 'undefined' && typeof window.unimartProfileSync.subscribeToProfile === 'function') {
+            if (unsubscribeProfileRealtime) {
+                unsubscribeProfileRealtime();
+                unsubscribeProfileRealtime = null;
+            }
+            unsubscribeProfileRealtime = window.unimartProfileSync.subscribeToProfile(user.uid, (profileFromCloud) => {
+                currentExtendedProfile = profileFromCloud;
+                console.log('User data:', currentExtendedProfile);
+                updateProfileDisplay(currentExtendedProfile);
+                updateFormValues(currentExtendedProfile);
+            });
         }
 
         initializeProfile();
         setupEventListeners();
     });
+});
+
+window.addEventListener('beforeunload', () => {
+    if (unsubscribeProfileRealtime) {
+        unsubscribeProfileRealtime();
+        unsubscribeProfileRealtime = null;
+    }
 });
 
 function initializeProfile() {
@@ -137,8 +169,10 @@ function updateProfileDisplay(profile) {
 
     // Show or hide alert based on policy agreement
     const alert = document.querySelector('.alert-warning');
-    if (profile.agreedToPolicies) {
+    if (isPolicyAgreed(profile)) {
         alert.style.display = 'none';
+    } else {
+        alert.style.display = 'flex';
     }
 }
 
@@ -149,7 +183,7 @@ function updateFormValues(profile) {
     document.getElementById('phone').value = profile.phone || '';
     document.getElementById('wechat').value = profile.wechat || '';
     document.getElementById('bio').value = profile.bio || '';
-    document.getElementById('policyCheckbox').checked = profile.agreedToPolicies || false;
+    document.getElementById('policyCheckbox').checked = isPolicyAgreed(profile);
 }
 
 function setupEventListeners() {
@@ -336,17 +370,31 @@ function closePoliciesModal() {
 }
 
 function handleAgreeToPolicy() {
-    // Update user agreement in extended profile
-    currentExtendedProfile = {
-        ...currentExtendedProfile,
-        agreedToPolicies: true,
-        updatedAt: new Date().toISOString()
-    };
-    
-    // Save to cloud (async)
-    saveExtendedProfile(currentFirebaseUser.uid, currentExtendedProfile)
-        .then(() => {
-            // Update form
+    if (!currentFirebaseUser || !currentFirebaseUser.uid) {
+        showNotification('Unable to save agreement. Please sign in again.', 'error');
+        return;
+    }
+
+    // Save agreement in cloud first, then fetch the latest profile as source of truth.
+    const saveAgreement = (typeof window.unimartProfileSync !== 'undefined' && typeof window.unimartProfileSync.setPolicyAgreement === 'function')
+        ? window.unimartProfileSync.setPolicyAgreement(currentFirebaseUser.uid, true)
+        : saveExtendedProfile(currentFirebaseUser.uid, {
+            ...currentExtendedProfile,
+            hasAgreedPolicy: true,
+            agreedToPolicies: true,
+            updatedAt: new Date().toISOString()
+        });
+
+    saveAgreement
+        .then(() => loadExtendedProfile(currentFirebaseUser.uid))
+        .then((freshProfile) => {
+            currentExtendedProfile = freshProfile || {
+                ...currentExtendedProfile,
+                hasAgreedPolicy: true,
+                agreedToPolicies: true
+            };
+            console.log('User data:', currentExtendedProfile);
+
             document.getElementById('policyCheckbox').checked = true;
             
             // Hide alert

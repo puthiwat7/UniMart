@@ -5,6 +5,15 @@
 const UNIMART_PROFILES_DB_PATH = 'unimartProfiles';
 const UNIMART_PROFILE_TIMEOUT_MS = 10000;
 
+function toBoolean(value) {
+    return value === true;
+}
+
+function hasUserAgreedPolicy(profile) {
+    if (!profile || typeof profile !== 'object') return false;
+    return toBoolean(profile.hasAgreedPolicy) || toBoolean(profile.agreedToPolicies);
+}
+
 function getProfileCacheKey(uid) {
     return `unimart_profile_${uid}`;
 }
@@ -66,10 +75,13 @@ function normalizeProfile(profile, uid) {
             wechat: '',
             bio: '',
             paymentQR: null,
+            hasAgreedPolicy: false,
             agreedToPolicies: false,
             updatedAt: new Date().toISOString()
         };
     }
+
+    const agreed = hasUserAgreedPolicy(profile);
 
     return {
         uid,
@@ -80,7 +92,8 @@ function normalizeProfile(profile, uid) {
         wechat: String(profile.wechat || ''),
         bio: String(profile.bio || ''),
         paymentQR: profile.paymentQR || null,
-        agreedToPolicies: Boolean(profile.agreedToPolicies || false),
+        hasAgreedPolicy: agreed,
+        agreedToPolicies: agreed,
         updatedAt: profile.updatedAt || new Date().toISOString()
     };
 }
@@ -167,6 +180,70 @@ async function updateProfileField(uid, field, value) {
     }
 }
 
+async function setPolicyAgreement(uid, agreed) {
+    if (!uid) return false;
+    const boolValue = agreed === true;
+
+    const ref = getProfilesDbRef();
+    if (!ref) {
+        console.warn('Database not available; policy agreement not updated');
+        return false;
+    }
+
+    try {
+        const updateData = {
+            hasAgreedPolicy: boolValue,
+            agreedToPolicies: boolValue,
+            updatedAt: new Date().toISOString()
+        };
+
+        await withProfileTimeout(ref.child(uid).update(updateData));
+
+        const cached = readProfileCache(uid) || normalizeProfile({}, uid);
+        const nextCached = {
+            ...cached,
+            ...updateData
+        };
+        writeProfileCache(uid, normalizeProfile(nextCached, uid));
+        return true;
+    } catch (error) {
+        console.error(`Error updating policy agreement for ${uid}:`, error);
+        throw error;
+    }
+}
+
+function subscribeToProfile(uid, callback) {
+    if (!uid || typeof callback !== 'function') return null;
+
+    const ref = getProfilesDbRef();
+    if (!ref) return null;
+
+    const profileRef = ref.child(uid);
+    const listener = profileRef.on('value', (snapshot) => {
+        try {
+            const normalized = normalizeProfile(snapshot.val(), uid);
+            writeProfileCache(uid, normalized);
+            callback(normalized);
+        } catch (error) {
+            console.warn('Profile realtime listener failed:', error);
+        }
+    }, (error) => {
+        console.warn('Profile realtime listener error:', error);
+    });
+
+    return () => {
+        profileRef.off('value', listener);
+    };
+}
+
+async function getPolicyAgreementFromCloud(uid) {
+    const profile = await getProfileFromCloud(uid);
+    return {
+        profile,
+        hasAgreedPolicy: hasUserAgreedPolicy(profile)
+    };
+}
+
 // Clear legacy localStorage profile data for a uid
 function clearLegacyLocalProfile(uid) {
     try {
@@ -181,6 +258,10 @@ window.unimartProfileSync = {
     getProfileFromCloud,
     saveProfileToCloud,
     updateProfileField,
+    setPolicyAgreement,
+    subscribeToProfile,
+    getPolicyAgreementFromCloud,
+    hasUserAgreedPolicy,
     clearLegacyLocalProfile,
     readProfileCache,
     writeProfileCache,

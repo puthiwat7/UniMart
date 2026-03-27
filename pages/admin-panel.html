@@ -9,7 +9,7 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script src="../js/firebase-config.js"></script>
     <script src="../js/firebase-auth.js"></script>
@@ -150,162 +150,9 @@
             </div>
         </main>
 
-        <div class="product-modal" id="adminSalesModal">
-            <div class="modal-overlay" id="adminModalOverlay"></div>
-            <div class="modal-content">
-                <button class="modal-close" id="adminModalCloseBtn">
-                    <i class="fas fa-times"></i>
-                </button>
-
-                <div class="modal-body">
-                    <div class="modal-image-section">
-                        <div class="image-carousel">
-                            <button class="carousel-btn prev-btn" id="adminPrevBtn">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <div class="carousel-image" id="adminCarouselImage"></div>
-                            <button class="carousel-btn next-btn" id="adminNextBtn">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
-                        <div class="badge-group">
-                            <span class="badge" id="adminModalBadge">Used</span>
-                        </div>
-                    </div>
-
-                    <div class="modal-details-section">
-                        <div id="adminViewPanel" class="modal-view-content">
-                            <div class="modal-header-content">
-                                <h2 id="adminModalTitle">Product Title</h2>
-                                <div class="modal-price" id="adminModalPrice">¥0.00</div>
-                            </div>
-
-                            <div class="modal-section">
-                                <h4>Seller</h4>
-                                <div class="details-grid">
-                                    <div class="detail-item">
-                                        <span class="detail-label">Name</span>
-                                        <span class="detail-value" id="adminModalSellerName">-</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Email</span>
-                                        <span class="detail-value" id="adminModalSellerEmail">-</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="modal-section">
-                                <h4>Description</h4>
-                                <p id="adminModalDescription">No description available</p>
-                            </div>
-
-                            <div class="modal-section">
-                                <h4>Details</h4>
-                                <div class="details-grid">
-                                    <div class="detail-item">
-                                        <span class="detail-label">Category</span>
-                                        <span class="detail-value" id="adminModalCategory">-</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Quantity</span>
-                                        <span class="detail-value" id="adminModalQuantity">1</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Status</span>
-                                        <span class="detail-value" id="adminModalStatus">ACTIVE</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="modal-actions-footer">
-                                <button class="btn-action btn-action-edit" id="adminEditBtn">
-                                    <i class="fas fa-pen"></i>
-                                    <span>Edit</span>
-                                </button>
-                                <button class="btn-action btn-action-withdraw" id="adminWithdrawBtn">
-                                    <i class="fas fa-ban"></i>
-                                    <span>Withdraw</span>
-                                </button>
-                                <button class="btn-action btn-action-sold" id="adminMarkSoldBtn">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>Mark as Sold</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div id="adminEditPanel" style="display: none;">
-                            <h3 style="margin-bottom: 12px;">Edit Listing</h3>
-
-                            <div class="form-group">
-                                <label for="adminEditTitle">Product Title</label>
-                                <input type="text" id="adminEditTitle" />
-                            </div>
-                            <div class="form-group">
-                                <label for="adminEditPrice">Listing Price (¥)</label>
-                                <input type="number" id="adminEditPrice" min="0.01" step="0.01" />
-                            </div>
-                            <div class="form-group">
-                                <label for="adminEditDescription">Description</label>
-                                <textarea id="adminEditDescription" rows="4"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="adminEditCategory">Category</label>
-                                <select id="adminEditCategory">
-                                    <option value="Textbooks">Textbooks</option>
-                                    <option value="Electronics">Electronics</option>
-                                    <option value="Furniture">Furniture</option>
-                                    <option value="Clothing">Clothing</option>
-                                    <option value="Sports">Sports</option>
-                                    <option value="Stationery">Stationery</option>
-                                    <option value="Kitchen">Kitchen</option>
-                                    <option value="Vehicles">Vehicles</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="adminEditCondition">Condition</label>
-                                <select id="adminEditCondition">
-                                    <option value="Very Poor">Very Poor</option>
-                                    <option value="Poor">Poor</option>
-                                    <option value="Fair">Fair</option>
-                                    <option value="Good">Good</option>
-                                    <option value="Like New">Like New</option>
-                                    <option value="Brand New">Brand New</option>
-                                    <option value="Used">Used</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="adminEditQuantity">Quantity</label>
-                                <input type="number" id="adminEditQuantity" min="1" step="1" />
-                            </div>
-                            <div class="form-group">
-                                <label for="adminEditImages">Upload More Images</label>
-                                <input type="file" id="adminEditImages" multiple accept="image/*" />
-                            </div>
-                            <div class="form-group">
-                                <label>Current Images</label>
-                                <div id="adminEditImagesPreview" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;"></div>
-                            </div>
-
-                            <div class="modal-actions">
-                                <button class="btn-order" id="adminSaveEditBtn" style="background-color: #10b981;">
-                                    <i class="fas fa-save"></i>
-                                    Save Changes
-                                </button>
-                                <button class="btn-save" id="adminCancelEditBtn" style="background-color: #6b7280; color: #fff;">
-                                    <i class="fas fa-times"></i>
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script src="../js/user-sidebar.js"></script>
-    <script src="../js/listings-sync.js"></script>
-    <script src="../js/admin-panel.js"></script>
+    <script type="module" src="../admin/AdminPage.js"></script>
 </body>
 </html>

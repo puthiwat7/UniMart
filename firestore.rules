@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function userDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && userDoc(request.auth.uid).data.role == 'admin';
+    }
+
+    function isBanned() {
+      return isAuthenticated() && userDoc(request.auth.uid).data.banned == true;
+    }
+
+    // Users
+    match /users/{userId} {
+      allow read: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
+      allow delete: if isAdmin();
+    }
+
+    // Listings
+    match /listings/{listingId} {
+      allow read: if isAuthenticated() && !isBanned();
+      allow create: if isAuthenticated() && !isBanned();
+      allow update: if isAdmin() || (isAuthenticated() && !isBanned() && resource.data.sellerUid == request.auth.uid);
+      allow delete: if isAdmin() || (isAuthenticated() && !isBanned() && resource.data.sellerUid == request.auth.uid);
+    }
+
+    // Reports
+    match /reports/{reportId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated() && !isBanned();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+  }
+}

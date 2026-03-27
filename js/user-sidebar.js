@@ -197,26 +197,40 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    firebaseAuthManager.onAuthStateChanged((user) => {
+    firebaseAuthManager.onAuthStateChanged(async (user) => {
         applyUserToSidebar(user);
-        enforcePolicy(user);
+        await enforcePolicy(user);
     });
 
 // check whether the user has agreed to marketplace policies; if not, force them to profile page
-function enforcePolicy(user) {
-    if (!user || !user.uid) return;
+async function enforcePolicy(user) {
+    if (!user || !user.uid) {
+        document.body.dataset.policyAgreed = 'unknown';
+        return null;
+    }
+
+    if (!window.unimartProfileSync || typeof window.unimartProfileSync.getProfileFromCloud !== 'function') {
+        document.body.dataset.policyAgreed = 'unknown';
+        return null;
+    }
+
     let profile = null;
     try {
-        const raw = localStorage.getItem(`unimart_profile_${user.uid}`);
-        profile = raw ? JSON.parse(raw) : null;
+        profile = await window.unimartProfileSync.getProfileFromCloud(user.uid);
+        console.log('User data:', profile);
     } catch (e) {
-        console.error('Failed to parse profile data for policy check', e);
+        console.error('Failed to load profile data for policy check', e);
+        document.body.dataset.policyAgreed = 'unknown';
+        return null;
     }
-    const agreed = profile && profile.agreedToPolicies;
+
+    const agreed = profile && (profile.hasAgreedPolicy === true || profile.agreedToPolicies === true);
 
     // Keep policy status available to page scripts, but do not hard-redirect.
     // Auto-redirecting causes login/profile navigation loops and poor UX.
     document.body.dataset.policyAgreed = agreed ? 'true' : 'false';
+
+    return agreed;
 }
 
 });

@@ -235,10 +235,33 @@ class FirebaseAuthManager {
         }
     }
 
+    async isUserBanned(uid) {
+        if (!uid) return false;
+        if (typeof firebase.firestore !== 'function') return false;
+
+        try {
+            const userDoc = await firebase.firestore().collection('users').doc(uid).get();
+            if (!userDoc.exists) return false;
+            const data = userDoc.data() || {};
+            return data.banned === true;
+        } catch (error) {
+            console.warn('Failed to check banned status:', error);
+            return false;
+        }
+    }
+
     // Listen to authentication state changes
     onAuthStateChanged(callback) {
-        this.auth.onAuthStateChanged((user) => {
+        this.auth.onAuthStateChanged(async (user) => {
             this.user = user;
+
+            if (user && await this.isUserBanned(user.uid)) {
+                await this.signOut();
+                alert('Your account has been restricted. Please contact support.');
+                callback(null);
+                return;
+            }
+
             // Cache basic user info so pages can show it immediately on load
             try {
                 if (user) {

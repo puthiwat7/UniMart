@@ -4162,3 +4162,211 @@ body {
         font-size: 16px;
     }
 }
+
+/* ======================== Modular Admin System ======================== */
+.admin-module-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 20px;
+}
+
+.admin-module-sidebar {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px;
+    height: fit-content;
+    position: sticky;
+    top: 16px;
+}
+
+.admin-module-nav {
+    width: 100%;
+    text-align: left;
+    border: 1px solid transparent;
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text-color);
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.admin-module-nav:hover {
+    background: var(--light-gray);
+}
+
+.admin-module-nav.active {
+    background: #eef2ff;
+    border-color: #c7d2fe;
+    color: var(--dark-blue);
+}
+
+.admin-module-main {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    min-height: 320px;
+}
+
+.admin-loading {
+    color: var(--dark-gray);
+    font-weight: 600;
+}
+
+.admin-section h2 {
+    font-size: 24px;
+    margin-bottom: 6px;
+}
+
+.admin-helper-text {
+    color: var(--dark-gray);
+    margin-bottom: 14px;
+    font-size: 14px;
+}
+
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.admin-stat-card {
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 14px;
+}
+
+.admin-stat-card h3 {
+    font-size: 13px;
+    color: var(--dark-gray);
+    margin-bottom: 6px;
+}
+
+.admin-stat-card p {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.admin-table-wrap {
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+    border-bottom: 1px solid var(--border-color);
+    padding: 10px 8px;
+    text-align: left;
+    vertical-align: top;
+    font-size: 14px;
+}
+
+.admin-table th {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--dark-gray);
+    letter-spacing: 0.04em;
+}
+
+.admin-action-cell {
+    min-width: 320px;
+}
+
+.admin-table-btn {
+    margin: 0 6px 6px 0;
+    border: 1px solid var(--border-color);
+    background: #fff;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.admin-table-btn:hover:not(:disabled) {
+    background: var(--light-gray);
+}
+
+.admin-table-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.admin-danger-btn {
+    border-color: #fecaca;
+    color: #b91c1c;
+    background: #fff5f5;
+}
+
+.admin-status-pill {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 4px 8px;
+    text-transform: uppercase;
+}
+
+.admin-status-active {
+    background: #ecfdf3;
+    color: #047857;
+}
+
+.admin-status-sold {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.admin-status-withdrawn {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.admin-section-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 1024px) {
+    .admin-module-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-module-sidebar {
+        position: static;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(100px, 1fr));
+        gap: 8px;
+    }
+
+    .admin-module-nav {
+        margin-bottom: 0;
+        text-align: center;
+    }
+
+    .admin-stats-grid {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .admin-module-sidebar {
+        grid-template-columns: repeat(2, minmax(100px, 1fr));
+    }
+
+    .admin-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
