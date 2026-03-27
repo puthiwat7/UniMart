@@ -56,13 +56,17 @@ body {
 .logo-placeholder {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, #ff9800, #f44336);
-    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    color: white;
+    overflow: hidden;
+}
+
+.logo-placeholder .logo-image {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    display: block;
 }
 
 .logo h1 {
