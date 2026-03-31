@@ -1,7 +1,7 @@
 const COLLECTIONS = {
-    users: 'users',
-    listings: 'listings',
-    reports: 'reports'
+    users: 'unimartProfiles',
+    listings: 'unimartListingsV1',
+    reports: 'unimartAdminV1/reports'
 };
 
 function getFirebaseAuth() {
@@ -11,83 +11,91 @@ function getFirebaseAuth() {
     return firebase.auth();
 }
 
-function getFirestoreDb() {
-    if (typeof firebase === 'undefined' || typeof firebase.firestore !== 'function') {
-        throw new Error('Firestore SDK is not available.');
+function getRealtimeDb() {
+    if (typeof firebase === 'undefined' || typeof firebase.database !== 'function') {
+        throw new Error('Firebase Realtime Database SDK is not available.');
     }
-    return firebase.firestore();
+    return firebase.database();
 }
 
-function mapSnapshot(snapshot) {
-    return snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data()
+function mapObjectSnapshot(snapshot) {
+    const value = snapshot && typeof snapshot.val === 'function' ? snapshot.val() : null;
+    if (!value || typeof value !== 'object') {
+        return [];
+    }
+
+    return Object.entries(value).map(([id, data]) => ({
+        id,
+        ...(data || {})
     }));
-}
-
-function nowServerTimestamp() {
-    return firebase.firestore.FieldValue.serverTimestamp();
 }
 
 async function getUserById(uid) {
     if (!uid) return null;
-    const db = getFirestoreDb();
-    const snap = await db.collection(COLLECTIONS.users).doc(uid).get();
-    if (!snap.exists) return null;
-    return { id: snap.id, ...snap.data() };
+    const db = getRealtimeDb();
+    const snap = await db.ref(`${COLLECTIONS.users}/${uid}`).once('value');
+    const data = snap.val();
+    if (!data) return null;
+    return { id: uid, ...data };
 }
 
 function subscribeUsers(onData, onError) {
-    const db = getFirestoreDb();
-    return db.collection(COLLECTIONS.users).onSnapshot(
-        (snapshot) => onData(mapSnapshot(snapshot)),
-        (error) => {
-            console.error('users subscription failed', error);
-            if (typeof onError === 'function') onError(error);
-        }
-    );
+    const db = getRealtimeDb();
+    const ref = db.ref(COLLECTIONS.users);
+    const handler = (snapshot) => onData(mapObjectSnapshot(snapshot));
+    const errorHandler = (error) => {
+        console.error('users subscription failed', error);
+        if (typeof onError === 'function') onError(error);
+    };
+
+    ref.on('value', handler, errorHandler);
+    return () => ref.off('value', handler);
 }
 
 function subscribeListings(onData, onError) {
-    const db = getFirestoreDb();
-    return db.collection(COLLECTIONS.listings).onSnapshot(
-        (snapshot) => onData(mapSnapshot(snapshot)),
-        (error) => {
-            console.error('listings subscription failed', error);
-            if (typeof onError === 'function') onError(error);
-        }
-    );
+    const db = getRealtimeDb();
+    const ref = db.ref(COLLECTIONS.listings);
+    const handler = (snapshot) => onData(mapObjectSnapshot(snapshot));
+    const errorHandler = (error) => {
+        console.error('listings subscription failed', error);
+        if (typeof onError === 'function') onError(error);
+    };
+
+    ref.on('value', handler, errorHandler);
+    return () => ref.off('value', handler);
 }
 
 function subscribeReports(onData, onError) {
-    const db = getFirestoreDb();
-    return db.collection(COLLECTIONS.reports).onSnapshot(
-        (snapshot) => onData(mapSnapshot(snapshot)),
-        (error) => {
-            console.error('reports subscription failed', error);
-            if (typeof onError === 'function') onError(error);
-        }
-    );
+    const db = getRealtimeDb();
+    const ref = db.ref(COLLECTIONS.reports);
+    const handler = (snapshot) => onData(mapObjectSnapshot(snapshot));
+    const errorHandler = (error) => {
+        console.error('reports subscription failed', error);
+        if (typeof onError === 'function') onError(error);
+    };
+
+    ref.on('value', handler, errorHandler);
+    return () => ref.off('value', handler);
 }
 
 async function fetchReports() {
-    const db = getFirestoreDb();
-    const snapshot = await db.collection(COLLECTIONS.reports).get();
-    return mapSnapshot(snapshot);
+    const db = getRealtimeDb();
+    const snapshot = await db.ref(COLLECTIONS.reports).once('value');
+    return mapObjectSnapshot(snapshot);
 }
 
 async function deleteListing(id) {
     if (!id) throw new Error('Listing id is required');
-    const db = getFirestoreDb();
-    await db.collection(COLLECTIONS.listings).doc(String(id)).delete();
+    const db = getRealtimeDb();
+    await db.ref(`${COLLECTIONS.listings}/${String(id)}`).remove();
 }
 
 async function updateListingStatus(id, status) {
     if (!id) throw new Error('Listing id is required');
-    const db = getFirestoreDb();
-    await db.collection(COLLECTIONS.listings).doc(String(id)).update({
+    const db = getRealtimeDb();
+    await db.ref(`${COLLECTIONS.listings}/${String(id)}`).update({
         status,
-        updatedAt: nowServerTimestamp()
+        updatedAt: new Date().toISOString()
     });
 }
 
@@ -96,35 +104,35 @@ async function createReport({ listingId, reason, reporterId }) {
         throw new Error('listingId, reason, and reporterId are required');
     }
 
-    const db = getFirestoreDb();
-    await db.collection(COLLECTIONS.reports).add({
+    const db = getRealtimeDb();
+    await db.ref(COLLECTIONS.reports).push({
         listingId: String(listingId),
         reason: String(reason),
         reporterId: String(reporterId),
-        createdAt: nowServerTimestamp()
+        createdAt: new Date().toISOString()
     });
 }
 
 async function deleteReport(id) {
     if (!id) throw new Error('Report id is required');
-    const db = getFirestoreDb();
-    await db.collection(COLLECTIONS.reports).doc(String(id)).delete();
+    const db = getRealtimeDb();
+    await db.ref(`${COLLECTIONS.reports}/${String(id)}`).remove();
 }
 
 async function banUser(userId) {
     if (!userId) throw new Error('User id is required');
-    const db = getFirestoreDb();
-    await db.collection(COLLECTIONS.users).doc(String(userId)).set({
+    const db = getRealtimeDb();
+    await db.ref(`${COLLECTIONS.users}/${String(userId)}`).update({
         banned: true,
-        bannedAt: nowServerTimestamp(),
-        updatedAt: nowServerTimestamp()
-    }, { merge: true });
+        bannedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    });
 }
 
 export {
     COLLECTIONS,
     getFirebaseAuth,
-    getFirestoreDb,
+    getRealtimeDb,
     getUserById,
     subscribeUsers,
     subscribeListings,

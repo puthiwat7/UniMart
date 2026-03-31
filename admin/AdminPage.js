@@ -1,4 +1,3 @@
-import { requireAdminAccess } from './authGuard.js';
 import {
     subscribeUsers,
     subscribeListings,
@@ -177,26 +176,11 @@ function cleanupSubscriptions() {
 
 function bootAdminModule() {
     renderShell();
-    setMainLoading('Verifying admin access...');
-
-    requireAdminAccess({
-        onPending: () => {
-            setMainLoading('Checking permissions...');
-        },
-        onAllowed: ({ authUser, userDoc }) => {
-            state.authUser = authUser;
-            state.adminUserDoc = userDoc;
-
-            setActiveNav(state.activeView);
-            setMainLoading('Loading admin data...');
-            attachStaticEvents();
-            subscribeCollectionsOnce();
-            renderActiveView();
-        },
-        onDenied: () => {
-            setMainLoading('Access denied. Redirecting...');
-        }
-    });
+    setActiveNav(state.activeView);
+    setMainLoading('Loading admin data...');
+    attachStaticEvents();
+    subscribeCollectionsOnce();
+    renderActiveView();
 
     window.addEventListener('beforeunload', cleanupSubscriptions);
 }

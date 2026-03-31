@@ -1,4 +1,34 @@
-import { getFirebaseAuth, getUserById } from './firestoreService.js';
+import { getFirebaseAuth } from './firestoreService.js';
+
+const ADMIN_EMAILS_KEY = 'unimart_admin_emails';
+const DEFAULT_ADMIN_EMAILS = ['puthiwat7@gmail.com'];
+
+function normalizeEmail(email) {
+    return String(email || '').trim().toLowerCase();
+}
+
+function getEmailAllowlist() {
+    const base = DEFAULT_ADMIN_EMAILS.map(normalizeEmail).filter(Boolean);
+
+    try {
+        const raw = localStorage.getItem(ADMIN_EMAILS_KEY);
+        if (!raw) return new Set(base);
+
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return new Set(base);
+
+        const merged = [...base, ...parsed.map(normalizeEmail).filter(Boolean)];
+        return new Set(merged);
+    } catch {
+        return new Set(base);
+    }
+}
+
+function isEmailAllowlistedAsAdmin(email) {
+    const normalized = normalizeEmail(email);
+    if (!normalized) return false;
+    return getEmailAllowlist().has(normalized);
+}
 
 function redirectTo(path) {
     window.location.href = path;
@@ -26,28 +56,22 @@ function requireAdminAccess({ onPending, onAllowed, onDenied }) {
             return;
         }
 
-        try {
-            const userDoc = await getUserById(user.uid);
-            const role = userDoc && userDoc.role ? String(userDoc.role).toLowerCase() : '';
+        const allowlistedAdmin = isEmailAllowlistedAsAdmin(user.email);
 
-            if (role !== 'admin') {
-                if (typeof onDenied === 'function') onDenied('not-admin');
-                redirectTo(getNonAdminPath());
-                return;
-            }
-
+        // Email allowlist is the single source of truth for admin page access.
+        if (allowlistedAdmin) {
             if (typeof onAllowed === 'function') {
                 onAllowed({
                     authUser: user,
-                    userDoc,
-                    role
+                    userDoc: { id: user.uid, role: 'admin', email: user.email || '' },
+                    role: 'admin'
                 });
             }
-        } catch (error) {
-            console.error('Failed to verify admin role:', error);
-            if (typeof onDenied === 'function') onDenied('role-check-failed');
-            redirectTo(getNonAdminPath());
+            return;
         }
+
+        if (typeof onDenied === 'function') onDenied('not-admin-email');
+        redirectTo(getNonAdminPath());
     });
 
     return unsubscribe;

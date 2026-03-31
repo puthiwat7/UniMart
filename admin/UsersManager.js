@@ -20,7 +20,7 @@ function renderUsersManager(container, state) {
     container.innerHTML = `
         <section class="admin-section">
             <h2>Users Manager</h2>
-            <p class="admin-helper-text">Banned users should be blocked by Firestore security rules from posting and privileged actions.</p>
+            <p class="admin-helper-text">Banned users are flagged in Realtime Database and should be blocked from privileged actions.</p>
             <div class="admin-table-wrap">
                 <table class="admin-table">
                     <thead>

@@ -81,7 +81,7 @@ function isCurrentUserAdmin(userLike) {
 
 function resolveAdminPanelPath() {
     const path = window.location.pathname || '';
-    return path.includes('/pages/') ? 'admin-panel.html' : 'pages/admin-panel.html';
+    return path.includes('/pages/') ? 'admin-panel' : 'pages/admin-panel';
 }
 
 function ensureAdminNavItem(userLike) {
@@ -103,7 +103,7 @@ function ensureAdminNavItem(userLike) {
         li.setAttribute('data-admin-nav-item', 'true');
 
         const adminPath = resolveAdminPanelPath();
-        const isActive = (window.location.pathname || '').includes('admin-panel.html');
+        const isActive = (window.location.pathname || '').includes('admin-panel');
         li.innerHTML = `
             <a href="${adminPath}" class="nav-item ${isActive ? 'active' : ''}">
                 <i class="fas fa-user-shield"></i>

@@ -30,7 +30,7 @@ function renderListingsManager(container, state) {
     container.innerHTML = `
         <section class="admin-section">
             <h2>Listings Manager</h2>
-            <p class="admin-helper-text">Single Firestore query with real-time updates.</p>
+            <p class="admin-helper-text">Realtime Database feed with live updates.</p>
             <div class="admin-table-wrap">
                 <table class="admin-table">
                     <thead>

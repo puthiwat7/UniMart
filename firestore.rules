@@ -9,8 +9,14 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(uid));
     }
 
+    function isAdminEmail() {
+      return isAuthenticated() && request.auth.token.email in [
+        'puthiwat7@gmail.com'
+      ];
+    }
+
     function isAdmin() {
-      return isAuthenticated() && userDoc(request.auth.uid).data.role == 'admin';
+      return isAdminEmail() || (isAuthenticated() && userDoc(request.auth.uid).data.role == 'admin');
     }
 
     function isBanned() {
