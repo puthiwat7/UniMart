@@ -4272,6 +4272,16 @@ body {
     color: #1f2b4b;
 }
 
+.guide-accordion-content h4 {
+    margin: 12px 0 6px;
+    font-size: 15px;
+    color: #1f2b4b;
+}
+
+.guide-accordion-content p {
+    margin: 0 0 10px;
+}
+
 .guide-side-cards {
     display: flex;
     flex-direction: column;

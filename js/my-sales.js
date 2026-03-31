@@ -458,7 +458,7 @@ function renderSales(salesToRender) {
                 <i class="fas fa-inbox"></i>
                 <h3>${msg.title}</h3>
                 <p>${msg.description}</p>
-                ${msg.action ? `<a href="sell-item.html" class="my-sales-start-selling-btn">${msg.action}</a>` : ''}
+                ${msg.action ? `<a href="sell-item" class="my-sales-start-selling-btn">${msg.action}</a>` : ''}
             </div>
         `;
         return;
