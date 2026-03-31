@@ -4,22 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - UniMart</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
-    <script src="../js/firebase-config.js"></script>
-    <script src="../js/firebase-auth.js"></script>
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/firebase-auth.js"></script>
 </head>
 <body>
     <div class="container">
         <aside class="sidebar">
             <div class="logo">
                 <div class="logo-placeholder">
-                    <img src="../assets/sidebar-logo.png" alt="UniMart logo" class="logo-image">
+                    <img src="/assets/sidebar-logo.png" alt="UniMart logo" class="logo-image">
                 </div>
                 <h1>UNIMART</h1>
             </div>
@@ -28,43 +28,43 @@
                 <h3>NAVIGATION</h3>
                 <ul>
                     <li>
-                        <a href="../" class="nav-item">
+                        <a href="/" class="nav-item">
                             <i class="fas fa-store"></i>
                             <span>Marketplace</span>
                         </a>
                     </li>
                     <li>
-                        <a href="sell-item" class="nav-item">
+                        <a href="/pages/sell-item" class="nav-item">
                             <i class="fas fa-plus"></i>
                             <span>Sell Item</span>
                         </a>
                     </li>
                     <li>
-                        <a href="my-sales" class="nav-item">
+                        <a href="/pages/my-sales" class="nav-item">
                             <i class="fas fa-chart-line"></i>
                             <span>My Sales</span>
                         </a>
                     </li>
                     <li>
-                        <a href="my-favorites" class="nav-item">
+                        <a href="/pages/my-favorites" class="nav-item">
                             <i class="fas fa-heart"></i>
                             <span>My Favorites</span>
                         </a>
                     </li>
                     <li>
-                        <a href="profile" class="nav-item">
+                        <a href="/pages/profile" class="nav-item">
                             <i class="fas fa-user"></i>
                             <span>Profile</span>
                         </a>
                     </li>
                     <li>
-                        <a href="user-guide" class="nav-item">
+                        <a href="/pages/user-guide" class="nav-item">
                             <i class="fas fa-book-open"></i>
                             <span>User Guide</span>
                         </a>
                     </li>
                     <li data-admin-nav-item="true">
-                        <a href="admin-panel" class="nav-item active">
+                        <a href="/pages/admin-panel" class="nav-item active">
                             <i class="fas fa-user-shield"></i>
                             <span>Admin Panel</span>
                         </a>
@@ -87,7 +87,7 @@
                     </button>
                 </div>
 
-                <button class="btn-login" id="loginBtn" onclick="window.location.href='login.html'">
+                <button class="btn-login" id="loginBtn" onclick="window.location.href='/pages/login'">
                     <i class="fab fa-google"></i>
                     <span>Sign in with Google</span>
                 </button>
@@ -143,7 +143,7 @@
 
     </div>
 
-    <script src="../js/user-sidebar.js"></script>
-    <script type="module" src="../admin/AdminPage.js"></script>
+    <script src="/js/user-sidebar.js"></script>
+    <script type="module" src="/admin/AdminPage.js"></script>
 </body>
 </html>

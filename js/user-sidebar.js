@@ -80,8 +80,7 @@ function isCurrentUserAdmin(userLike) {
 }
 
 function resolveAdminPanelPath() {
-    const path = window.location.pathname || '';
-    return path.includes('/pages/') ? 'admin-panel' : 'pages/admin-panel';
+    return '/pages/admin-panel';
 }
 
 function ensureAdminNavItem(userLike) {
