@@ -65,6 +65,15 @@ function renderShell() {
     if (!mainContent) return;
 
     mainContent.innerHTML = `
+        <section class="admin-access-section">
+            <h3>Admin Access</h3>
+            <div class="admin-access-row">
+                <input type="email" id="newAdminEmail" placeholder="Add admin email (e.g. student@example.com)">
+                <button type="button" id="addAdminEmailBtn">Add Admin</button>
+            </div>
+            <ul id="adminEmailList" class="admin-email-list"></ul>
+        </section>
+
         <div class="admin-module-layout">
             <aside class="admin-module-sidebar" id="adminModuleSidebar">
                 <button class="admin-module-nav active" data-view="dashboard">Dashboard</button>
@@ -75,6 +84,87 @@ function renderShell() {
             <section class="admin-module-main" id="adminModulePanel"></section>
         </div>
     `;
+}
+
+function renderAdminEmailList() {
+    const list = document.getElementById('adminEmailList');
+    if (!list || !window.unimartAdminAccess) return;
+
+    const emails = window.unimartAdminAccess.getAdminEmails();
+    const currentUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+    const currentEmail = window.unimartAdminAccess.normalizeEmail(currentUser && currentUser.email ? currentUser.email : '');
+
+    list.innerHTML = '';
+
+    emails.forEach((email) => {
+        const isDefaultAdmin = typeof window.unimartAdminAccess.isDefaultAdminEmail === 'function'
+            ? window.unimartAdminAccess.isDefaultAdminEmail(email)
+            : false;
+        const isCurrentUserEmail = currentEmail && email === currentEmail;
+
+        const actionHtml = isDefaultAdmin
+            ? '<span class="admin-tag">Admin</span>'
+            : `<button type="button" class="admin-remove-btn" data-remove-admin-email="${email}">Remove</button>`;
+
+        const li = document.createElement('li');
+        li.className = 'admin-email-item';
+        li.innerHTML = `
+            <span>${email}${isCurrentUserEmail ? ' (you)' : ''}</span>
+            ${actionHtml}
+        `;
+        list.appendChild(li);
+    });
+}
+
+function setupAdminEmailManagement() {
+    const input = document.getElementById('newAdminEmail');
+    const addBtn = document.getElementById('addAdminEmailBtn');
+    const list = document.getElementById('adminEmailList');
+
+    if (!input || !addBtn || !window.unimartAdminAccess) return;
+
+    const handleAdd = () => {
+        const result = window.unimartAdminAccess.addAdminEmail(input.value);
+        if (!result.ok) {
+            alert(result.message);
+            return;
+        }
+
+        input.value = '';
+        renderAdminEmailList();
+        alert('Admin email added successfully.');
+    };
+
+    addBtn.addEventListener('click', handleAdd);
+    input.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            handleAdd();
+        }
+    });
+
+    if (list) {
+        list.addEventListener('click', (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) return;
+
+            const email = target.getAttribute('data-remove-admin-email');
+            if (!email) return;
+
+            if (!confirm(`Remove admin access for ${email}?`)) return;
+
+            const result = window.unimartAdminAccess.removeAdminEmail(email);
+            if (!result.ok) {
+                alert(result.message);
+                return;
+            }
+
+            renderAdminEmailList();
+            alert('Admin removed successfully.');
+        });
+    }
+
+    renderAdminEmailList();
 }
 
 function setActiveNav(view) {
@@ -176,6 +266,7 @@ function cleanupSubscriptions() {
 
 function bootAdminModule() {
     renderShell();
+    setupAdminEmailManagement();
     setActiveNav(state.activeView);
     setMainLoading('Loading admin data...');
     attachStaticEvents();
