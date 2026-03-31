@@ -710,7 +710,7 @@ function setupAdminEmailManagement() {
 
 function redirectNonAdmin() {
     alert('You do not have access to the Admin Panel.');
-    window.location.href = '../index.html';
+    window.location.href = '../';
 }
 
 function verifyAdminAccess(user) {

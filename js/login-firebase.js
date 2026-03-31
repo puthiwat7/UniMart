@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user && !justLoggedOut) {
             // User is logged in, redirect to home
             console.log('User already logged in:', user.email);
-            window.location.href = '../index.html';
+            window.location.href = '../';
         }
     });
 
@@ -112,7 +112,7 @@ async function handleEmailAuth(e) {
 
         // Redirect to home
         setTimeout(() => {
-            window.location.href = '../index.html';
+            window.location.href = '../';
         }, 2000);
 
     } catch (error) {
@@ -169,7 +169,7 @@ async function handleGoogleSignIn() {
 
         // Redirect to home
         setTimeout(() => {
-            window.location.href = '../index.html';
+            window.location.href = '../';
         }, 2000);
 
     } catch (error) {

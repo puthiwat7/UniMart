@@ -69,7 +69,7 @@ async function enforceBuyPolicyOrRedirect() {
     }
 
     alert('You must agree to marketplace policies before buying. You will be redirected to your profile.');
-    window.location.href = 'profile.html';
+    window.location.href = 'profile';
     return false;
 }
 
@@ -201,7 +201,7 @@ async function renderFavorites() {
                 <i class="fas fa-heart"></i>
                 <p>No favorites yet</p>
                 <p class="favorites-empty-hint">Start adding items to your favorites!</p>
-                <a href="../index.html" class="my-sales-start-selling-btn">
+                <a href="../" class="my-sales-start-selling-btn">
                     Browse Marketplace
                 </a>
             </div>
