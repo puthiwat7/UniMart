@@ -297,20 +297,20 @@ async function initializeApp() {
     setupScrollToTop();
     setupProductModal();
     setupPaymentModal();
-    populateCollegeFilterOptions();
+    populateCollegeDropdown();
 }
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         initializeApp();
-        // Ensure college filter is populated as backup
-        populateCollegeFilterOptions();
+        // Ensure college dropdown is populated as backup
+        populateCollegeDropdown();
     });
 } else {
     initializeApp();
-    // Ensure college filter is populated as backup
-    populateCollegeFilterOptions();
+    // Ensure college dropdown is populated as backup
+    populateCollegeDropdown();
 }
 
 // Refresh marketplace when page becomes visible (e.g., after navigating back from sell-item)
@@ -579,7 +579,7 @@ function setupCategoryDropdown() {
 function filterProducts() {
     currentPage = 1; // Reset pagination when filtering
     const searchInput = document.querySelector('.search-box input').value.toLowerCase();
-    const selectedCollege = document.getElementById('collegeFilter').value;
+    const selectedCollege = document.getElementById('collegeSelect').value;
     
     filteredProducts = products.filter(product => {
         const matchCategory = currentCategory === 'All Items' || product.category === currentCategory;
@@ -597,7 +597,7 @@ function filterProducts() {
 function updateCategoryCounts() {
     const categoryCards = document.querySelectorAll('.category-card');
     const searchInput = document.querySelector('.search-box input').value.toLowerCase();
-    const selectedCollege = document.getElementById('collegeFilter').value;
+    const selectedCollege = document.getElementById('collegeSelect').value;
     
     // Create a map for efficient counting
     const categoryCounts = new Map();
@@ -904,7 +904,7 @@ document.querySelectorAll('.filter-select').forEach((select, index) => {
 });
 
 // Handle college filter
-document.getElementById('collegeFilter').addEventListener('change', (e) => {
+document.getElementById('collegeSelect').addEventListener('change', (e) => {
     filterProducts();
 });
 
@@ -1087,12 +1087,15 @@ function setupPaymentModal() {
     }
 }
 
-function populateCollegeFilterOptions() {
-    const collegeFilter = document.getElementById('collegeFilter');
-    if (!collegeFilter) return;
+function populateCollegeDropdown() {
+    const collegeSelect = document.getElementById('collegeSelect');
+    if (!collegeSelect) {
+        console.warn('College select element not found');
+        return;
+    }
 
     // Clear existing options
-    collegeFilter.innerHTML = '';
+    collegeSelect.innerHTML = '';
 
     // Fallback colleges if COLLEGES constant is not available
     const fallbackColleges = [
@@ -1117,6 +1120,11 @@ function populateCollegeFilterOptions() {
         const option = document.createElement('option');
         option.value = college;
         option.textContent = college;
-        collegeFilter.appendChild(option);
+        collegeSelect.appendChild(option);
     });
 }
+
+// Ensure college dropdown is populated on DOMContentLoaded
+document.addEventListener("DOMContentLoaded", () => {
+    populateCollegeDropdown();
+});
