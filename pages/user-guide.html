@@ -266,7 +266,79 @@
         </main>
     </div>
 
+    <div class="guide-policy-gate" id="guidePolicyGate" aria-hidden="true">
+        <div class="guide-policy-gate-backdrop"></div>
+        <div class="guide-policy-gate-dialog" role="dialog" aria-modal="true" aria-labelledby="guidePolicyGateTitle">
+            <div class="guide-policy-gate-icon">
+                <i class="fas fa-file-contract"></i>
+            </div>
+            <h2 id="guidePolicyGateTitle">Welcome to UniMart</h2>
+            <p>
+                Before you start buying or selling, please read the Marketplace Policies and agree to them in your profile.
+                This helps keep transactions safe and clear for everyone.
+            </p>
+            <button type="button" class="btn-primary guide-policy-gate-btn" id="guidePolicyGateProfileBtn">
+                Go to Profile
+            </button>
+        </div>
+    </div>
+
+    <script defer src="../js/profile-sync.js"></script>
     <script defer src="../js/user-sidebar.js"></script>
+    <script>
+        (function initializeUserGuidePolicyGate() {
+            const gateRoot = document.getElementById('guidePolicyGate');
+            const goProfileBtn = document.getElementById('guidePolicyGateProfileBtn');
+
+            if (!gateRoot || !goProfileBtn) {
+                return;
+            }
+
+            function showGate() {
+                gateRoot.classList.add('active');
+                gateRoot.setAttribute('aria-hidden', 'false');
+            }
+
+            function hideGate() {
+                gateRoot.classList.remove('active');
+                gateRoot.setAttribute('aria-hidden', 'true');
+            }
+
+            goProfileBtn.addEventListener('click', () => {
+                window.location.href = 'profile';
+            });
+
+            if (typeof firebase === 'undefined' || !firebase.auth) {
+                return;
+            }
+
+            firebase.auth().onAuthStateChanged(async (user) => {
+                if (!user || !user.uid) {
+                    hideGate();
+                    return;
+                }
+
+                try {
+                    const sync = window.unimartProfileSync;
+                    if (!sync || typeof sync.getPolicyAgreementFromCloud !== 'function') {
+                        return;
+                    }
+
+                    const result = await sync.getPolicyAgreementFromCloud(user.uid);
+                    const hasAgreed = !!(result && result.hasAgreedPolicy === true);
+
+                    if (hasAgreed) {
+                        hideGate();
+                        return;
+                    }
+
+                    showGate();
+                } catch (error) {
+                    console.warn('Unable to determine policy agreement on user guide:', error);
+                }
+            });
+        })();
+    </script>
 
     <!-- Mobile Bottom Navigation -->
     <nav class="bottom-nav" id="bottomNav">
