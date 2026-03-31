@@ -60,6 +60,13 @@ body {
     box-shadow: 0 10px 30px rgba(45, 58, 143, 0.3);
 }
 
+.login-logo-image {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    display: block;
+}
+
 .logo-section h1 {
     font-size: 28px;
     font-weight: 700;
