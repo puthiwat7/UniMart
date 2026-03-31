@@ -31,6 +31,7 @@ function unimartNormalizeListing(item, index = 0) {
         seller: String(item.seller || 'Campus Seller'),
         sellerUid: item.sellerUid || null,
         sellerEmail: item.sellerEmail ? String(item.sellerEmail).toLowerCase() : '',
+        college: String(item.college || ''),
         image: String(item.image || '📦'),
         imageUrl: item.imageUrl || images[0] || '',
         images,

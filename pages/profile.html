@@ -185,6 +185,18 @@
                             </div>
                         </div>
 
+                        <!-- User Activity Stats -->
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <span class="stat-number" id="totalListings">0</span>
+                                <span class="stat-label">Listings</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="itemsSold">0</span>
+                                <span class="stat-label">Sold</span>
+                            </div>
+                        </div>
+
                         <!-- Edit Mode -->
                         <form class="profile-edit" id="profileForm" style="display: none;">
                             <div class="form-row">
@@ -195,13 +207,7 @@
                                 <div class="form-group">
                                     <label for="college">College *</label>
                                     <select id="college" name="college" required>
-                                        <option value="">Select your college</option>
-                                        <option value="Minerva">Minerva</option>
-                                        <option value="Muse">Muse</option>
-                                        <option value="Diligentia">Diligentia</option>
-                                        <option value="Ling">Ling</option>
-                                        <option value="Harmonia">Harmonia</option>
-                                        <option value="Shaw">Shaw</option>
+                                        <!-- Options populated by JavaScript -->
                                     </select>
                                 </div>
                             </div>
@@ -236,6 +242,9 @@
                     <!-- Profile QR Code Section -->
                     <div class="profile-section">
                         <h2><i class="fas fa-qrcode"></i> Profile QR Code</h2>
+                        <p class="qr-description">
+                            Scan to add this seller on WeChat and discuss the item directly.
+                        </p>
                         <div class="qr-upload-container">
                             <div class="qr-display" id="qrDisplay">
                                 <div class="qr-placeholder" id="qrPlaceholder">
@@ -355,6 +364,7 @@
 
     <!-- Profile Sync & Profile Logic -->
     <script src="../js/profile-sync.js"></script>
+    <script src="../js/listings-sync.js"></script>
     <script src="../js/user-sidebar.js"></script>
     <script src="../js/profile.js"></script>
 
