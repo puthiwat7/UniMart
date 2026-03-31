@@ -302,9 +302,15 @@ async function initializeApp() {
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeApp);
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeApp();
+        // Ensure college filter is populated as backup
+        populateCollegeFilterOptions();
+    });
 } else {
     initializeApp();
+    // Ensure college filter is populated as backup
+    populateCollegeFilterOptions();
 }
 
 // Refresh marketplace when page becomes visible (e.g., after navigating back from sell-item)
@@ -1088,8 +1094,26 @@ function populateCollegeFilterOptions() {
     // Clear existing options
     collegeFilter.innerHTML = '';
 
-    // Add college options from COLLEGES constant
-    COLLEGES.forEach(college => {
+    // Fallback colleges if COLLEGES constant is not available
+    const fallbackColleges = [
+        "All Colleges",
+        "Minerva",
+        "Muse",
+        "Diligentia", 
+        "Ling",
+        "Harmonia",
+        "Shaw",
+        "Eighth College",
+        "Duran Family"
+    ];
+
+    // Use COLLEGES constant if available, otherwise use fallback
+    const collegesToUse = (typeof COLLEGES !== 'undefined' && Array.isArray(COLLEGES)) 
+        ? COLLEGES 
+        : fallbackColleges;
+
+    // Add college options
+    collegesToUse.forEach(college => {
         const option = document.createElement('option');
         option.value = college;
         option.textContent = college;

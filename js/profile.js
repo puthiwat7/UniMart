@@ -172,14 +172,31 @@ function populateCollegeOptions() {
     // Clear existing options
     collegeSelect.innerHTML = '';
 
+    // Fallback colleges if COLLEGES constant is not available
+    const fallbackColleges = [
+        "Minerva",
+        "Muse", 
+        "Diligentia",
+        "Ling",
+        "Harmonia",
+        "Shaw",
+        "Eighth College",
+        "Duran Family"
+    ];
+
+    // Use COLLEGES constant if available, otherwise use fallback
+    const collegesToUse = (typeof COLLEGES !== 'undefined' && Array.isArray(COLLEGES)) 
+        ? COLLEGES.slice(1) // Skip "All Colleges" for profile
+        : fallbackColleges;
+
     // Add default option
     const defaultOption = document.createElement('option');
     defaultOption.value = '';
     defaultOption.textContent = 'Select your college';
     collegeSelect.appendChild(defaultOption);
 
-    // Add college options from COLLEGES constant (skip "All Colleges")
-    COLLEGES.slice(1).forEach(college => {
+    // Add college options
+    collegesToUse.forEach(college => {
         const option = document.createElement('option');
         option.value = college;
         option.textContent = college;
@@ -541,3 +558,8 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Ensure college options are populated on page load
+document.addEventListener('DOMContentLoaded', () => {
+    populateCollegeOptions();
+});
