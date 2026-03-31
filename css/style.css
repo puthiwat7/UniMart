@@ -4163,6 +4163,190 @@ body {
     }
 }
 
+/* ======================== User Guide ======================== */
+.guide-main-content {
+    padding: 28px;
+}
+
+.guide-main-content .guide-header {
+    background: transparent;
+    color: var(--text-color);
+    text-align: left;
+    padding: 0;
+    border-radius: 0;
+    margin-bottom: 24px;
+}
+
+.guide-main-content .guide-header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 8px;
+}
+
+.guide-main-content .guide-header p {
+    font-size: 16px;
+    font-weight: 400;
+    opacity: 1;
+    margin: 0;
+    color: var(--dark-gray);
+}
+
+.guide-grid {
+    display: grid;
+    grid-template-columns: 1.7fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.guide-panel {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(12, 18, 40, 0.06);
+}
+
+.guide-accordion-panel {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.guide-accordion {
+    border: 1px solid #e8ebf5;
+    border-radius: 12px;
+    background: #fcfdff;
+    overflow: hidden;
+}
+
+.guide-accordion summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #1e2a4a;
+}
+
+.guide-accordion summary::-webkit-details-marker {
+    display: none;
+}
+
+.guide-accordion summary span {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.guide-accordion summary span i {
+    color: var(--primary-blue);
+}
+
+.guide-accordion summary > i {
+    color: #8a93ab;
+    transition: transform 0.2s ease;
+}
+
+.guide-accordion[open] summary > i {
+    transform: rotate(180deg);
+}
+
+.guide-accordion-content {
+    border-top: 1px solid #edf0f8;
+    padding: 14px 16px 18px;
+    color: #2a3557;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.guide-accordion-content ol,
+.guide-accordion-content ul {
+    padding-left: 20px;
+}
+
+.guide-accordion-content strong {
+    color: #1f2b4b;
+}
+
+.guide-side-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.guide-card {
+    padding: 18px;
+}
+
+.guide-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    margin-bottom: 12px;
+    color: #1e2a4a;
+}
+
+.guide-card h3 i {
+    color: var(--primary-blue);
+}
+
+.guide-card p,
+.guide-card li {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #364164;
+}
+
+.guide-card ul {
+    padding-left: 20px;
+}
+
+@media (max-width: 1024px) {
+    .guide-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .guide-main-content {
+        padding: 20px 16px;
+    }
+
+    .guide-main-content .guide-header {
+        padding: 0;
+        text-align: left;
+    }
+
+    .guide-main-content .guide-header h1 {
+        font-size: 28px;
+    }
+
+    .guide-accordion summary {
+        padding: 14px;
+    }
+
+    .guide-accordion-content {
+        padding: 12px 14px 16px;
+    }
+
+    .bottom-nav-item {
+        padding: 6px 4px;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .guide-main-content .guide-header {
+        padding: 0;
+        text-align: left;
+    }
+}
+
 /* ======================== Modular Admin System ======================== */
 .admin-module-layout {
     display: grid;

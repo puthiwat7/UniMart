@@ -21,6 +21,8 @@ function initializeBottomNav() {
         currentPage = 'favorites';
     } else if (currentPath.includes('profile')) {
         currentPage = 'profile';
+    } else if (currentPath.includes('user-guide')) {
+        currentPage = 'guide';
     } else if (currentPath.includes('index') || currentPath.endsWith('/')) {
         currentPage = 'marketplace';
     }

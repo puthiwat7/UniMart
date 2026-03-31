@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Guide - UniMart</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="shortcut icon" href="../favicon.svg">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDKs (Compat version for script tag compatibility) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <!-- Firebase Config & Auth -->
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/firebase-auth.js"></script>
+
+    <!-- Auth Guard -->
+    <script>
+        setTimeout(() => {
+            try {
+                firebase.auth().onAuthStateChanged((user) => {
+                    if (!user) {
+                        window.location.href = 'login.html';
+                    }
+                });
+            } catch (error) {
+                console.error('Firebase not initialized:', error);
+                window.location.href = 'login.html';
+            }
+        }, 100);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-placeholder">
+                    <img src="../assets/sidebar-logo.png" alt="UniMart logo" class="logo-image">
+                </div>
+                <h1>UNIMART</h1>
+            </div>
+
+            <nav class="navigation">
+                <h3>NAVIGATION</h3>
+                <ul>
+                    <li>
+                        <a href="../index.html" class="nav-item">
+                            <i class="fas fa-store"></i>
+                            <span>Marketplace</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="sell-item.html" class="nav-item">
+                            <i class="fas fa-plus"></i>
+                            <span>Sell Item</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="my-sales.html" class="nav-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>My Sales</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="my-favorites.html" class="nav-item">
+                            <i class="fas fa-heart"></i>
+                            <span>My Favorites</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="profile.html" class="nav-item">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="user-guide.html" class="nav-item active">
+                            <i class="fas fa-book-open"></i>
+                            <span>User Guide</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div id="userSection">
+                <div class="user-profile" id="userProfile" style="display: none;">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="user-info">
+                        <h4 id="userName">User Name</h4>
+                        <p id="userEmail">user@email.com</p>
+                    </div>
+                    <button class="btn-logout" onclick="handleSignOut()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Sign Out</span>
+                    </button>
+                </div>
+
+                <button class="btn-login" id="loginBtn" onclick="window.location.href='login.html'">
+                    <i class="fab fa-google"></i>
+                    <span>Sign in with Google</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content guide-main-content">
+            <div class="guide-header">
+                <h1>User Guide</h1>
+                <p>Everything you need to buy, sell, and stay safe on UniMart.</p>
+            </div>
+
+            <div class="guide-grid">
+                <section class="guide-panel guide-accordion-panel">
+                    <details class="guide-accordion" open>
+                        <summary>
+                            <span><i class="fas fa-cart-shopping"></i> How to Buy</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </summary>
+                        <div class="guide-accordion-content">
+                            <ol>
+                                <li><strong>Browse Listings:</strong> Explore available items in the Marketplace and use category or keyword filters.</li>
+                                <li><strong>Review Details:</strong> Open the listing to check images, item condition, and seller-provided notes.</li>
+                                <li><strong>Favorite Items:</strong> Save interesting products to My Favorites for quick access later.</li>
+                                <li><strong>Contact the Seller:</strong> Use listed contact details and agree on pickup time and location.</li>
+                                <li><strong>Complete Payment Safely:</strong> Verify item condition first, then complete payment using trusted methods.</li>
+                                <li><strong>Confirm Completion:</strong> Once done, keep records of chats and transfer details for your protection.</li>
+                            </ol>
+                        </div>
+                    </details>
+
+                    <details class="guide-accordion">
+                        <summary>
+                            <span><i class="fas fa-tag"></i> How to Sell</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </summary>
+                        <div class="guide-accordion-content">
+                            <ol>
+                                <li>Create a clear listing title and choose the right category.</li>
+                                <li>Upload clean photos with good lighting and honest angles.</li>
+                                <li>Set a fair price and provide concise condition details.</li>
+                                <li>Respond promptly and agree on pickup in public campus areas.</li>
+                                <li>Mark sold items quickly to keep the marketplace fresh.</li>
+                            </ol>
+                        </div>
+                    </details>
+
+                    <details class="guide-accordion">
+                        <summary>
+                            <span><i class="fas fa-rotate-left"></i> Refund Process</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </summary>
+                        <div class="guide-accordion-content">
+                            <ol>
+                                <li>Discuss issues with the seller first within 24 hours of handover.</li>
+                                <li>Collect evidence (photos, listing screenshots, and chat logs).</li>
+                                <li>Submit a report in admin channels for dispute mediation.</li>
+                                <li>Follow case updates and provide additional proof if requested.</li>
+                            </ol>
+                        </div>
+                    </details>
+
+                    <details class="guide-accordion">
+                        <summary>
+                            <span><i class="fas fa-scale-balanced"></i> Marketplace Policies</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </summary>
+                        <div class="guide-accordion-content">
+                            <ul>
+                                <li>No prohibited, illegal, or unsafe items.</li>
+                                <li>No spam, duplicate listings, or deceptive descriptions.</li>
+                                <li>Respectful communication is required at all times.</li>
+                                <li>Violations can result in listing removal or account restrictions.</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details class="guide-accordion">
+                        <summary>
+                            <span><i class="fas fa-circle-info"></i> About UniMart</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </summary>
+                        <div class="guide-accordion-content">
+                            <p>UniMart is a student-centered marketplace for the CUHK-SZ community. It helps students buy and sell useful items quickly, sustainably, and safely.</p>
+                        </div>
+                    </details>
+                </section>
+
+                <aside class="guide-side-cards">
+                    <article class="guide-panel guide-card">
+                        <h3><i class="fas fa-bell"></i> Notifications & Updates</h3>
+                        <p>Watch for policy updates, security advisories, and product announcements. High-priority alerts are shown in-app and should be reviewed promptly.</p>
+                    </article>
+
+                    <article class="guide-panel guide-card">
+                        <h3><i class="fas fa-lightbulb"></i> Quick Tips for Success</h3>
+                        <ul>
+                            <li>Use descriptive titles and clear pricing.</li>
+                            <li>Meet in visible, public campus areas.</li>
+                            <li>Keep all communication polite and traceable.</li>
+                            <li>Take screenshots for high-value transactions.</li>
+                        </ul>
+                    </article>
+                </aside>
+            </div>
+        </main>
+    </div>
+
+    <script defer src="../js/user-sidebar.js"></script>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="../index.html" class="bottom-nav-item" data-page="marketplace">
+            <i class="fas fa-store"></i>
+            <span>Marketplace</span>
+        </a>
+        <a href="sell-item.html" class="bottom-nav-item" data-page="sell">
+            <i class="fas fa-plus"></i>
+            <span>Sell</span>
+        </a>
+        <a href="my-sales.html" class="bottom-nav-item" data-page="sales">
+            <i class="fas fa-chart-line"></i>
+            <span>Sales</span>
+        </a>
+        <a href="my-favorites.html" class="bottom-nav-item" data-page="favorites">
+            <i class="fas fa-heart"></i>
+            <span>Favorites</span>
+        </a>
+        <a href="profile.html" class="bottom-nav-item" data-page="profile">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+        <a href="user-guide.html" class="bottom-nav-item active" data-page="guide">
+            <i class="fas fa-book-open"></i>
+            <span>Guide</span>
+        </a>
+    </nav>
+
+    <script defer src="../js/bottom-nav.js"></script>
+</body>
+</html>
