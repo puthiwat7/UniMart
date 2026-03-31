@@ -13,6 +13,19 @@ const firebaseConfig = {
   measurementId: "G-2QJ09Q5M12"
 };
 
+// Global constants
+const COLLEGES = [
+  "All Colleges",
+  "Minerva",
+  "Muse",
+  "Diligentia",
+  "Ling",
+  "Harmonia",
+  "Shaw",
+  "Eighth College",
+  "Duran Family"
+];
+
 // Initialize Firebase - wait for SDK to be available
 if (typeof firebase !== 'undefined') {
   firebase.initializeApp(firebaseConfig);

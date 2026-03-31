@@ -158,8 +158,33 @@ function initializeProfile() {
     // Set form values in case user switches to edit mode
     updateFormValues(profile);
 
+    // Populate college options
+    populateCollegeOptions();
+
     // Load user activity stats
     loadUserStats(user.uid);
+}
+
+function populateCollegeOptions() {
+    const collegeSelect = document.getElementById('college');
+    if (!collegeSelect) return;
+
+    // Clear existing options
+    collegeSelect.innerHTML = '';
+
+    // Add default option
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Select your college';
+    collegeSelect.appendChild(defaultOption);
+
+    // Add college options from COLLEGES constant (skip "All Colleges")
+    COLLEGES.slice(1).forEach(college => {
+        const option = document.createElement('option');
+        option.value = college;
+        option.textContent = college;
+        collegeSelect.appendChild(option);
+    });
 }
 
 async function loadUserStats(userId) {

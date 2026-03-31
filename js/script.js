@@ -297,6 +297,7 @@ async function initializeApp() {
     setupScrollToTop();
     setupProductModal();
     setupPaymentModal();
+    populateCollegeFilterOptions();
 }
 
 // Initialize when DOM is ready
@@ -572,12 +573,14 @@ function setupCategoryDropdown() {
 function filterProducts() {
     currentPage = 1; // Reset pagination when filtering
     const searchInput = document.querySelector('.search-box input').value.toLowerCase();
+    const selectedCollege = document.getElementById('collegeFilter').value;
     
     filteredProducts = products.filter(product => {
         const matchCategory = currentCategory === 'All Items' || product.category === currentCategory;
         const matchSearch = product.title.toLowerCase().includes(searchInput) || 
                           product.seller.toLowerCase().includes(searchInput);
-        return matchCategory && matchSearch;
+        const matchCollege = selectedCollege === 'All Colleges' || product.college === selectedCollege;
+        return matchCategory && matchSearch && matchCollege;
     });
 
     renderProducts(filteredProducts, 1);
@@ -588,6 +591,7 @@ function filterProducts() {
 function updateCategoryCounts() {
     const categoryCards = document.querySelectorAll('.category-card');
     const searchInput = document.querySelector('.search-box input').value.toLowerCase();
+    const selectedCollege = document.getElementById('collegeFilter').value;
     
     // Create a map for efficient counting
     const categoryCounts = new Map();
@@ -597,8 +601,9 @@ function updateCategoryCounts() {
         const matchesSearch = !searchInput || 
             product.title.toLowerCase().includes(searchInput) || 
             product.seller.toLowerCase().includes(searchInput);
+        const matchesCollege = selectedCollege === 'All Colleges' || product.college === selectedCollege;
         
-        if (matchesSearch) {
+        if (matchesSearch && matchesCollege) {
             const category = product.category;
             categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1);
             totalCount++;
@@ -889,8 +894,12 @@ document.querySelectorAll('.filter-select').forEach((select, index) => {
             }
             renderProducts(filteredProducts);
         }
-        // College filter (index === 1) can be expanded for college-specific filtering
     });
+});
+
+// Handle college filter
+document.getElementById('collegeFilter').addEventListener('change', (e) => {
+    filterProducts();
 });
 
 // ======================== Scroll to Top Button ========================
@@ -1070,4 +1079,20 @@ function setupPaymentModal() {
     if (btnPaymentMade) {
         btnPaymentMade.addEventListener('click', handlePaymentMade);
     }
+}
+
+function populateCollegeFilterOptions() {
+    const collegeFilter = document.getElementById('collegeFilter');
+    if (!collegeFilter) return;
+
+    // Clear existing options
+    collegeFilter.innerHTML = '';
+
+    // Add college options from COLLEGES constant
+    COLLEGES.forEach(college => {
+        const option = document.createElement('option');
+        option.value = college;
+        option.textContent = college;
+        collegeFilter.appendChild(option);
+    });
 }
