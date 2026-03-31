@@ -709,8 +709,7 @@ function setupAdminEmailManagement() {
 }
 
 function redirectNonAdmin() {
-    alert('You do not have access to the Admin Panel.');
-    window.location.href = '../';
+    // Intentionally no redirect. Access control is handled by sidebar visibility only.
 }
 
 function verifyAdminAccess(user) {
@@ -734,7 +733,6 @@ async function initializeAdminPage() {
     if (typeof firebase !== 'undefined' && firebase.auth) {
         firebase.auth().onAuthStateChanged(async (user) => {
             if (!user) {
-                window.location.href = 'login.html';
                 return;
             }
 
@@ -749,7 +747,7 @@ async function initializeAdminPage() {
         return;
     }
 
-    redirectNonAdmin();
+    return;
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

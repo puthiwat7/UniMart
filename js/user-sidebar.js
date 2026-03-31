@@ -2,7 +2,7 @@
 // This script assumes firebase-config.js and firebase-auth.js have been loaded.
 
 const ADMIN_EMAILS_KEY = 'unimart_admin_emails';
-const DEFAULT_ADMIN_EMAILS = ['puthiwat7@gmail.com'];
+const DEFAULT_ADMIN_EMAILS = ['puthiwat7@gmail.com', '124020058@link.cuhk.edu.cn'];
 
 function normalizeEmail(email) {
     return String(email || '').trim().toLowerCase();
@@ -80,8 +80,7 @@ function isCurrentUserAdmin(userLike) {
 }
 
 function resolveAdminPanelPath() {
-    const path = window.location.pathname || '';
-    return path.includes('/pages/') ? 'admin-panel' : 'pages/admin-panel';
+    return '/pages/admin-panel';
 }
 
 function ensureAdminNavItem(userLike) {
