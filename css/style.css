@@ -5376,6 +5376,42 @@ body {
     margin-bottom: 10px;
 }
 
+/* ==================== Listings Manager Tabs ==================== */
+.admin-listing-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0;
+}
+
+.admin-listing-tab {
+    padding: 10px 16px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark-gray);
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    position: relative;
+    margin-bottom: -2px;
+}
+
+.admin-listing-tab:hover {
+    color: var(--text-color);
+}
+
+.admin-listing-tab.active {
+    color: var(--primary-blue);
+    border-bottom-color: var(--primary-blue);
+}
+
+.admin-listings-table-wrap {
+    margin-top: 12px;
+}
+
 @media (max-width: 1024px) {
     .admin-module-layout {
         grid-template-columns: 1fr;
