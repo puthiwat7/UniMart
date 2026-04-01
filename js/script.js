@@ -1107,7 +1107,7 @@ function populateCollegeDropdown() {
         "Harmonia",
         "Shaw",
         "Eighth College",
-        "Duran Family"
+        "Duan Family"
     ];
 
     // Use COLLEGES constant if available, otherwise use fallback
