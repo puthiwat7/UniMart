@@ -133,8 +133,9 @@ function normalizeListing(item, index = 0) {
     const status = rawStatus === 'withdrawed' ? 'withdrawn' : rawStatus;
 
     return {
-        id: item.id || Date.now() + index,
+        id: String(item.id || Date.now() + index),
         title: String(item.title || 'Untitled Item'),
+        sellerPaymentQR: item.sellerPaymentQR || '',
         price: String(item.price || '¥0.00'),
         category: String(item.category || 'Other'),
         image: String(item.image || '📦'),
@@ -612,7 +613,41 @@ function openSalesModal(itemId) {
     document.getElementById('salesEditPanel').style.display = 'none';
 
     renderSalesModalImage();
+    renderSalesQR(item);
     document.getElementById('salesModal').classList.add('active');
+}
+
+async function renderSalesQR(item) {
+    const qrBox = document.getElementById('salesQRImage');
+    if (!qrBox) return;
+
+    let qrSrc = item && item.sellerPaymentQR ? item.sellerPaymentQR : '';
+
+    if (!qrSrc && window.unimartProfileSync && typeof window.unimartProfileSync.getProfileFromCloud === 'function') {
+        try {
+            const currentUser = getCurrentUserIdentity();
+            if (currentUser.uid) {
+                const profile = await window.unimartProfileSync.getProfileFromCloud(currentUser.uid);
+                if (profile && profile.paymentQR) qrSrc = profile.paymentQR;
+            }
+        } catch (_) {}
+    }
+
+    if (!qrSrc) {
+        try {
+            const raw = localStorage.getItem('userProfile');
+            if (raw) {
+                const profile = JSON.parse(raw);
+                if (profile.paymentQR) qrSrc = profile.paymentQR;
+            }
+        } catch (_) {}
+    }
+
+    if (qrSrc) {
+        qrBox.innerHTML = `<img src="${qrSrc}" alt="Seller Payment QR" style="max-width: 100%; max-height: 220px; object-fit: contain; border-radius: 8px;">`;
+    } else {
+        qrBox.innerHTML = '<i class="fas fa-qrcode" style="font-size: 72px; color: #d1d5db;"></i><p style="color:#9ca3af;font-size:12px;margin-top:8px;">No seller QR uploaded</p>';
+    }
 }
 
 function closeSalesModal() {
@@ -630,33 +665,28 @@ function openSalesEditPanel() {
     document.getElementById('editPrice').value = String(item.price).replace(/[^\d.]/g, '');
     document.getElementById('editDescription').value = item.description || '';
     document.getElementById('editCategory').value = item.category || 'Other';
-    
-    // Map condition number to select value
+
     const conditionValue = Number(item.condition) || Number(item.conditionPercentage) || 75;
     const conditionMap = {
         0: 'Very Poor',
-        20: 'Poor', 
+        20: 'Poor',
         40: 'Fair',
-        60: 'Used',
         60: 'Good',
         80: 'Like New',
         100: 'Brand New'
     };
-    const selectValue = conditionMap[conditionValue] || 'Used';
-    document.getElementById('editCondition').value = selectValue;
-    
+    document.getElementById('editCondition').value = conditionMap[conditionValue] || 'Used';
     document.getElementById('editQuantity').value = item.quantity || 1;
 
     editingImages = [...getSalesItemImages(item)];
     renderEditImagesPreview();
 
-    // Store original data for change detection
     originalEditData = {
         title: item.title,
         price: String(item.price).replace(/[^\d.]/g, ''),
         description: item.description || '',
         category: item.category || 'Other',
-        condition: conditionMap[Number(item.condition) || Number(item.conditionPercentage) || 75] || 'Used', // Map to select value
+        condition: conditionMap[conditionValue] || 'Used',
         quantity: item.quantity || 1,
         images: [...editingImages]
     };
