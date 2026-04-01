@@ -258,6 +258,16 @@ body {
     padding: 20px;
 }
 
+/* Scoped User Guide Page - Fix Main Width */
+.user-guide-page > .main-content {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 240px;
+    padding: 0;
+    background: #ffffff;
+    overflow: visible;
+}
+
 .header-banner {
     background-color: #4a5fc1;
     color: white;
@@ -869,12 +879,49 @@ body {
     color: #9ca3af;
 }
 
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 50%;
+    border-top-color: #3b82f6;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 .admin-access-section {
     margin: 20px 48px 0;
     background: #fff;
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 16px;
+}
+
+.admin-filter-row {
+    margin-bottom: 14px;
+}
+
+.admin-filter-btn {
+    background: #f1f5f9;
+    border: 1px solid #dbeafe;
+    color: #1f2937;
+    padding: 7px 12px;
+    margin-right: 6px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all .15s ease;
+}
+
+.admin-filter-btn.active,
+.admin-filter-btn:hover {
+    background: #3b82f6;
+    color: #fff;
+    border-color: #60a5fa;
 }
 
 .admin-access-section h3 {
@@ -3231,50 +3278,321 @@ body {
 }
 
 /* ======================== User Guide Page ======================== */
-.guide-header {
+.user-guide-page .guide-header {
     background: linear-gradient(135deg, #4a5fc1 0%, #2d3a8f 100%);
     color: white;
     padding: 64px 48px;
     text-align: center;
 }
 
-.guide-header h1 {
+.user-guide-page .guide-header h1 {
     font-size: 48px;
     font-weight: 700;
     margin-bottom: 12px;
 }
 
-.guide-header p {
+.user-guide-page .guide-header p {
     font-size: 16px;
     font-weight: 300;
     opacity: 0.9;
     margin: 8px 0;
 }
 
-/* Dashboard Layout */
-.guide-container {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 24px;
+/* Main Container - Centered Layout */
+.user-guide-page .guide-container {
+    display: flex;
+    gap: 32px;
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 48px;
+    padding: 48px 20px;
 }
 
-.guide-main {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+.user-guide-page .guide-main {
+    flex: 1;
+    max-width: 900px;
+    margin: 0 auto;
 }
 
-.guide-sidebar {
+.user-guide-page .guide-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+}
+
+/* User Guide Content Container */
+.user-guide-page .user-guide-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+/* Introduction Section */
+.user-guide-page .guide-intro {
+    margin-bottom: 32px;
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.user-guide-page .guide-intro h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #111827;
+    line-height: 1.2;
+}
+
+.user-guide-page .guide-intro p {
+    font-size: 16px;
+    color: #6b7280;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.user-guide-page .guide-intro p:last-child {
+    margin-bottom: 0;
+}
+
+/* Banner Styles */
+.user-guide-page .guide-banner {
+    padding: 20px 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    border: 1px solid;
     display: flex;
-    flex-direction: column;
-    gap: 16px;
+    align-items: flex-start;
+    gap: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.user-guide-page .guide-banner-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.user-guide-page .guide-banner h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    margin: 0 0 8px 0;
+    line-height: 1.3;
+}
+
+.user-guide-page .guide-banner p {
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.user-guide-page .guide-banner.warning {
+    background: #fef3c7;
+    border-color: #f59e0b;
+    color: #92400e;
+}
+
+.user-guide-page .guide-banner.warning h4 {
+    color: #92400e;
+}
+
+.user-guide-page .guide-banner.warning .guide-banner-icon {
+    color: #f59e0b;
+}
+
+.user-guide-page .guide-banner.info {
+    background: #dbeafe;
+    border-color: #3b82f6;
+    color: #1e40af;
+}
+
+.user-guide-page .guide-banner.info h4 {
+    color: #1e40af;
+}
+
+.user-guide-page .guide-banner.info .guide-banner-icon {
+    color: #3b82f6;
+}
+
+/* Guide Block Sections */
+.user-guide-page .guide-block {
+    margin-bottom: 32px;
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.user-guide-page .guide-block h3 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: #111827;
+    line-height: 1.2;
+}
+
+/* Timeline Styles */
+.user-guide-page .timeline {
+    border-left: 3px solid #e5e7eb;
+    padding-left: 24px;
+    margin-left: 0;
+    position: relative;
+}
+
+.user-guide-page .timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.user-guide-page .timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+.user-guide-page .dot {
+    position: absolute;
+    left: -9px;
+    top: 16px;
+    width: 14px;
+    height: 14px;
+    background: #4f46e5;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px #e5e7eb;
+}
+
+/* Card Styles */
+.user-guide-page .card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.user-guide-page .card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.user-guide-page .card.simple {
+    margin-bottom: 16px;
+}
+
+.user-guide-page .card.simple:last-child {
+    margin-bottom: 0;
+}
+
+.user-guide-page .card h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: #111827;
+    line-height: 1.3;
+}
+
+.user-guide-page .card p {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Tip Styles */
+.user-guide-page .guide-tip {
+    margin-top: 24px;
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 4px solid #4f46e5;
+}
+
+.user-guide-page .guide-tip ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.user-guide-page .guide-tip ul li {
+    font-size: 14px;
+    color: #4f46e5;
+    margin-bottom: 8px;
+    padding-left: 24px;
+    position: relative;
+    line-height: 1.5;
+}
+
+.user-guide-page .guide-tip ul li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+}
+
+.user-guide-page .guide-tip ul li:last-child {
+    margin-bottom: 0;
+}
+
+/* Sidebar Info Cards */
+.user-guide-page .info-card {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.user-guide-page .info-card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.user-guide-page .info-card h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-guide-page .info-icon {
+    width: 20px;
+    height: 20px;
+    color: #4f46e5;
+    flex-shrink: 0;
+}
+
+.user-guide-page .info-card p {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0 0 12px 0;
+}
+
+.user-guide-page .info-card ul {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0;
+    padding-left: 20px;
+}
+
+.user-guide-page .info-card ul li {
+    margin-bottom: 6px;
+}
+
+.user-guide-page .info-card ul li:last-child {
+    margin-bottom: 0;
 }
 
 /* Accordion Styles */
-.accordion {
+.user-guide-page .accordion {
     background: white;
     border-radius: 12px;
     margin-bottom: 16px;
@@ -3283,17 +3601,17 @@ body {
     transition: all 0.3s ease;
 }
 
-.accordion:hover {
+.user-guide-page .accordion:hover {
     border-color: #cbd5e1;
     background: #fafbfc;
 }
 
-.accordion.active {
+.user-guide-page .accordion.active {
     border-color: #4a5fc1;
     background: white;
 }
 
-.accordion-header {
+.user-guide-page .accordion-header {
     padding: 20px;
     font-weight: 600;
     font-size: 16px;
@@ -3307,25 +3625,25 @@ body {
     border: none;
 }
 
-.accordion-header:hover {
+.user-guide-page .accordion-header:hover {
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
-.accordion-header span:first-child {
+.user-guide-page .accordion-header span:first-child {
     display: flex;
     align-items: center;
     gap: 12px;
     color: #1e293b;
 }
 
-.accordion-icon {
+.user-guide-page .accordion-icon {
     width: 20px;
     height: 20px;
     color: #4a5fc1;
     flex-shrink: 0;
 }
 
-.arrow {
+.user-guide-page .arrow {
     font-size: 16px;
     color: #64748b;
     transition: all 0.3s ease;
@@ -3338,13 +3656,13 @@ body {
     background: #f8fafc;
 }
 
-.accordion.active .arrow {
+.user-guide-page .accordion.active .arrow {
     transform: rotate(180deg);
     background: #4a5fc1;
     color: white;
 }
 
-.accordion-body {
+.user-guide-page .accordion-body {
     max-height: 0;
     overflow: hidden;
     background: #fafbfc;
@@ -3352,26 +3670,26 @@ body {
     border-top: 1px solid #e2e8f0;
 }
 
-.accordion.active .accordion-body {
+.user-guide-page .accordion.active .accordion-body {
     max-height: 2000px;
 }
 
-.accordion-body > * {
+.user-guide-page .accordion-body > * {
     padding: 0 20px;
     margin-bottom: 16px;
 }
 
-.accordion-body > *:first-child {
+.user-guide-page .accordion-body > *:first-child {
     padding-top: 20px;
 }
 
-.accordion-body > *:last-child {
+.user-guide-page .accordion-body > *:last-child {
     margin-bottom: 0;
     padding-bottom: 20px;
 }
 
 /* Sidebar Info Cards */
-.info-card {
+.user-guide-page .info-card {
     background: white;
     padding: 20px;
     border-radius: 12px;
@@ -3379,12 +3697,12 @@ body {
     transition: all 0.3s ease;
 }
 
-.info-card:hover {
+.user-guide-page .info-card:hover {
     border-color: #cbd5e1;
     background: #fafbfc;
 }
 
-.info-card h3 {
+.user-guide-page .info-card h3 {
     font-size: 16px;
     font-weight: 600;
     color: #1e293b;
@@ -3394,21 +3712,21 @@ body {
     gap: 8px;
 }
 
-.info-icon {
+.user-guide-page .info-icon {
     width: 18px;
     height: 18px;
     color: #4a5fc1;
     flex-shrink: 0;
 }
 
-.info-card p {
+.user-guide-page .info-card p {
     font-size: 14px;
     color: #64748b;
     line-height: 1.6;
     margin: 0 0 12px 0;
 }
 
-.info-card ul {
+.user-guide-page .info-card ul {
     font-size: 14px;
     color: #64748b;
     line-height: 1.6;
@@ -3416,11 +3734,11 @@ body {
     padding-left: 20px;
 }
 
-.info-card li {
+.user-guide-page .info-card li {
     margin-bottom: 6px;
 }
 
-.info-card li:last-child {
+.user-guide-page .info-card li:last-child {
     margin-bottom: 0;
 }
 
@@ -3461,6 +3779,97 @@ body {
     font-weight: 600;
 }
 
+/* Responsive - User Guide Page */
+@media (max-width: 768px) {
+    .user-guide-page .guide-header {
+        padding: 40px 24px;
+    }
+
+    .user-guide-page .guide-header h1 {
+        font-size: 32px;
+    }
+
+    .user-guide-page .guide-container {
+        flex-direction: column;
+        padding: 32px 16px;
+        gap: 24px;
+    }
+
+    .user-guide-page .guide-main,
+    .user-guide-page .guide-sidebar {
+        max-width: 100%;
+    }
+
+    .user-guide-page .timeline {
+        margin-left: 8px;
+        padding-left: 16px;
+    }
+
+    .user-guide-page .timeline-card {
+        padding: 12px 14px;
+    }
+
+    .user-guide-page .timeline-card h4 {
+        font-size: 15px;
+    }
+
+    .user-guide-page .timeline-card p {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-guide-page .guide-header {
+        padding: 32px 16px;
+    }
+
+    .user-guide-page .guide-header h1 {
+        font-size: 24px;
+    }
+
+    .user-guide-page .guide-header p {
+        font-size: 14px;
+    }
+
+    .user-guide-page .guide-container {
+        flex-direction: column;
+        padding: 24px 12px;
+        gap: 16px;
+    }
+
+    .user-guide-page .timeline {
+        margin-left: 4px;
+        padding-left: 12px;
+        border-left-width: 1.5px;
+    }
+
+    .user-guide-page .timeline-item {
+        margin-bottom: 16px;
+    }
+
+    .user-guide-page .timeline-card {
+        padding: 10px 12px;
+    }
+
+    .user-guide-page .timeline-card h4 {
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .user-guide-page .timeline-card p {
+        font-size: 12px;
+    }
+
+    .user-guide-page .accordion-header {
+        padding: 16px;
+        font-size: 14px;
+    }
+
+    .user-guide-page .section-title {
+        font-size: 15px;
+    }
+}
+
 .guide-main ol {
     color: #666;
     line-height: 1.6;
@@ -3469,7 +3878,7 @@ body {
 }
 
 /* Step Components */
-.step {
+.user-guide-page .step {
     display: flex;
     gap: 16px;
     margin-bottom: 20px;
@@ -3480,16 +3889,16 @@ body {
     transition: all 0.2s ease;
 }
 
-.step:hover {
+.user-guide-page .step:hover {
     background: #f8fafc;
     border-color: #cbd5e1;
 }
 
-.step:last-child {
+.user-guide-page .step:last-child {
     margin-bottom: 0;
 }
 
-.step-number {
+.user-guide-page .step-number {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3504,7 +3913,7 @@ body {
     flex-shrink: 0;
 }
 
-.step-title {
+.user-guide-page .step-title {
     font-size: 16px;
     font-weight: 600;
     color: #1e293b;
@@ -3512,13 +3921,13 @@ body {
     margin-bottom: 4px;
 }
 
-.step-description {
+.user-guide-page .step-description {
     font-size: 14px;
     color: #64748b;
     line-height: 1.5;
 }
 
-.step-recommendation {
+.user-guide-page .step-recommendation {
     display: flex;
     align-items: flex-start;
     gap: 12px;
@@ -3529,7 +3938,7 @@ body {
     margin-top: 16px;
 }
 
-.recommendation-icon {
+.user-guide-page .recommendation-icon {
     width: 18px;
     height: 18px;
     color: #d97706;
@@ -3537,7 +3946,7 @@ body {
     margin-top: 2px;
 }
 
-.step-recommendation span {
+.user-guide-page .step-recommendation span {
     font-size: 14px;
     color: #92400e;
     line-height: 1.5;
@@ -3626,6 +4035,61 @@ body {
     line-height: 1.5;
     font-weight: 500;
 }
+
+/* Setup Progress Card */
+.setup-card-clean {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 22px;
+    border: 1px solid #eaeaea;
+    margin-bottom: 20px;
+}
+
+.setup-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.setup-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 14px;
+}
+
+.setup-divider {
+    height: 1px;
+    background: #eee;
+    margin: 14px 0;
+}
+
+.setup-item-clean {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.setup-item-clean i {
+    width: 20px;
+    height: 20px;
+    color: #5b6cff;
+    margin-top: 2px;
+}
+
+.item-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.item-desc {
+    font-size: 13px;
+    color: #777;
+    line-height: 1.4;
+}
+
+/* Existing setup-card styles are no longer used for the UI variant above */
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -3821,6 +4285,45 @@ body {
     .enforcement-icon {
         width: 14px;
         height: 14px;
+    }
+
+    /* Setup Card Mobile */
+    .setup-card {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .setup-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .setup-header h3 {
+        font-size: 16px;
+    }
+
+    .setup-header p {
+        font-size: 13px;
+    }
+
+    .progress-text {
+        font-size: 14px;
+    }
+
+    .setup-item {
+        font-size: 13px;
+        gap: 8px;
+    }
+
+    .setup-item i {
+        width: 14px;
+        height: 14px;
+    }
+
+    .primary-btn {
+        padding: 12px 16px;
+        font-size: 14px;
     }
 }
 

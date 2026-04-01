@@ -45,6 +45,47 @@ class FirebaseAuthManager {
         }
     }
 
+    async ensureUserExists(user) {
+        if (!user || !user.uid || !user.email) {
+            console.warn('ensureUserExists: missing user data', user);
+            return;
+        }
+
+        if (typeof firebase === 'undefined' || typeof firebase.firestore !== 'function') {
+            console.warn('Firestore SDK not available for user provisioning.');
+            return;
+        }
+
+        try {
+            const userRef = firebase.firestore().collection('users').doc(user.uid);
+            const userDoc = await userRef.get();
+
+            if (!userDoc.exists) {
+                await userRef.set({
+                    email: String(user.email).toLowerCase(),
+                    role: 'user',
+                    createdAt: new Date().toISOString()
+                });
+                console.log('Created Firestore user profile:', user.uid);
+                return;
+            }
+
+            const data = userDoc.data() || {};
+            const updates = {};
+
+            if (!data.email) updates.email = String(user.email).toLowerCase();
+            if (!data.role) updates.role = 'user';
+            if (!data.createdAt) updates.createdAt = new Date().toISOString();
+
+            if (Object.keys(updates).length > 0) {
+                await userRef.set(updates, { merge: true });
+                console.log('Updated Firestore user profile or role defaults:', user.uid);
+            }
+        } catch (error) {
+            console.error('ensureUserExists Firestore operation failed:', error);
+        }
+    }
+
     // Check if user is logged in
     isUserLoggedIn() {
         return this.user !== null;
@@ -67,6 +108,9 @@ class FirebaseAuthManager {
             const result = await this.auth.signInWithPopup(provider);
             
             console.log('User signed in:', result.user);
+            
+            // Ensure user exists in Firestore
+            await this.ensureUserExists(result.user);
             
             // Track login event
             this.logAnalyticsEvent('login', {
@@ -112,6 +156,8 @@ class FirebaseAuthManager {
         try {
             const result = await this.auth.signInWithEmailAndPassword(email, password);
             console.log('User signed in with email:', result.user);
+
+            await this.ensureUserExists(result.user);
             
             // Track login event
             this.logAnalyticsEvent('login', {
@@ -157,6 +203,8 @@ class FirebaseAuthManager {
         try {
             const result = await this.auth.createUserWithEmailAndPassword(email, password);
             console.log('User signed up with email:', result.user);
+
+            await this.ensureUserExists(result.user);
             
             // Track sign up event
             this.logAnalyticsEvent('sign_up', {
@@ -260,6 +308,10 @@ class FirebaseAuthManager {
                 alert('Your account has been restricted. Please contact support.');
                 callback(null);
                 return;
+            }
+
+            if (user) {
+                await this.ensureUserExists(user);
             }
 
             // Cache basic user info so pages can show it immediately on load

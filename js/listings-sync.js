@@ -42,7 +42,8 @@ function unimartNormalizeListing(item, index = 0) {
         status,
         listedAt: item.listedAt || item.listedDate || new Date().toISOString(),
         listedDate: item.listedDate || item.listedAt || new Date().toISOString(),
-        soldDate: item.soldDate || null
+        soldDate: item.soldDate || null,
+        userId: item.userId || item.sellerUid || null
     };
 }
 

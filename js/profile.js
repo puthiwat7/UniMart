@@ -244,6 +244,17 @@ function updateProfileDisplay(profile) {
     document.getElementById('displayWechat').textContent = profile.wechat || 'Not set';
     document.getElementById('displayBio').textContent = profile.bio || 'No bio added';
 
+    // Check if profile is complete and store in localStorage
+    const isProfileComplete = profile.fullName && profile.college;
+    if (isProfileComplete) {
+        localStorage.setItem("profileComplete", "true");
+    }
+
+    // Check if policy is agreed and store in localStorage
+    if (isPolicyAgreed(profile)) {
+        localStorage.setItem("policyAccepted", "true");
+    }
+
     // Show or hide alert based on policy agreement
     const alert = document.querySelector('.alert-warning');
     if (isPolicyAgreed(profile)) {
@@ -365,6 +376,12 @@ function handleProfileSubmit(e) {
             // Toggle back to view mode
             toggleEditMode();
             
+            // Check if profile is now complete and store in localStorage
+            const isProfileComplete = profileData.fullName && profileData.college;
+            if (isProfileComplete) {
+                localStorage.setItem("profileComplete", "true");
+            }
+            
             // Show success message
             showNotification('Profile updated successfully!', 'success');
         })
@@ -480,6 +497,9 @@ function handleAgreeToPolicy() {
             
             // Close modal
             closePoliciesModal();
+            
+            // Store policy acceptance in localStorage for modal check
+            localStorage.setItem("policyAccepted", "true");
             
             showNotification('You have agreed to the marketplace policies!', 'success');
         })
