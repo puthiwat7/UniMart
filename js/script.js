@@ -114,7 +114,7 @@ function normalizeListing(listing, fallbackIndex = 0) {
     });
 
     return {
-        id: listing.id || Date.now() + fallbackIndex,
+        id: String(listing.id || Date.now() + fallbackIndex),
         title: String(listing.title || 'Untitled Item'),
         price: normalizedPrice,
         category: normalizedCategory,
@@ -654,7 +654,8 @@ function setupRefresh() {
 
 // Handle view details button - Open product modal
 function handleViewDetails(productId) {
-    const product = products.find(p => p.id === productId);
+    const normalizedId = String(productId);
+    const product = products.find(p => String(p.id) === normalizedId);
     if (product) {
         openProductModal(product);
     }
