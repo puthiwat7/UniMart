@@ -27,7 +27,6 @@ async function loadExtendedProfile(uid) {
         studentId: '',
         phone: '',
         wechat: '',
-        bio: '',
         paymentQR: null,
         hasAgreedPolicy: false,
         agreedToPolicies: false
@@ -242,7 +241,6 @@ function updateProfileDisplay(profile) {
     document.getElementById('displayStudentID').textContent = profile.studentId || 'Not set';
     document.getElementById('displayPhone').textContent = profile.phone || 'Not set';
     document.getElementById('displayWechat').textContent = profile.wechat || 'Not set';
-    document.getElementById('displayBio').textContent = profile.bio || 'No bio added';
 
     // Check if profile is complete and store in localStorage
     const isProfileComplete = profile.fullName && profile.college;
@@ -270,7 +268,6 @@ function updateFormValues(profile) {
     document.getElementById('studentId').value = profile.studentId || '';
     document.getElementById('phone').value = profile.phone || '';
     document.getElementById('wechat').value = profile.wechat || '';
-    document.getElementById('bio').value = profile.bio || '';
     document.getElementById('policyCheckbox').checked = isPolicyAgreed(profile);
 }
 
@@ -345,8 +342,7 @@ function handleProfileSubmit(e) {
         college: document.getElementById('college').value,
         studentId: document.getElementById('studentId').value,
         phone: document.getElementById('phone').value,
-        wechat: document.getElementById('wechat').value,
-        bio: document.getElementById('bio').value
+        wechat: document.getElementById('wechat').value
     };
 
     // Validate required fields
