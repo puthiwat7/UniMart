@@ -23,7 +23,7 @@ const COLLEGES = [
   "Harmonia",
   "Shaw",
   "Eighth College",
-  "Duran Family"
+  "Duan Family"
 ];
 
 // Initialize Firebase - wait for SDK to be available
