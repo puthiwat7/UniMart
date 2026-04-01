@@ -125,6 +125,7 @@ function normalizeListing(listing, fallbackIndex = 0) {
         images: imageList.length ? imageList : (primaryImageUrl ? [primaryImageUrl] : []),
         badge: String(listing.badge || 'Used'),
         condition: normalizedCondition,
+        quantity: Number.isFinite(Number(listing.quantity)) ? Number(listing.quantity) : 1,
         description: String(listing.description || ''),
         status: String(listing.status || 'active').toLowerCase()
     };
@@ -473,13 +474,16 @@ function createProductCard(product) {
             </button>
         </div>
         <div class="product-info">
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
+            <div class="product-meta-row">
                 <span class="product-badge" style="margin-bottom: 0;">${product.badge}</span>
-                ${conditionPercent !== null ? `<span class="product-badge" style="margin-bottom: 0; background-color: #ecfdf5; color: #047857;">${conditionPercent}%</span>` : ''}
+                ${conditionPercent !== null ? `<span class="product-badge condition-badge">${conditionPercent}%</span>` : ''}
             </div>
             <h3 class="product-title">${product.title}</h3>
             <div class="product-price">${product.price}</div>
-            <div class="product-seller">Sold by ${product.seller || 'Campus Seller'}</div>
+            <div class="product-details-row">
+                <span class="product-seller">by ${product.seller || 'Campus Seller'}</span>
+                <span class="product-quantity">Qty: ${product.quantity || 1}</span>
+            </div>
             <div class="product-actions">
                 <button onclick="handleViewDetails(${product.id})">View Details</button>
             </div>
