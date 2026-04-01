@@ -119,6 +119,7 @@ function normalizeListing(listing, fallbackIndex = 0) {
         price: normalizedPrice,
         category: normalizedCategory,
         seller: String(listing.seller || 'Campus Seller'),
+        college: String(listing.college || ''),
         sellerPaymentQR: listing.sellerPaymentQR || '',
         image: String(listing.image || '📦'),
         imageUrl: primaryImageUrl,
@@ -486,6 +487,7 @@ function createProductCard(product) {
                 <span class="product-seller">by ${product.seller || 'Campus Seller'}</span>
                 <span class="product-quantity">Qty: ${product.quantity || 1}</span>
             </div>
+            ${product.college ? `<div class="product-college">${product.college}</div>` : ''}
             <div class="product-actions">
                 <button onclick="handleViewDetails(${productIdLiteral})">View Details</button>
             </div>

@@ -624,7 +624,7 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .product-seller {
@@ -637,6 +637,17 @@ body {
     font-size: 13px;
     color: #1f2937;
     font-weight: 700;
+}
+
+.product-college {
+    font-size: 12px;
+    color: #3b82f6;
+    background-color: #eff6ff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    font-weight: 600;
+    display: inline-block;
 }
 
 .product-actions {
