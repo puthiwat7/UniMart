@@ -134,27 +134,33 @@ function saveFavorites(favorites) {
 
 // Add item to favorites
 function addToFavorites(productId, product) {
+    const normalizedId = String(productId);
     const favorites = getFavorites();
-    const exists = favorites.some(fav => fav.id === productId);
+    const exists = favorites.some((fav) => String(fav.id) === normalizedId);
     
     if (!exists) {
-        favorites.push(product);
+        favorites.push({
+            ...product,
+            id: normalizedId
+        });
         saveFavorites(favorites);
     }
 }
 
 // Remove item from favorites
 function removeFromFavorites(productId) {
+    const normalizedId = String(productId);
     let favorites = getFavorites();
-    favorites = favorites.filter(fav => fav.id !== productId);
+    favorites = favorites.filter((fav) => String(fav.id) !== normalizedId);
     saveFavorites(favorites);
     renderFavorites();
 }
 
 // Check if item is in favorites
 function isFavorited(productId) {
+    const normalizedId = String(productId);
     const favorites = getFavorites();
-    return favorites.some(fav => fav.id === productId);
+    return favorites.some((fav) => String(fav.id) === normalizedId);
 }
 
 // Render favorites
@@ -232,6 +238,7 @@ async function renderFavorites() {
 function createFavoriteCard(product) {
     const card = document.createElement('div');
     card.className = 'product-card';
+    const productIdLiteral = JSON.stringify(String(product.id));
     
     const status = product.status || 'active';
     const isAvailable = status === 'active';
@@ -250,7 +257,7 @@ function createFavoriteCard(product) {
     }
     
     card.innerHTML = `
-        <div class="product-image favorite-image-wrapper" onclick="handleViewDetails(${product.id})">
+        <div class="product-image favorite-image-wrapper" onclick="handleViewDetails(${productIdLiteral})">
             ${cardImage}
             ${!isAvailable ? '<div class="favorite-unavailable-overlay">UNAVAILABLE</div>' : ''}
         </div>
@@ -265,8 +272,8 @@ function createFavoriteCard(product) {
             <div class="product-price">${product.price}</div>
             <div class="product-seller">by ${product.seller}</div>
             <div class="product-actions">
-                <button onclick="handleViewDetails(${product.id})">View Details</button>
-                <button class="favorite-remove-btn" onclick="removeFromFavorites(${product.id})">
+                <button onclick="handleViewDetails(${productIdLiteral})">View Details</button>
+                <button class="favorite-remove-btn" onclick="removeFromFavorites(${productIdLiteral})">
                     <i class="fas fa-trash"></i> Remove
                 </button>
             </div>
@@ -307,8 +314,9 @@ let currentProduct = null;
 
 // Handle view details
 async function handleViewDetails(productId) {
+    const normalizedId = String(productId);
     const favorites = getFavorites();
-    const product = favorites.find((p) => p.id === productId);
+    const product = favorites.find((p) => String(p.id) === normalizedId);
     if (product) {
         const updatedProduct = await getUpdatedProduct(product);
         openProductModal(updatedProduct);

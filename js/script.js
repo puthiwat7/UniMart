@@ -451,7 +451,9 @@ function renderMarketplaceLoadingState(count = 8) {
 function createProductCard(product) {
     const card = document.createElement('div');
     card.className = 'product-card';
-    const isFavorited = checkIfFavorited(product.id);
+    const productId = String(product.id);
+    const productIdLiteral = JSON.stringify(productId);
+    const isFavorited = checkIfFavorited(productId);
     const favBtnColor = isFavorited ? '#ef4444' : '#9ca3af';
     const conditionPercent = getConditionPercentage(product);
     
@@ -467,9 +469,9 @@ function createProductCard(product) {
     }
 
     card.innerHTML = `
-        <div class="product-image" style="position: relative; cursor: pointer;" onclick="handleViewDetails(${product.id})">
+        <div class="product-image" style="position: relative; cursor: pointer;" onclick="handleViewDetails(${productIdLiteral})">
             ${cardImage}
-            <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite(${product.id}, ${JSON.stringify(product).replace(/"/g, '&quot;')})" style="position: absolute; top: 8px; right: 8px; background-color: transparent; border: none; color: ${favBtnColor}; font-size: 20px; cursor: pointer; z-index: 10;">
+            <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite(${productIdLiteral}, ${JSON.stringify(product).replace(/"/g, '&quot;')})" style="position: absolute; top: 8px; right: 8px; background-color: transparent; border: none; color: ${favBtnColor}; font-size: 20px; cursor: pointer; z-index: 10;">
                 <i class="fas fa-heart"></i>
             </button>
         </div>
@@ -485,7 +487,7 @@ function createProductCard(product) {
                 <span class="product-quantity">Qty: ${product.quantity || 1}</span>
             </div>
             <div class="product-actions">
-                <button onclick="handleViewDetails(${product.id})">View Details</button>
+                <button onclick="handleViewDetails(${productIdLiteral})">View Details</button>
             </div>
         </div>
     `;
@@ -948,19 +950,25 @@ function saveFavorites(favorites) {
 
 // Check if item is favorited
 function checkIfFavorited(productId) {
+    const normalizedId = String(productId);
     const favorites = getFavorites();
-    return favorites.some(fav => fav.id === productId);
+    return favorites.some((fav) => String(fav.id) === normalizedId);
 }
 
 // Toggle favorite
 function toggleFavorite(productId, product) {
+    const normalizedId = String(productId);
     let favorites = getFavorites();
-    const isFavorited = favorites.some(fav => fav.id === productId);
+    const isFavorited = favorites.some((fav) => String(fav.id) === normalizedId);
+    const normalizedProduct = {
+        ...product,
+        id: normalizedId
+    };
     
     if (isFavorited) {
-        favorites = favorites.filter(fav => fav.id !== productId);
+        favorites = favorites.filter((fav) => String(fav.id) !== normalizedId);
     } else {
-        favorites.push(product);
+        favorites.push(normalizedProduct);
     }
     
     saveFavorites(favorites);
