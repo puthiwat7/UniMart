@@ -129,7 +129,29 @@ function isTimeoutError(error) {
 function parseSnapshotToListings(snapshot) {
     const value = snapshot.val();
     if (!value) return [];
-    const list = Array.isArray(value) ? value : Object.values(value);
+
+    // Keep stable IDs for legacy records by using RTDB child keys when item.id is missing.
+    if (Array.isArray(value)) {
+        return unimartDedupeListings(value.map((item, index) => {
+            if (!item || typeof item !== 'object') return item;
+            return {
+                ...item,
+                id: item.id || String(index)
+            };
+        }));
+    }
+
+    const list = Object.entries(value).map(([key, item]) => {
+        if (!item || typeof item !== 'object') {
+            return item;
+        }
+
+        return {
+            ...item,
+            id: item.id || key
+        };
+    });
+
     return unimartDedupeListings(list);
 }
 
