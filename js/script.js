@@ -138,11 +138,11 @@ function getConditionPercentage(product) {
 
     const badge = String(product?.badge || '').toLowerCase();
     const fallbackMap = {
-        'very poor': 10,
-        poor: 30,
-        fair: 50,
-        good: 70,
-        'like new': 90,
+        'very poor': 0,
+        poor: 20,
+        fair: 40,
+        good: 60,
+        'like new': 80,
         'brand new': 100,
         used: 60
     };

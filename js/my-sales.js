@@ -634,12 +634,12 @@ function openSalesEditPanel() {
     // Map condition number to select value
     const conditionValue = Number(item.condition) || Number(item.conditionPercentage) || 75;
     const conditionMap = {
-        10: 'Very Poor',
-        30: 'Poor', 
-        50: 'Fair',
+        0: 'Very Poor',
+        20: 'Poor', 
+        40: 'Fair',
         60: 'Used',
-        70: 'Good',
-        90: 'Like New',
+        60: 'Good',
+        80: 'Like New',
         100: 'Brand New'
     };
     const selectValue = conditionMap[conditionValue] || 'Used';
@@ -715,12 +715,12 @@ async function saveSalesEdit() {
 
     // Map select value to number
     const conditionMap = {
-        'Very Poor': 10,
-        'Poor': 30,
-        'Fair': 50,
+        'Very Poor': 0,
+        'Poor': 20,
+        'Fair': 40,
         'Used': 60,
-        'Good': 70,
-        'Like New': 90,
+        'Good': 60,
+        'Like New': 80,
         'Brand New': 100
     };
     const condition = conditionMap[conditionSelect] || 60;
