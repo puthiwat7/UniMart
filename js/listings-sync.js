@@ -19,7 +19,7 @@ function unimartNormalizeListing(item, index = 0) {
     const rawStatus = String(item.status || 'active').toLowerCase();
     const status = rawStatus === 'withdrawed' ? 'withdrawn' : rawStatus;
 
-    const id = item.id || Date.now() + index;
+    const id = String(item.id || Date.now() + index);
     const images = Array.isArray(item.images) ? item.images.filter(Boolean) : [];
 
     return {

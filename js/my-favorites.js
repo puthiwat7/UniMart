@@ -121,10 +121,30 @@ async function getUpdatedProduct(product) {
     return { ...product, status: 'active' };
 }
 
-// Get favorites from localStorage
 function getFavorites() {
-    const favorites = localStorage.getItem('favorites');
-    return favorites ? JSON.parse(favorites) : [];
+    const raw = localStorage.getItem('favorites');
+    if (!raw) return [];
+    try {
+        const favorites = JSON.parse(raw);
+        // Migrate any bloated entries (containing image data) to slim format
+        const slim = favorites.map(fav => ({
+            id: String(fav.id || ''),
+            title: fav.title || '',
+            price: fav.price || '',
+            badge: fav.badge || '',
+            category: fav.category || '',
+            seller: fav.seller || '',
+            college: fav.college || '',
+            status: fav.status || 'active'
+        })).filter(fav => fav.id);
+        // If migration changed anything, persist the cleaned version
+        if (slim.some((s, i) => JSON.stringify(s) !== JSON.stringify(favorites[i]))) {
+            try { localStorage.setItem('favorites', JSON.stringify(slim)); } catch (_) {}
+        }
+        return slim;
+    } catch (_) {
+        return [];
+    }
 }
 
 // Save favorites to localStorage
@@ -137,11 +157,19 @@ function addToFavorites(productId, product) {
     const normalizedId = String(productId);
     const favorites = getFavorites();
     const exists = favorites.some((fav) => String(fav.id) === normalizedId);
-    
+
     if (!exists) {
+        // Strip large image data before saving to avoid localStorage quota errors.
+        const slim = product || {};
         favorites.push({
-            ...product,
-            id: normalizedId
+            id: normalizedId,
+            title: slim.title || '',
+            price: slim.price || '',
+            badge: slim.badge || '',
+            category: slim.category || '',
+            seller: slim.seller || '',
+            college: slim.college || '',
+            status: slim.status || 'active'
         });
         saveFavorites(favorites);
     }
@@ -238,7 +266,7 @@ async function renderFavorites() {
 function createFavoriteCard(product) {
     const card = document.createElement('div');
     card.className = 'product-card';
-    const productIdLiteral = JSON.stringify(String(product.id));
+    const productIdLiteral = `'${String(product.id)}'`;
     
     const status = product.status || 'active';
     const isAvailable = status === 'active';

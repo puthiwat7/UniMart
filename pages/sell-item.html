@@ -660,7 +660,7 @@
             const sellerEmail = getCurrentUserEmail();
             const badge = conditionLabel.textContent.trim() || 'Used';
             const listing = {
-                id: Date.now(),
+                id: String(Date.now()),
                 title: String(formData.get('productTitle')).trim(),
                 price: `¥${listingPrice.toFixed(2)}`,
                 category: toTitleCase(String(categoryValue).replace(/-/g, ' ')),

@@ -453,7 +453,7 @@ function createProductCard(product) {
     const card = document.createElement('div');
     card.className = 'product-card';
     const productId = String(product.id);
-    const productIdLiteral = JSON.stringify(productId);
+    const productIdLiteral = `'${productId}'`;
     const isFavorited = checkIfFavorited(productId);
     const favBtnColor = isFavorited ? '#ef4444' : '#9ca3af';
     const conditionPercent = getConditionPercentage(product);
@@ -472,7 +472,7 @@ function createProductCard(product) {
     card.innerHTML = `
         <div class="product-image" style="position: relative; cursor: pointer;" onclick="handleViewDetails(${productIdLiteral})">
             ${cardImage}
-            <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite(${productIdLiteral}, ${JSON.stringify(product).replace(/"/g, '&quot;')})" style="position: absolute; top: 8px; right: 8px; background-color: transparent; border: none; color: ${favBtnColor}; font-size: 20px; cursor: pointer; z-index: 10;">
+            <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite(${productIdLiteral})" style="position: absolute; top: 8px; right: 8px; background-color: transparent; border: none; color: ${favBtnColor}; font-size: 20px; cursor: pointer; z-index: 10;">
                 <i class="fas fa-heart"></i>
             </button>
         </div>
@@ -942,8 +942,29 @@ function setupScrollToTop() {
 
 // ======================== Favorites Management ========================
 function getFavorites() {
-    const favorites = localStorage.getItem('favorites');
-    return favorites ? JSON.parse(favorites) : [];
+    const raw = localStorage.getItem('favorites');
+    if (!raw) return [];
+    try {
+        const favorites = JSON.parse(raw);
+        // Migrate any bloated entries (containing image data) to slim format
+        const slim = favorites.map(fav => ({
+            id: String(fav.id || ''),
+            title: fav.title || '',
+            price: fav.price || '',
+            badge: fav.badge || '',
+            category: fav.category || '',
+            seller: fav.seller || '',
+            college: fav.college || '',
+            status: fav.status || 'active'
+        })).filter(fav => fav.id);
+        // If migration changed anything, persist the cleaned version
+        if (slim.some((s, i) => JSON.stringify(s) !== JSON.stringify(favorites[i]))) {
+            try { localStorage.setItem('favorites', JSON.stringify(slim)); } catch (_) {}
+        }
+        return slim;
+    } catch (_) {
+        return [];
+    }
 }
 
 // Save favorites to localStorage
@@ -961,19 +982,28 @@ function checkIfFavorited(productId) {
 // Toggle favorite
 function toggleFavorite(productId, product) {
     const normalizedId = String(productId);
+    const resolvedProduct = product || products.find(p => String(p.id) === normalizedId);
     let favorites = getFavorites();
     const isFavorited = favorites.some((fav) => String(fav.id) === normalizedId);
-    const normalizedProduct = {
-        ...product,
-        id: normalizedId
-    };
-    
+
     if (isFavorited) {
         favorites = favorites.filter((fav) => String(fav.id) !== normalizedId);
     } else {
-        favorites.push(normalizedProduct);
+        // Strip large image data before saving to avoid localStorage quota errors.
+        // The favorites page re-fetches full listing data from the cloud.
+        const slim = resolvedProduct || {};
+        favorites.push({
+            id: normalizedId,
+            title: slim.title || '',
+            price: slim.price || '',
+            badge: slim.badge || '',
+            category: slim.category || '',
+            seller: slim.seller || '',
+            college: slim.college || '',
+            status: slim.status || 'active'
+        });
     }
-    
+
     saveFavorites(favorites);
     renderProducts(filteredProducts); // Re-render to update heart colors
 }
