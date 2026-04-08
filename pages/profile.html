@@ -147,7 +147,7 @@
                             <i class="fas fa-exclamation-triangle"></i>
                             <div>
                                 <strong>Action Required</strong>
-                                <p>Please review and agree to the marketplace policies to enable buying and selling. <a href="#" id="reviewPoliciesLink">Click here to review.</a></p>
+                                <p>Please review and agree to the Terms of Use &amp; Marketplace Policy to enable buying and selling. <a href="#" id="reviewPoliciesLink">Click here to review.</a></p>
                             </div>
                         </div>
 
@@ -253,16 +253,28 @@
                         </div>
                     </div>
 
-                    <!-- Marketplace Policies Section -->
+                    <!-- Terms of Use & Marketplace Policy Section -->
                     <div class="profile-section">
-                        <h2><i class="fas fa-file-contract"></i> Marketplace Policies Agreement</h2>
+                        <h2><i class="fas fa-file-contract"></i> Terms of Use &amp; Marketplace Policy Agreement</h2>
                         <div class="policy-agreement">
+                            <div class="policy-agreement-header">
+                                <p class="policy-kicker">Required for Marketplace Access</p>
+                                <p class="policy-summary">To enable buying and selling, review the latest policy and confirm agreement once.</p>
+                            </div>
+
                             <label class="checkbox-container">
                                 <input type="checkbox" id="policyCheckbox">
                                 <span class="checkmark"></span>
-                                <span>I have read and agree to the terms</span>
+                                <span>I have read and agree to the Terms of Use &amp; Marketplace Policy</span>
                             </label>
-                            <p class="policy-text">You must agree to our <a href="#" id="policiesLink" class="policy-link">Marketplace Policies</a> before you can buy or sell items on UniMart. Please review them carefully.</p>
+
+                            <p class="policy-text">You must agree to the <a href="#" id="policiesLink" class="policy-link">Terms of Use &amp; Marketplace Policy</a> before you can buy or sell items on UniMart. Please review them carefully.</p>
+
+                            <ul class="policy-quick-points">
+                                <li>UniMart is an intermediary platform, not a payment or escrow provider.</li>
+                                <li>Users are responsible for transaction safety, communication, and verification.</li>
+                                <li>Violations may lead to listing removal, account restriction, or suspension.</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -270,82 +282,211 @@
         </main>
     </div>
 
-    <!-- Marketplace Policies Modal -->
+    <!-- Terms of Use & Marketplace Policy Modal -->
     <div class="modal" id="policiesModal">
         <div class="modal-content policy-modal">
             <div class="modal-header">
-                <h2><i class="fas fa-file-contract"></i> Marketplace Policies</h2>
+                <h2><i class="fas fa-file-contract"></i> UniMart Terms of Use &amp; Marketplace Policy</h2>
                 <button class="modal-close" id="closeModal">&times;</button>
             </div>
             <div class="modal-body">
-                <p class="modal-subtitle">Please read and understand these policies before using UniMart</p>
+                <p class="modal-subtitle">Please read and understand these terms before using UniMart.</p>
+                <div class="policy-meta">Last updated: April 8, 2026</div>
+
+                <div class="policy-grid">
 
                 <div class="policy-section">
-                    <h3>General Terms</h3>
+                    <h3>User Information Requirement (Precondition for Access)</h3>
                     <ul>
-                        <li>This platform acts as a neutral facilitator for transactions between CUHK-SZ community members.</li>
-                        <li>All users must conduct themselves respectfully. Harassment or fraudulent activity will result in a permanent ban.</li>
-                        <li>All payments are final and securely held by the platform until the transaction is successfully completed. Do not pay sellers directly.</li>
-                        <li>The platform is not responsible for the quality, safety, or legality of items listed. Buyers purchase at their own discretion.</li>
+                        <li>Provide accurate and complete personal information.</li>
+                        <li>Maintain a valid contact method, including a WeChat contact.</li>
+                        <li>Agree to these Terms of Use and all applicable policies.</li>
+                        <li>Failure to provide or maintain accurate information may result in restricted access or account suspension.</li>
                     </ul>
                 </div>
 
                 <div class="policy-section">
-                    <h3>Seller Responsibilities</h3>
+                    <h3>Acceptance of Terms</h3>
                     <ul>
-                        <li>You must provide accurate product descriptions and clear, recent photos of your items. Misrepresentation is grounds for a refund claim.</li>
-                        <li>You must upload a valid Profile QR code to your profile before listing and selling items.</li>
-                        <li>Once a payment is confirmed by an admin, you are obligated to deliver the item within <strong>48 hours</strong>.</li>
-                        <li><strong>CRITICAL:</strong> If you fail to deliver within 48 hours, the buyer will automatically receive a full refund and you will not be paid.</li>
-                        <li>You must confirm the delivery on the "My Sales" page, including uploading proof (e.g., a photo of the item at the delivery location).</li>
+                        <li>By creating an account, submitting your information, or clicking “Agree,” you acknowledge that you have read, understood, and agree to be bound by these Terms of Use and all related policies.</li>
+                        <li>If you do not agree, you must not use the platform.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>Platform Description and Role</h3>
+                    <ul>
+                        <li>UniMart is a campus-based online marketplace that enables users to list items and connect with other users.</li>
+                        <li>UniMart acts solely as an intermediary platform and does not own, store, or inspect listed items.</li>
+                        <li>UniMart does not handle payments or financial transactions.</li>
+                        <li>UniMart does not provide delivery, logistics, or escrow services and is not a party to user transactions.</li>
+                        <li>All transactions are conducted directly between users at their own discretion and risk.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>User Eligibility</h3>
+                    <ul>
+                        <li>Users must comply with all applicable laws and university regulations.</li>
+                        <li>Users must use the platform only for lawful purposes.</li>
+                        <li>UniMart reserves the right to request identity verification at its discretion.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>User Responsibilities and Conduct</h3>
+                    <ul>
+                        <li>Users agree to provide accurate and truthful information, communicate respectfully and in good faith, honor commitments, and use the platform responsibly and lawfully.</li>
+                        <li>Prohibited behavior includes fraud, misrepresentation, deceptive practices, harassment, abuse, spamming, misuse of platform features, and creating multiple or fake accounts.</li>
+                        <li>UniMart reserves the right to take action, including account suspension or termination.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>Listing Policy and Seller Obligations</h3>
+                    <ul>
+                        <li>Sellers must ensure listings accurately describe item condition and details, include clear truthful images, represent currently available items, and use appropriate categories.</li>
+                        <li>Sellers must have the legal right to sell listed items.</li>
+                        <li>Sellers must respond to inquiries in a timely manner and fulfill agreed terms with buyers.</li>
+                        <li>Sellers must update listing status promptly (e.g., mark as “Sold”).</li>
+                        <li>UniMart may remove misleading, duplicate, or inactive listings at its discretion.</li>
                     </ul>
                 </div>
 
                 <div class="policy-section">
                     <h3>Buyer Responsibilities</h3>
                     <ul>
-                        <li>You are responsible for reading the item description and viewing all photos before purchasing.</li>
-                        <li>You must upload your personal Profile QR code to your profile. This is <strong>mandatory</strong> before placing orders.</li>
-                        <li>Upon receiving your item, you have <strong>48 hours</strong> to either "Confirm Receipt" or "Request Refund" from your "My Orders" page.</li>
-                        <li>If no action is taken within 48 hours of the seller marking the item as delivered, the order will be automatically completed, and payment will be released to the seller.</li>
+                        <li>Buyers are responsible for carefully reviewing listing details.</li>
+                        <li>Buyers are responsible for verifying item condition and authenticity.</li>
+                        <li>Buyers are responsible for communicating clearly with sellers.</li>
+                        <li>Buyers are responsible for inspecting items before completing payment.</li>
+                        <li>All purchase decisions are made at the buyer’s own risk.</li>
                     </ul>
                 </div>
 
                 <div class="policy-section">
-                    <h3>Refunds & Disputes</h3>
+                    <h3>Communication and Off-Platform Interaction</h3>
                     <ul>
-                        <li>Refunds can only be requested for items that are not as described, broken (if not disclosed), or not delivered.</li>
-                        <li>Automatic refunds are issued if sellers fail to deliver within the 48-hour deadline.</li>
-                        <li>To request a refund, you must provide a clear reason and strong photo/video evidence. <strong>Failure to provide sufficient evidence will result in your refund request being denied.</strong></li>
-                        <li>If a refund is requested, the seller will be notified to review the claim and retrieve the item. The seller can approve or deny the request.</li>
-                        <li>If the seller denies the refund request, an admin will mediate. The admin's decision, based on the evidence provided by both parties, is <strong>final</strong>.</li>
+                        <li>Users communicate directly using provided contact details (e.g., WeChat, QR codes).</li>
+                        <li>Users are solely responsible for verifying the identity of the other party and ensuring safe, appropriate communication.</li>
+                        <li>UniMart does not monitor or control communications and is not responsible for interactions outside the platform.</li>
                     </ul>
                 </div>
 
                 <div class="policy-section">
-                    <h3>Platform Fees</h3>
+                    <h3>Payments and Transaction Risk</h3>
                     <ul>
-                        <li>The platform charges a 1% service fee plus ¥1 fixed fee on each transaction.</li>
-                        <li>This fee covers payment processing, dispute resolution, and platform maintenance.</li>
-                        <li>Sellers see their expected payout amount before listing an item.</li>
+                        <li>UniMart does not process or facilitate payments.</li>
+                        <li>Users are fully responsible for choosing secure payment methods and verifying payment before completing transactions.</li>
+                        <li>UniMart does not guarantee payment security and is not liable for payment disputes, fraud/scams, non-payment, or chargebacks.</li>
                     </ul>
                 </div>
 
                 <div class="policy-section">
-                    <h3>Delivery Process</h3>
+                    <h3>Safety and Risk Acknowledgement</h3>
                     <ul>
-                        <li>All items must be delivered to platform-designated spots at the buyer's college.</li>
-                        <li>There is no direct meeting between buyers and sellers.</li>
-                        <li>Sellers must upload photo proof of delivery showing the item at the designated location.</li>
-                        <li>Buyers must pick up their items from the designated spot within 48 hours of delivery notification.</li>
+                        <li>Users are responsible for personal safety when conducting transactions.</li>
+                        <li>Users are strongly advised to meet in public or designated campus locations and exercise caution with unfamiliar individuals.</li>
+                        <li>UniMart does not guarantee the safety, reliability, or conduct of any user.</li>
                     </ul>
                 </div>
 
-                <p class="policy-footer">By agreeing to these policies, you acknowledge that you have read, understood, and will comply with all the terms outlined above. Violation of these policies may result in account suspension or termination.</p>
+                <div class="policy-section">
+                    <h3>Prohibited Items</h3>
+                    <ul>
+                        <li>Users may not list or sell items that are illegal, stolen, or counterfeit.</li>
+                        <li>Users may not list or sell items restricted by law or university policy.</li>
+                        <li>Users may not list or sell dangerous, hazardous, or unsafe items.</li>
+                        <li>UniMart reserves the right to remove such listings without notice.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>Content and Intellectual Property</h3>
+                    <ul>
+                        <li>Users are responsible for content they upload.</li>
+                        <li>By posting content, users grant UniMart a non-exclusive, royalty-free license to use, display, and distribute content for platform operation and promotion.</li>
+                        <li>Users must not upload content that violates intellectual property rights.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>Account Suspension and Termination</h3>
+                    <ul>
+                        <li>UniMart reserves the right to suspend or terminate accounts, remove listings, and restrict platform access.</li>
+                        <li>This may occur at UniMart’s sole discretion, with or without notice, for violations of these Terms.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>Dispute Disclaimer</h3>
+                    <ul>
+                        <li>All disputes are strictly between users.</li>
+                        <li>UniMart is not obligated to mediate disputes but may provide limited assistance at its discretion.</li>
+                        <li>Users agree to resolve disputes independently.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>No Warranty</h3>
+                    <ul>
+                        <li>UniMart is provided on an “as is” and “as available” basis.</li>
+                        <li>UniMart does not guarantee listing accuracy, item availability, successful transactions, or continuous error-free operation.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>Limitation of Liability</h3>
+                    <ul>
+                        <li>To the fullest extent permitted by law, UniMart is not liable for indirect, incidental, or consequential damages.</li>
+                        <li>UniMart is not liable for losses arising from user transactions, fraud, misrepresentation, or user misconduct.</li>
+                        <li>Use of the platform is entirely at the user’s own risk.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>Privacy</h3>
+                    <ul>
+                        <li>User information is handled in accordance with UniMart’s Privacy Policy.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>Governing Law</h3>
+                    <ul>
+                        <li>These Terms are governed by and interpreted in accordance with the laws of China.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>Force Majeure</h3>
+                    <ul>
+                        <li>UniMart is not liable for delay or failure caused by events beyond reasonable control, including system failures, network disruptions, or external events.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>Policy Updates</h3>
+                    <ul>
+                        <li>UniMart reserves the right to modify these Terms at any time.</li>
+                        <li>Continued use of the platform constitutes acceptance of updated Terms.</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section">
+                    <h3>Contact</h3>
+                    <ul>
+                        <li>For questions or concerns, users may contact UniMart through official platform channels.</li>
+                    </ul>
+                </div>
+
+                </div>
+
+                <p class="policy-footer">By clicking “I Agree,” you confirm that you have read, understood, and accepted the UniMart Terms of Use &amp; Marketplace Policy.</p>
             </div>
             <div class="modal-footer">
                 <button class="btn-secondary" id="closeModalBtn">Close</button>
-                <button class="btn-primary" id="agreeModalBtn">I Agree to These Terms</button>
+                <button class="btn-primary" id="agreeModalBtn">I Agree</button>
             </div>
         </div>
     </div>

@@ -68,7 +68,7 @@ async function enforceBuyPolicyOrRedirect() {
         return true;
     }
 
-    alert('You must agree to marketplace policies before buying. You will be redirected to your profile.');
+    alert('You must agree to the Terms of Use & Marketplace Policy before buying. You will be redirected to your profile.');
     window.location.href = 'profile';
     return false;
 }
