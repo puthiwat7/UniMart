@@ -127,7 +127,7 @@ function performSearch(query) {
 
 ### Firebase Console:
 1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Select your project (unimart-bccb5)
+2. Select your project (unimart-63bcc)
 3. Click **Analytics** → **Dashboard**
 4. View real-time events and user behavior
 
