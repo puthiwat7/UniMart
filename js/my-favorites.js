@@ -1,735 +1,403 @@
-function getCachedUser() {
-    try {
-        const raw = localStorage.getItem('unimart_last_user');
-        return raw ? JSON.parse(raw) : null;
-    } catch (error) {
-        return null;
-    }
+﻿// ======================== State ========================
+let favoritedIds = new Set();
+let favoritedListings = [];
+let favDbListener = null;
+let currentFavProduct = null;
+let currentFavImages = [];
+let currentFavImageIndex = 0;
+
+// ======================== Helpers ========================
+function getFavCurrentUser() {
+    return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
 }
 
-function getCurrentUserUid() {
-    const firebaseUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
-    if (firebaseUser && firebaseUser.uid) return firebaseUser.uid;
-    const cachedUser = getCachedUser();
-    return cachedUser && cachedUser.uid ? cachedUser.uid : null;
+function escHtml(str) {
+    return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-let policyProfile = null;
-let policyProfileLoaded = false;
-
-function isPolicyAgreed(profile) {
-    if (!profile || typeof profile !== 'object') return false;
-    return profile.hasAgreedPolicy === true || profile.agreedToPolicies === true;
-}
-
-async function loadPolicyProfileFromCloud(forceRefresh = false) {
-    const uid = getCurrentUserUid();
-    if (!uid) {
-        policyProfileLoaded = false;
-        policyProfile = null;
-        return null;
-    }
-
-    if (!forceRefresh && policyProfileLoaded) {
-        return policyProfile;
-    }
-
-    if (!window.unimartProfileSync || typeof window.unimartProfileSync.getProfileFromCloud !== 'function') {
-        policyProfileLoaded = false;
-        policyProfile = null;
-        return null;
-    }
-
-    try {
-        policyProfile = await window.unimartProfileSync.getProfileFromCloud(uid);
-        policyProfileLoaded = true;
-        console.log('User data:', policyProfile);
-        return policyProfile;
-    } catch (error) {
-        console.warn('Failed to load policy profile:', error);
-        policyProfileLoaded = false;
-        policyProfile = null;
-        return null;
-    }
-}
-
-async function enforceBuyPolicyOrRedirect() {
-    const uid = getCurrentUserUid();
-    if (!uid) {
-        return null;
-    }
-
-    if (!policyProfileLoaded) {
-        await loadPolicyProfileFromCloud(true);
-    }
-
-    const profile = await loadPolicyProfileFromCloud(true);
-    if (profile && isPolicyAgreed(profile)) {
-        return true;
-    }
-
-    alert('You must agree to marketplace policies before buying. You will be redirected to your profile.');
-    window.location.href = 'profile';
-    return false;
-}
-
-async function getListingsByIds(ids) {
-    if (!window.unimartListingsSync) return [];
-
-    if (typeof window.unimartListingsSync.getListingsByIdsFromCloud === 'function') {
-        return window.unimartListingsSync.getListingsByIdsFromCloud(ids, {
-            cacheTtlMs: 60000,
-            timeoutMs: 10000
-        });
-    }
-
-    if (typeof window.unimartListingsSync.getAllListingsFromCloud !== 'function') {
-        return [];
-    }
-
-    const all = await window.unimartListingsSync.getAllListingsFromCloud({ limit: 300 });
-    const idSet = new Set((Array.isArray(ids) ? ids : []).map((id) => String(id)));
-    return all.filter((item) => idSet.has(String(item.id)));
-}
-
-// Get product status from listings
-async function getProductStatus(productId) {
-    const listings = await getListingsByIds([productId]);
-    const listing = listings.find((l) => String(l.id) === String(productId));
-    return listing ? (listing.status || 'active').toLowerCase() : 'active';
-}
-
-// Get updated product data (to reflect edits)
-async function getUpdatedProduct(product) {
-    const listings = await getListingsByIds([product.id]);
-    const listing = listings.find((l) => String(l.id) === String(product.id));
-    
-    if (listing) {
-        // Merge listing data with favorite data
-        return {
-            ...product,
-            title: listing.title || product.title,
-            price: listing.price || product.price,
-            category: listing.category || product.category,
-            badge: listing.badge || product.badge,
-            image: listing.image || product.image,
-            seller: listing.seller || product.seller,
-            status: (listing.status || 'active').toLowerCase(),
-            reserved: Boolean(listing.reserved)
-        };
-    }
-    
-    return { ...product, status: 'active' };
-}
-
-// Firebase-based favorites management
-let favoritesRef = null;
-
-// Load favorites from Firebase database
-function loadFavorites(userId) {
-    console.log("Loading favorites for user:", userId);
-
-    if (!userId) {
-        console.log("No userId provided to loadFavorites");
-        showEmptyState("Please log in to view favorites");
-        return;
-    }
-
-    // Remove any existing listener
-    if (favoritesRef) {
-        favoritesRef.off();
-        favoritesRef = null;
-    }
-
-    if (!firebase.database || typeof firebase.database !== 'function') {
-        console.error("Realtime Database SDK is not available on this page.");
-        showDataError("Failed to load favorites. Database SDK missing.");
-        return;
-    }
-
-    try {
-        const path = `favorites/${userId}`;
-        console.log("Reading favorites from path:", path);
-
-        favoritesRef = firebase.database().ref(path);
-
-        favoritesRef.on('value', async (snapshot) => {
-            try {
-                const data = snapshot.val();
-                console.log("Favorites data:", data);
-
-                if (!data) {
-                    console.log("No favorites data found");
-                    renderEmptyFavorites();
-                    return;
-                }
-
-                // Convert favorites object to array
-                const favoriteIds = Object.keys(data);
-                console.log("Favorite item IDs:", favoriteIds);
-
-                if (favoriteIds.length === 0) {
-                    renderEmptyFavorites();
-                    return;
-                }
-
-                // Fetch full listing data for each favorite
-                await fetchAndRenderFavorites(favoriteIds);
-            } catch (snapshotError) {
-                console.error("FAVORITES SNAPSHOT ERROR:", {
-                    message: snapshotError.message,
-                    code: snapshotError.code,
-                    type: snapshotError.constructor.name,
-                    stack: snapshotError.stack
-                });
-                showDataError("Failed to process favorites data. Please try again.");
-            }
-        }, (error) => {
-            console.error("FAVORITES DATABASE ERROR:", {
-                message: error.message,
-                code: error.code,
-                type: error.constructor.name,
-                stack: error.stack,
-                path: path
-            });
-
-            // Provide specific error messages based on error code
-            if (error.code === 'PERMISSION_DENIED') {
-                console.error("Database Rules Issue: User does not have permission to read favorites");
-                showDataError("Permission denied. Database rules may need adjustment.");
-            } else if (error.message && error.message.includes('not a function')) {
-                console.error("SDK Issue: firebase.database is not properly initialized");
-                showDataError("Database SDK initialization error. Please refresh the page.");
-            } else {
-                showDataError("Failed to load favorites. Please try again.");
-            }
-        });
-    } catch (error) {
-        console.error("FAVORITES INITIALIZATION ERROR:", {
-            message: error.message,
-            code: error.code,
-            type: error.constructor.name,
-            stack: error.stack
-        });
-        showDataError("Failed to initialize favorites. Please try again.");
-    }
-// Fetch full listing data and render favorites
-async function fetchAndRenderFavorites(favoriteIds) {
-    console.log("Fetching listings for favorite IDs:", favoriteIds);
-
-    try {
-        const listings = await getListingsByIds(favoriteIds);
-        console.log("Fetched listings:", listings.length, "items");
-
-        const listingMap = new Map(listings.map((item) => [String(item.id), item]));
-
-        const grid = document.getElementById('favoritesGrid');
-        if (!grid) return;
-
-        grid.innerHTML = '';
-
-        if (listings.length === 0) {
-            renderEmptyFavorites();
+// ======================== Auth Init ========================
+document.addEventListener('DOMContentLoaded', () => {
+    function waitForFirebase() {
+        if (typeof firebase === 'undefined' || !firebase.auth) {
+            setTimeout(waitForFirebase, 100);
             return;
         }
-
-        // Render each favorite
-        for (const listing of listings) {
-            if (listing && String(listing.status || 'active').toLowerCase() === 'active') {
-                const card = renderProductCard(listing, {
-                    showFavoriteIcon: true,
-                    showRemoveButton: true,
-                    isFavorited: true,
-                    onViewDetails: 'handleViewDetails',
-                    onFavoriteToggle: 'removeFromFavorites',
-                    onRemove: 'removeFromFavorites'
-                });
-                grid.appendChild(card);
-            }
-        }
-
-        console.log("Rendered", listings.length, "favorite items");
-
-    } catch (error) {
-        console.error("Error fetching favorite listings:", error);
-        showDataError("Failed to load favorite items. Please try again.");
-    }
-}
-
-// Add item to favorites in Firebase
-function addToFavorites(productId, product) {
-    const user = firebase.auth().currentUser;
-    if (!user) {
-        console.log("Cannot add to favorites: no authenticated user");
-        return false;
-    }
-
-    const normalizedId = String(productId);
-    const favoritesRef = firebase.database().ref(`favorites/${user.uid}/${normalizedId}`);
-
-    // Store minimal data needed for favorites
-    const favoriteData = {
-        id: normalizedId,
-        addedAt: firebase.database.ServerValue.TIMESTAMP
-    };
-
-    console.log("Adding to favorites:", user.uid, normalizedId);
-
-    favoritesRef.set(favoriteData)
-        .then(() => {
-            console.log("Successfully added to favorites");
-        })
-        .catch((error) => {
-            console.error("Error adding to favorites:", error);
-        });
-
-    return true;
-}
-
-// Remove item from favorites in Firebase
-function removeFromFavorites(productId) {
-    const user = firebase.auth().currentUser;
-    if (!user) {
-        console.log("Cannot remove from favorites: no authenticated user");
-        return false;
-    }
-
-    const normalizedId = String(productId);
-    const favoritesRef = firebase.database().ref(`favorites/${user.uid}/${normalizedId}`);
-
-    console.log("Removing from favorites:", user.uid, normalizedId);
-
-    favoritesRef.remove()
-        .then(() => {
-            console.log("Successfully removed from favorites");
-        })
-        .catch((error) => {
-            console.error("Error removing from favorites:", error);
-        });
-
-    return true;
-}
-
-// Check if item is favorited (for UI updates)
-function isFavorited(productId) {
-    // This is a simplified version - in a real app you'd cache this
-    // For now, we'll rely on the UI state being updated when favorites load
-    return false;
-}
-
-// Render empty favorites state
-function renderEmptyFavorites() {
-    const grid = document.getElementById('favoritesGrid');
-    if (!grid) return;
-
-    grid.innerHTML = `
-        <div class="my-sales-empty-state">
-            <i class="fas fa-heart"></i>
-            <p>No favorites yet</p>
-            <p class="favorites-empty-hint">Start adding items to your favorites!</p>
-            <a href="../" class="my-sales-start-selling-btn">
-                Browse Marketplace
-            </a>
-        </div>
-    `;
-}
-
-// Show empty state with message
-function showEmptyState(message) {
-    const grid = document.getElementById('favoritesGrid');
-    if (!grid) return;
-
-    grid.innerHTML = `
-        <div class="my-sales-empty-state">
-            <i class="fas fa-sign-in-alt"></i>
-            <p>${message}</p>
-            <a href="login.html" class="my-sales-start-selling-btn">
-                Sign In
-            </a>
-        </div>
-    `;
-}
-
-function showDataError(message) {
-    const grid = document.getElementById('favoritesGrid');
-    if (!grid) return;
-
-    grid.innerHTML = `
-        <div class="my-sales-empty-state">
-            <i class="fas fa-exclamation-triangle"></i>
-            <p>${message}</p>
-            <p class="favorites-empty-hint">There was an issue loading your saved items.</p>
-        </div>
-    `;
-}
-
-// Render favorites
-// Initialize page with auth state listener
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log("My Favorites page loaded, initializing...");
-
-    function initializeWithAuth() {
-        if (typeof firebase !== 'undefined' && typeof firebase.auth === 'function') {
-            console.log("Firebase available, setting up auth listener...");
-
-            if (typeof firebaseConfig === 'undefined') {
-                console.error("Missing firebaseConfig on My Favorites page");
-                showEmptyState("Firebase configuration missing. Please refresh the page.");
-                return;
-            }
-
-            if (!firebase.apps.length) {
-                try {
-                    firebase.initializeApp(firebaseConfig);
-                    console.log("Firebase app initialized from my-favorites.js");
-                } catch (error) {
-                    console.error("Failed to initialize Firebase app:", error);
-                }
-            }
-
-            firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-                .then(() => console.log("Auth persistence set to LOCAL"))
-                .catch((error) => console.error('Error setting persistence:', error));
-
-            firebase.auth().onAuthStateChanged(async (user) => {
-                console.log("Auth state changed:", user);
-                console.log("currentUser:", firebase.auth().currentUser);
-
-                if (user) {
-                    updateSidebarAuthState(user);
-                    loadFavorites(user.uid);
-                } else {
-                    console.log("No authenticated user detected");
-                    showEmptyState("Please log in to view your favorites");
-                    updateSidebarAuthState(null);
-                }
-            });
-        } else {
-            console.log("Firebase not available yet, retrying...");
-            setTimeout(initializeWithAuth, 100);
-        }
-    }
-
-    initializeWithAuth();
-
-    const refreshFavoritesBtn = document.getElementById('refreshFavoritesBtn');
-    if (refreshFavoritesBtn) {
-        refreshFavoritesBtn.addEventListener('click', () => {
-            const user = firebase.auth().currentUser;
+        firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                console.log("Manual refresh triggered");
-                loadFavorites(user.uid);
+                startFavoritesListener(user.uid);
+            } else {
+                stopFavoritesListener();
+                renderEmptyState('Please sign in to view your favorites.', 'sign-in');
             }
         });
     }
-
-    setupClearFavoritesButton();
-    setupProductModal();
-    setupPaymentModal();
+    waitForFirebase();
+    setupFavModal();
+    setupRefreshButton();
+    setupClearButton();
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) refreshFavorites();
+    });
 });
 
-// Refresh favorites when the page becomes active
-function refreshFavoritesForCurrentUser() {
-    const user = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
-    if (user) {
-        loadFavorites(user.uid);
+// ======================== RTDB Favorites Listener ========================
+function startFavoritesListener(uid) {
+    stopFavoritesListener();
+    renderLoadingState();
+
+    const ref = firebase.database().ref(`favorites/${uid}`);
+    favDbListener = ref;
+
+    ref.on('value', async (snapshot) => {
+        favoritedIds.clear();
+        if (snapshot.exists()) {
+            snapshot.forEach(child => favoritedIds.add(String(child.key)));
+        }
+        if (favoritedIds.size === 0) {
+            favoritedListings = [];
+            renderFavoritesGrid();
+            return;
+        }
+        await fetchFavoritedListings();
+    }, (err) => {
+        console.error('Favorites listener error:', err);
+        renderErrorState('Failed to load favorites. Please try again.');
+    });
+}
+
+function stopFavoritesListener() {
+    if (favDbListener) {
+        favDbListener.off();
+        favDbListener = null;
+    }
+    favoritedIds.clear();
+}
+
+// ======================== Fetch Listing Data ========================
+async function fetchFavoritedListings() {
+    if (!window.unimartListingsSync) {
+        renderErrorState('Listing data unavailable.');
+        return;
+    }
+    const ids = Array.from(favoritedIds);
+    try {
+        const fetched = await window.unimartListingsSync.getListingsByIdsFromCloud(ids, {
+            cacheTtlMs: 30000,
+            timeoutMs: 12000
+        });
+        const found = new Map(fetched.map(l => [String(l.id), l]));
+        // For IDs not found in DB (deleted), create placeholder
+        favoritedListings = ids.map(id => {
+            if (found.has(id)) return found.get(id);
+            return {
+                id,
+                title: 'Item no longer available',
+                price: '—',
+                badge: 'Unknown',
+                status: 'unavailable',
+                seller: '—',
+                sellerUid: null,
+                college: '',
+                category: '—',
+                description: '',
+                image: '📦',
+                imageUrl: '',
+                images: [],
+                sellerPaymentQR: ''
+            };
+        });
+        renderFavoritesGrid();
+    } catch (error) {
+        console.error('Error fetching favorited listings:', error);
+        renderErrorState('Failed to load listings. Please refresh.');
     }
 }
 
-document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-        refreshFavoritesForCurrentUser();
-    }
-});
-
-window.addEventListener('focus', () => {
-    refreshFavoritesForCurrentUser();
-});
-
-// ======================== Product Modal ========================
-let currentProduct = null;
-
-// Handle view details
-async function handleViewDetails(productId) {
-    const normalizedId = String(productId);
-    console.log("Viewing details for product:", normalizedId);
-
-    // Get the product data from listings
-    const listings = await getListingsByIds([normalizedId]);
-    const product = listings.find((l) => String(l.id) === normalizedId);
-
-    if (product) {
-        openProductModal(product);
-    } else {
-        console.error("Product not found:", normalizedId);
+async function refreshFavorites() {
+    const user = getFavCurrentUser();
+    if (!user) return;
+    renderLoadingState();
+    favoritedIds.clear();
+    const ref = firebase.database().ref(`favorites/${user.uid}`);
+    try {
+        const snapshot = await ref.once('value');
+        if (snapshot.exists()) {
+            snapshot.forEach(child => favoritedIds.add(String(child.key)));
+        }
+        if (favoritedIds.size === 0) {
+            favoritedListings = [];
+            renderFavoritesGrid();
+            return;
+        }
+        await fetchFavoritedListings();
+    } catch (err) {
+        renderErrorState('Refresh failed. Please try again.');
     }
 }
 
-function openProductModal(product) {
-    currentProduct = product;
-    const status = product.status || 'active';
-    const isAvailable = status === 'active';
-
-    // Update modal content
-    document.getElementById('modalProductTitle').textContent = product.title;
-    document.getElementById('modalProductPrice').textContent = product.price;
-    document.getElementById('modalSeller').textContent = product.seller;
-    document.getElementById('modalBadge').textContent = product.badge;
-    
-    // Display image - uploaded or emoji
-    const carouselImage = document.getElementById('carouselImage');
-    if (product.imageUrl || (product.images && product.images.length > 0)) {
-        const imgSrc = product.imageUrl || product.images[0];
-        carouselImage.innerHTML = `<img src="${imgSrc}" alt="${product.title}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
-    } else {
-        carouselImage.textContent = product.image || '📦';
-        carouselImage.style.fontSize = '120px';
+// ======================== Render Grid ========================
+function renderLoadingState() {
+    const grid = document.getElementById('favoritesGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    for (let i = 0; i < 6; i++) {
+        const card = document.createElement('div');
+        card.className = 'product-card loading-card';
+        card.innerHTML = `
+            <div class="product-image skeleton-block"></div>
+            <div class="product-info">
+                <div class="skeleton-line skeleton-badge"></div>
+                <div class="skeleton-line skeleton-title"></div>
+                <div class="skeleton-line skeleton-price"></div>
+                <div class="skeleton-line skeleton-button"></div>
+            </div>`;
+        grid.appendChild(card);
     }
-    
-    document.getElementById('modalDescription').textContent = product.description || `A ${product.badge.toLowerCase()} ${(product.category || '').toLowerCase()} item.`;
+}
 
-    // Update availability section
-    const availabilitySection = document.getElementById('availabilitySection');
-    const availabilityNotice = document.getElementById('availabilityNotice');
-    const availabilityText = document.getElementById('availabilityText');
-    
-    if (!isAvailable) {
-        availabilitySection.style.display = 'block';
-        availabilityNotice.style.padding = '12px';
-        availabilityNotice.style.background = '#fef2f2';
-        availabilityNotice.style.border = '1px solid #fecaca';
-        availabilityNotice.style.borderRadius = '8px';
-        availabilityNotice.style.display = 'flex';
-        availabilityNotice.style.alignItems = 'center';
-        availabilityNotice.style.gap = '8px';
-        availabilityNotice.style.color = '#dc2626';
-        
+function renderFavoritesGrid() {
+    const grid = document.getElementById('favoritesGrid');
+    if (!grid) return;
+    if (favoritedListings.length === 0) {
+        renderEmptyState('No favorites yet. Browse the marketplace and heart items to save them here.', 'browse');
+        return;
+    }
+    grid.innerHTML = '';
+    for (const listing of favoritedListings) {
+        grid.appendChild(createFavCard(listing));
+    }
+}
+
+function createFavCard(listing) {
+    const productId = String(listing.id);
+    const productIdLiteral = `'${productId}'`;
+    const status = String(listing.status || 'active').toLowerCase();
+    const isActive = status === 'active';
+    const imageUrl = listing.imageUrl || (Array.isArray(listing.images) && listing.images[0]) || '';
+
+    let cardImage;
+    if (imageUrl) {
+        cardImage = `<img src="${imageUrl}" alt="${escHtml(listing.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">`;
+    } else {
+        cardImage = `<span style="font-size:64px;line-height:1;">${listing.image || '📦'}</span>`;
+    }
+
+    const overlayBg = status === 'sold' ? '#dc2626cc' : status === 'withdrawn' ? '#6b7280cc' : '#374151cc';
+    const overlay = !isActive
+        ? `<div class="reserved-overlay" style="background:${overlayBg};">${status.toUpperCase()}</div>`
+        : '';
+
+    const unavailBadge = !isActive
+        ? `<span class="product-badge" style="background:#fef2f2;color:#dc2626;border-color:#fecaca;">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`
+        : '';
+
+    const card = document.createElement('div');
+    card.className = 'product-card' + (!isActive ? ' fav-unavailable-card' : '');
+    card.innerHTML = `
+        <div class="product-image" onclick="openFavModal(${productIdLiteral})" style="position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+            ${cardImage}
+            <button class="favorite-btn" onclick="event.stopPropagation(); handleFavRemove(${productIdLiteral})"
+                style="position:absolute;top:8px;right:8px;background:transparent;border:none;color:#ef4444;font-size:20px;cursor:pointer;z-index:10;" title="Remove from favorites">
+                <i class="fas fa-heart"></i>
+            </button>
+            ${overlay}
+        </div>
+        <div class="product-info">
+            <div class="product-meta-row">
+                <span class="product-badge">${escHtml(listing.badge || 'Used')}</span>
+                ${unavailBadge}
+            </div>
+            <h3 class="product-title" onclick="openFavModal(${productIdLiteral})" style="cursor:pointer;">${escHtml(listing.title)}</h3>
+            <div class="product-price">${escHtml(listing.price)}</div>
+            <div class="product-details-row">
+                <span class="product-seller">by ${escHtml(listing.seller || 'Campus Seller')}</span>
+            </div>
+            <div class="product-actions">
+                <button onclick="openFavModal(${productIdLiteral})">View Details</button>
+            </div>
+        </div>`;
+    return card;
+}
+
+function renderEmptyState(message, type) {
+    const grid = document.getElementById('favoritesGrid');
+    if (!grid) return;
+    const icon = type === 'sign-in' ? 'fa-sign-in-alt' : 'fa-heart';
+    const linkHtml = type === 'browse'
+        ? `<a href="../" class="my-sales-start-selling-btn"><i class="fas fa-store"></i> Browse Marketplace</a>`
+        : type === 'sign-in'
+        ? `<a href="login" class="my-sales-start-selling-btn"><i class="fas fa-sign-in-alt"></i> Sign In</a>`
+        : '';
+    grid.innerHTML = `
+        <div class="my-sales-empty-state">
+            <i class="fas ${icon}"></i>
+            <p>${message}</p>
+            ${linkHtml}
+        </div>`;
+}
+
+function renderErrorState(message) {
+    const grid = document.getElementById('favoritesGrid');
+    if (!grid) return;
+    grid.innerHTML = `
+        <div class="my-sales-empty-state">
+            <i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i>
+            <p>${message}</p>
+        </div>`;
+}
+
+// ======================== Remove from Favorites ========================
+function handleFavRemove(productId) {
+    const user = getFavCurrentUser();
+    if (!user) return;
+    firebase.database().ref(`favorites/${user.uid}/${String(productId)}`).remove()
+        .catch(err => console.error('Error removing favorite:', err));
+    // Firebase listener auto re-renders grid
+}
+
+// ======================== Modal ========================
+function openFavModal(productId) {
+    const id = String(productId);
+    const product = favoritedListings.find(l => String(l.id) === id);
+    if (!product) return;
+
+    currentFavProduct = product;
+    currentFavImages = Array.isArray(product.images) && product.images.length > 0
+        ? product.images
+        : product.imageUrl ? [product.imageUrl] : [];
+    currentFavImageIndex = 0;
+
+    const status = String(product.status || 'active').toLowerCase();
+    const isActive = status === 'active';
+
+    document.getElementById('favModalTitle').textContent = product.title;
+    document.getElementById('favModalPrice').textContent = product.price;
+    document.getElementById('favModalBadge').textContent = product.badge || 'Used';
+    document.getElementById('favModalDescription').textContent =
+        product.description || `A ${(product.badge || '').toLowerCase()} item.`;
+    document.getElementById('favModalCategory').textContent = product.category || '—';
+    document.getElementById('favModalSeller').textContent = product.seller || '—';
+    document.getElementById('favModalStatus').textContent = status.toUpperCase();
+    document.getElementById('favModalCollege').textContent = product.college || '—';
+
+    // Carousel
+    renderFavModalImage();
+
+    // Availability notice
+    const availSection = document.getElementById('favAvailabilitySection');
+    const availText = document.getElementById('favAvailabilityText');
+    const availNotice = document.getElementById('favAvailabilityNotice');
+    if (!isActive) {
+        availSection.style.display = 'block';
+        availNotice.style.cssText =
+            'padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;display:flex;align-items:center;gap:8px;color:#dc2626;';
         if (status === 'sold') {
-            availabilityText.textContent = 'This item has been sold';
-        } else if (status === 'withdrawed' || status === 'withdrawn') {
-            availabilityText.textContent = 'This item has been withdrawn by the seller';
+            availText.textContent = 'This item has been sold.';
+        } else if (status === 'withdrawn') {
+            availText.textContent = 'This item has been withdrawn by the seller.';
         } else {
-            availabilityText.textContent = 'This item is no longer available';
+            availText.textContent = 'This item is no longer available.';
         }
     } else {
-        availabilitySection.style.display = 'none';
+        availSection.style.display = 'none';
     }
 
-    // Update save button state
-    const saveBtn = document.getElementById('modalSaveBtn');
-    saveBtn.classList.add('favorited');
-    saveBtn.innerHTML = '<i class="fas fa-heart"></i>Saved';
+    // QR Code
+    renderFavQR(product);
 
-    // Show modal
-    document.getElementById('productModal').classList.add('active');
+    document.getElementById('favModal').classList.add('active');
 }
 
-function closeProductModal() {
-    document.getElementById('productModal').classList.remove('active');
-    currentProduct = null;
-}
-
-function setupProductModal() {
-    const modalCloseBtn = document.getElementById('modalCloseBtn');
-    if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeProductModal);
-
-    const modalOverlay = document.getElementById('modalOverlay');
-    if (modalOverlay) modalOverlay.addEventListener('click', closeProductModal);
-
-    // Carousel navigation
-    const prevBtn = document.getElementById('prevBtn');
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-            if (currentProduct) {
-                document.getElementById('carouselImage').textContent = currentProduct.image;
-            }
-        });
-    }
-
-    const nextBtn = document.getElementById('nextBtn');
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            if (currentProduct) {
-                document.getElementById('carouselImage').textContent = currentProduct.image;
-            }
-        });
-    }
-
-    // Save/Favorite button
-    const modalSaveBtn = document.getElementById('modalSaveBtn');
-    if (modalSaveBtn) {
-        modalSaveBtn.addEventListener('click', () => {
-            if (currentProduct) {
-                // Already in favorites, so remove it
-                removeFromFavorites(currentProduct.id);
-                closeProductModal();
-            }
-        });
-    }
-
-    // Order button
-    const modalOrderBtn = document.getElementById('modalOrderBtn');
-    if (modalOrderBtn) {
-        modalOrderBtn.addEventListener('click', async () => {
-            if (currentProduct) {
-                if (!(await enforceBuyPolicyOrRedirect())) {
-                    return;
-                }
-
-                const status = currentProduct.status || 'active';
-                const isAvailable = status === 'active';
-                
-                if (!isAvailable) {
-                    // If not available, just close the modal
-                    closeProductModal();
-                } else {
-                    // If available, open payment modal
-                    const orderData = {
-                        itemName: currentProduct.title,
-                        price: currentProduct.price,
-                        seller: currentProduct.seller,
-                        sellerPaymentQR: currentProduct.sellerPaymentQR,
-                        productId: currentProduct.id
-                    };
-                    closeProductModal();
-                    openPaymentModal(orderData);
-                }
-            }
-        });
-    }
-}
-
-// ======================== Payment Modal ========================
-let currentOrderData = null;
-
-function openPaymentModal(orderData) {
-    currentOrderData = orderData;
-    const paymentModal = document.getElementById('paymentModal');
-    
-    document.getElementById('paymentItemName').textContent = orderData.itemName;
-    
-    const qrCodeContainer = document.getElementById('paymentQRCode');
-    if (orderData.sellerPaymentQR) {
-        qrCodeContainer.innerHTML = `<img src="${orderData.sellerPaymentQR}" alt="Seller QR Code" style="width: 100%; height: 100%; object-fit: contain;">`;
+function renderFavModalImage() {
+    const container = document.getElementById('favCarouselImage');
+    if (!container || !currentFavProduct) return;
+    if (currentFavImages.length > 0) {
+        const src = currentFavImages[currentFavImageIndex];
+        container.innerHTML = `<img src="${src}" alt="${escHtml(currentFavProduct.title)}" style="max-width:100%;max-height:100%;object-fit:contain;">`;
+        container.style.fontSize = '';
     } else {
-        qrCodeContainer.innerHTML = '<i class="fas fa-qrcode" style="font-size: 120px; color: #ddd;"></i>';
-    }
-    
-    paymentModal.classList.add('active');
-}
-
-function closePaymentModal() {
-    const paymentModal = document.getElementById('paymentModal');
-    paymentModal.classList.remove('active');
-    currentOrderData = null;
-}
-
-function setupPaymentModal() {
-    const paymentModalClose = document.getElementById('paymentModalClose');
-    const paymentModalOverlay = document.getElementById('paymentModalOverlay');
-    const btnCancelOrder = document.getElementById('btnCancelOrder');
-    const btnPaymentMade = document.getElementById('btnPaymentMade');
-    
-    if (paymentModalClose) {
-        paymentModalClose.addEventListener('click', closePaymentModal);
-    }
-    
-    if (paymentModalOverlay) {
-        paymentModalOverlay.addEventListener('click', closePaymentModal);
-    }
-    
-    if (btnCancelOrder) {
-        btnCancelOrder.addEventListener('click', closePaymentModal);
-    }
-    
-    if (btnPaymentMade) {
-        btnPaymentMade.addEventListener('click', closePaymentModal);
+        container.innerHTML = '';
+        container.textContent = currentFavProduct.image || '📦';
+        container.style.fontSize = '72px';
     }
 }
 
-// Setup clear favorites button
-function setupClearFavoritesButton() {
-    const clearBtn = document.getElementById('clearFavoritesBtn');
-    if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            const user = firebase.auth().currentUser;
-            if (!user) {
-                alert('Please log in first');
-                return;
+async function renderFavQR(product) {
+    const qrBox = document.getElementById('favQRImage');
+    if (!qrBox) return;
+    qrBox.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:32px;color:#d1d5db;"></i>';
+
+    let qrSrc = product.sellerPaymentQR || '';
+
+    // Fetch seller profile from cloud using their UID
+    if (!qrSrc && product.sellerUid &&
+        window.unimartProfileSync &&
+        typeof window.unimartProfileSync.getProfileFromCloud === 'function') {
+        try {
+            const sellerProfile = await window.unimartProfileSync.getProfileFromCloud(product.sellerUid);
+            if (sellerProfile && sellerProfile.paymentQR) {
+                qrSrc = sellerProfile.paymentQR;
             }
-
-            if (confirm('Are you sure you want to clear all favorites? This will remove all your saved items.')) {
-                console.log("Clearing all favorites for user:", user.uid);
-                const favoritesRef = firebase.database().ref(`favorites/${user.uid}`);
-                favoritesRef.remove()
-                    .then(() => {
-                        console.log("All favorites cleared");
-                        renderEmptyFavorites();
-                    })
-                    .catch((error) => {
-                        console.error("Error clearing favorites:", error);
-                        alert('Error clearing favorites. Please try again.');
-                    });
-            }
-        });
+        } catch (_) {}
     }
-}
 
-// ======================== Authentication Management ========================
-// Check if user is logged in and update sidebar
-function checkAuthStatus() {
-    const user = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
-    updateSidebarAuthState(user);
-}
-
-// Update sidebar based on auth state
-function updateSidebarAuthState(user) {
-    if (user) {
-        showUserProfile({
-            name: user.displayName || user.email || 'User',
-            email: user.email || ''
-        });
+    if (qrSrc) {
+        qrBox.innerHTML = `<img src="${qrSrc}" alt="Seller Payment QR" style="max-width:100%;max-height:220px;object-fit:contain;border-radius:8px;">`;
     } else {
-        showLoginButton();
+        qrBox.innerHTML = `
+            <i class="fas fa-qrcode" style="font-size:64px;color:#d1d5db;"></i>
+            <p style="color:#9ca3af;font-size:12px;margin-top:8px;text-align:center;">Seller has not uploaded a QR code</p>`;
     }
 }
 
-// Display user profile
-function showUserProfile(user) {
-    const userProfile = document.getElementById('userProfile');
-    const loginBtn = document.getElementById('loginBtn');
-    if (!userProfile || !loginBtn) return;
-
-    userProfile.style.display = 'flex';
-    loginBtn.style.display = 'none';
-    
-    document.getElementById('userName').textContent = user.name || 'User';
-    document.getElementById('userEmail').textContent = user.email || '';
+function closeFavModal() {
+    document.getElementById('favModal').classList.remove('active');
+    currentFavProduct = null;
 }
 
-// Display login button
-function showLoginButton() {
-    const userProfile = document.getElementById('userProfile');
-    const loginBtn = document.getElementById('loginBtn');
-    if (!userProfile || !loginBtn) return;
+function setupFavModal() {
+    document.getElementById('favModalCloseBtn').addEventListener('click', closeFavModal);
+    document.getElementById('favModalOverlay').addEventListener('click', closeFavModal);
 
-    userProfile.style.display = 'none';
-    loginBtn.style.display = 'flex';
+    document.getElementById('favPrevBtn').addEventListener('click', () => {
+        if (currentFavImages.length > 1) {
+            currentFavImageIndex = (currentFavImageIndex - 1 + currentFavImages.length) % currentFavImages.length;
+            renderFavModalImage();
+        }
+    });
+
+    document.getElementById('favNextBtn').addEventListener('click', () => {
+        if (currentFavImages.length > 1) {
+            currentFavImageIndex = (currentFavImageIndex + 1) % currentFavImages.length;
+            renderFavModalImage();
+        }
+    });
+
+    document.getElementById('favRemoveBtn').addEventListener('click', () => {
+        if (currentFavProduct) {
+            handleFavRemove(currentFavProduct.id);
+            closeFavModal();
+        }
+    });
 }
 
-// Handle login button click
-document.addEventListener('DOMContentLoaded', () => {
-    const loginBtn = document.getElementById('loginBtn');
-    if (loginBtn) {
-        loginBtn.addEventListener('click', () => {
-            alert('Login button clicked! (Placeholder for future Google Sign-In integration)');
-        });
-    }
-});
-
-// Handle logout (optional - can be triggered from profile menu)
-function logout() {
-    localStorage.removeItem('userProfile');
-    showLoginButton();
-    alert('Signed out successfully!');
+// ======================== Refresh & Clear Buttons ========================
+function setupRefreshButton() {
+    const btn = document.getElementById('refreshFavoritesBtn');
+    if (btn) btn.addEventListener('click', refreshFavorites);
 }
+
+function setupClearButton() {
+    const btn = document.getElementById('clearFavoritesBtn');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+        const user = getFavCurrentUser();
+        if (!user) return;
+        if (!confirm('Remove all favorites? This cannot be undone.')) return;
+        firebase.database().ref(`favorites/${user.uid}`).remove()
+            .catch(err => console.error('Error clearing favorites:', err));
+    });
+}
+
+window.openFavModal = openFavModal;
+window.handleFavRemove = handleFavRemove;

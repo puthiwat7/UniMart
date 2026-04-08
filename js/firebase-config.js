@@ -4,7 +4,7 @@
 
 const firebaseConfig = {
   apiKey: "AIzaSyAt50gvXpxqE1A4qdnnX3BqbMf1Q0x4i6o",
-  authDomain: "unimart-63bcc-3f714.web.app",
+  authDomain: "unimart-63bcc.firebaseapp.com",
   projectId: "unimart-63bcc",
   databaseURL: "https://unimart-63bcc-default-rtdb.asia-southeast1.firebasedatabase.app",
   storageBucket: "unimart-63bcc.firebasestorage.app",

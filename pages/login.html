@@ -76,11 +76,35 @@
                 <p id="errorText"></p>
             </div>
 
+            <!-- Forgot Password Link (shown after wrong-password errors) -->
+            <div id="forgotPasswordHint" style="display: none; text-align: center; margin-top: 8px;">
+                <button class="btn-forgot-password" onclick="openForgotPasswordPopup()">
+                    Forgot password? &nbsp;<strong>Click here!</strong>
+                </button>
+            </div>
+
             <!-- Success Message -->
             <div id="successMessage" class="success-message" style="display: none;">
                 <i class="fas fa-check-circle"></i>
                 <p id="successText"></p>
             </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Popup -->
+    <div id="forgotPasswordOverlay" class="forgot-overlay" style="display:none;" onclick="closeForgotPasswordPopup(event)">
+        <div class="forgot-popup" role="dialog" aria-modal="true">
+            <button class="forgot-popup-close" onclick="closeForgotPasswordPopup()" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="forgot-popup-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h3>Reset Your Password</h3>
+            <p>To reset your password, please contact UniMart support:</p>
+            <a class="forgot-email-link" href="mailto:unimartofficial01@gmail.com">unimartofficial01@gmail.com</a>
+            <p class="forgot-note">Include your registered email address in the message. Password resets are completed within <strong>24 hours</strong>.</p>
+            <button class="btn-forgot-done" onclick="closeForgotPasswordPopup()">Got it</button>
         </div>
     </div>
 

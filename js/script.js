@@ -1,4 +1,4 @@
-const DEFAULT_PRODUCTS = [];
+﻿const DEFAULT_PRODUCTS = [];
 
 // Local storage keys used by the legacy listing cache.
 // These are updated by the My Sales page when listings change.
@@ -6,6 +6,8 @@ const USER_LISTINGS_KEY = 'unimartListings';
 const LEGACY_LISTINGS_KEY = 'listings';
 
 let products = [];
+let userFavoriteIds = new Set();
+let favoritesDbUnsubscribe = null;
 
 let currentCategory = 'All Items';
 let filteredProducts = [];
@@ -301,6 +303,11 @@ async function initializeApp() {
     setupProductModal();
     setupPaymentModal();
     populateCollegeDropdown();
+
+    // Wire up favorites sync to auth state
+    firebase.auth().onAuthStateChanged((user) => {
+        startFavoritesListener(user ? user.uid : null);
+    });
 }
 
 // Initialize when DOM is ready
@@ -836,10 +843,10 @@ function handleAddToCart(productId) {
 document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', (e) => {
         const href = item.getAttribute('href');
-        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const currentPage = window.location.pathname.split('/').pop() || 'index';
         
         // If navigating to Marketplace and already on index.html, don't show alert
-        if ((href === '#' || href === '') && currentPage === 'index.html' && item.querySelector('span').textContent === 'Marketplace') {
+        if ((href === '#' || href === '') && currentPage === 'index' && item.querySelector('span').textContent === 'Marketplace') {
             e.preventDefault();
             return;
         }
@@ -942,58 +949,92 @@ function saveFavorites(favorites) {
     localStorage.setItem('favorites', JSON.stringify(favorites));
 }
 
+// Sync favorites from Firebase for the logged-in user into the in-memory Set
+function startFavoritesListener(uid) {
+    if (favoritesDbUnsubscribe) {
+        favoritesDbUnsubscribe();
+        favoritesDbUnsubscribe = null;
+    }
+    if (!uid) {
+        userFavoriteIds.clear();
+        return;
+    }
+    const ref = firebase.database().ref(`favorites/${uid}`);
+    const handler = ref.on('value', (snapshot) => {
+        userFavoriteIds.clear();
+        if (snapshot.exists()) {
+            snapshot.forEach((child) => {
+                userFavoriteIds.add(String(child.key));
+            });
+        }
+        // Update all visible heart buttons without full re-render
+        updateAllHeartButtons();
+    }, (err) => {
+        console.warn('favorites listener error:', err);
+    });
+    favoritesDbUnsubscribe = () => ref.off('value', handler);
+}
+
+function updateAllHeartButtons() {
+    document.querySelectorAll('.favorite-btn').forEach((btn) => {
+        const onclick = btn.getAttribute('onclick') || '';
+        const match = onclick.match(/toggleFavorite\('([^']+)'\)/);
+        if (!match) return;
+        const id = match[1];
+        btn.style.color = userFavoriteIds.has(id) ? '#ef4444' : '#9ca3af';
+    });
+    // Also update modal save button if open
+    if (currentProduct) {
+        const saveBtn = document.getElementById('modalSaveBtn');
+        if (saveBtn) {
+            const fav = userFavoriteIds.has(String(currentProduct.id));
+            saveBtn.classList.toggle('favorited', fav);
+            saveBtn.innerHTML = fav ? '<i class="fas fa-heart"></i>Saved' : '<i class="fas fa-heart"></i>Save';
+        }
+    }
+}
+
 // Check if item is favorited
 function checkIfFavorited(productId) {
-    // For now, return false - favorites state will be updated via real-time listeners
-    // In a production app, you'd cache favorites locally for immediate UI feedback
-    return false;
+    return userFavoriteIds.has(String(productId));
 }
 
 // Toggle favorite
 function toggleFavorite(productId, product) {
     const user = firebase.auth().currentUser;
     if (!user) {
-        console.log("Cannot toggle favorite: no authenticated user");
-        // Could show a login prompt here
+        console.log('Cannot toggle favorite: no authenticated user');
         return;
     }
 
     const normalizedId = String(productId);
+    const isFav = userFavoriteIds.has(normalizedId);
+
+    // Optimistically update in-memory cache and DOM immediately
+    if (isFav) {
+        userFavoriteIds.delete(normalizedId);
+    } else {
+        userFavoriteIds.add(normalizedId);
+    }
+    updateAllHeartButtons();
+
     const favoritesRef = firebase.database().ref(`favorites/${user.uid}/${normalizedId}`);
-
-    // Check if already favorited by trying to get the data
-    favoritesRef.once('value', (snapshot) => {
-        const exists = snapshot.exists();
-
-        if (exists) {
-            // Remove from favorites
-            console.log("Removing from favorites:", user.uid, normalizedId);
-            favoritesRef.remove()
-                .then(() => {
-                    console.log("Successfully removed from favorites");
-                    renderProducts(filteredProducts); // Re-render to update heart colors
-                })
-                .catch((error) => {
-                    console.error("Error removing from favorites:", error);
-                });
-        } else {
-            // Add to favorites
-            const favoriteData = {
-                id: normalizedId,
-                addedAt: firebase.database.ServerValue.TIMESTAMP
-            };
-
-            console.log("Adding to favorites:", user.uid, normalizedId);
-            favoritesRef.set(favoriteData)
-                .then(() => {
-                    console.log("Successfully added to favorites");
-                    renderProducts(filteredProducts); // Re-render to update heart colors
-                })
-                .catch((error) => {
-                    console.error("Error adding to favorites:", error);
-                });
-        }
-    });
+    if (isFav) {
+        favoritesRef.remove().catch((error) => {
+            console.error('Error removing from favorites:', error);
+            // Roll back
+            userFavoriteIds.add(normalizedId);
+            updateAllHeartButtons();
+        });
+    } else {
+        favoritesRef.set({ id: normalizedId, addedAt: firebase.database.ServerValue.TIMESTAMP })
+            .catch((error) => {
+                console.error('Error adding to favorites:', error);
+                // Roll back
+                userFavoriteIds.delete(normalizedId);
+                updateAllHeartButtons();
+            });
+    }
 }
 
 window.toggleFavorite = toggleFavorite;

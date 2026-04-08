@@ -8,6 +8,7 @@
   "hosting": {
     "public": ".",
     "site": "unimart-63bcc-3f714",
+    "cleanUrls": true,
     "ignore": [
       "firebase.json",
       "**/.*",
