@@ -128,7 +128,8 @@ function normalizeListing(listing, fallbackIndex = 0) {
         condition: normalizedCondition,
         quantity: Number.isFinite(Number(listing.quantity)) ? Number(listing.quantity) : 1,
         description: String(listing.description || ''),
-        status: String(listing.status || 'active').toLowerCase()
+        status: String(listing.status || 'active').toLowerCase(),
+        reserved: Boolean(listing.reserved)
     };
 }
 
@@ -450,50 +451,13 @@ function renderMarketplaceLoadingState(count = 8) {
 
 // Create a product card element
 function createProductCard(product) {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    const productId = String(product.id);
-    const productIdLiteral = `'${productId}'`;
-    const isFavorited = checkIfFavorited(productId);
-    const favBtnColor = isFavorited ? '#ef4444' : '#9ca3af';
-    const conditionPercent = getConditionPercentage(product);
-    
-    // Show uploaded image if available, otherwise show emoji icon
-    let cardImage;
-    if (product.imageUrl || (product.images && product.images.length > 0)) {
-        const imgSrc = product.imageUrl || product.images[0];
-        cardImage = `<img src="${imgSrc}" alt="${product.title}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">`;
-    } else if (product.image) {
-        cardImage = product.image;
-    } else {
-        cardImage = '📦';
-    }
-
-    card.innerHTML = `
-        <div class="product-image" style="position: relative; cursor: pointer;" onclick="handleViewDetails(${productIdLiteral})">
-            ${cardImage}
-            <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite(${productIdLiteral})" style="position: absolute; top: 8px; right: 8px; background-color: transparent; border: none; color: ${favBtnColor}; font-size: 20px; cursor: pointer; z-index: 10;">
-                <i class="fas fa-heart"></i>
-            </button>
-        </div>
-        <div class="product-info">
-            <div class="product-meta-row">
-                <span class="product-badge" style="margin-bottom: 0;">${product.badge}</span>
-                ${conditionPercent !== null ? `<span class="product-badge condition-badge">${conditionPercent}%</span>` : ''}
-            </div>
-            <h3 class="product-title">${product.title}</h3>
-            <div class="product-price">${product.price}</div>
-            <div class="product-details-row">
-                <span class="product-seller">by ${product.seller || 'Campus Seller'}</span>
-                <span class="product-quantity">Qty: ${product.quantity || 1}</span>
-            </div>
-            ${product.college ? `<div class="product-college">${product.college}</div>` : ''}
-            <div class="product-actions">
-                <button onclick="handleViewDetails(${productIdLiteral})">View Details</button>
-            </div>
-        </div>
-    `;
-    return card;
+    return renderProductCard(product, {
+        showFavoriteIcon: true,
+        showRemoveButton: false,
+        isFavorited: checkIfFavorited(String(product.id)),
+        onViewDetails: 'handleViewDetails',
+        onFavoriteToggle: 'toggleFavorite'
+    });
 }
 
 // Setup category filter clicks
@@ -728,6 +692,10 @@ function openProductModal(product) {
     
     // Use seller-provided description
     document.getElementById('modalDescription').textContent = product.description || 'No description available.';
+    const modalReservedElem = document.getElementById('modalReservedStatus');
+    if (modalReservedElem) {
+        modalReservedElem.textContent = product.reserved ? 'Reserved' : 'Available';
+    }
 
     // Update favorite button state
     const saveBtn = document.getElementById('modalSaveBtn');
@@ -974,38 +942,56 @@ function saveFavorites(favorites) {
 
 // Check if item is favorited
 function checkIfFavorited(productId) {
-    const normalizedId = String(productId);
-    const favorites = getFavorites();
-    return favorites.some((fav) => String(fav.id) === normalizedId);
+    // For now, return false - favorites state will be updated via real-time listeners
+    // In a production app, you'd cache favorites locally for immediate UI feedback
+    return false;
 }
 
 // Toggle favorite
 function toggleFavorite(productId, product) {
-    const normalizedId = String(productId);
-    const resolvedProduct = product || products.find(p => String(p.id) === normalizedId);
-    let favorites = getFavorites();
-    const isFavorited = favorites.some((fav) => String(fav.id) === normalizedId);
-
-    if (isFavorited) {
-        favorites = favorites.filter((fav) => String(fav.id) !== normalizedId);
-    } else {
-        // Strip large image data before saving to avoid localStorage quota errors.
-        // The favorites page re-fetches full listing data from the cloud.
-        const slim = resolvedProduct || {};
-        favorites.push({
-            id: normalizedId,
-            title: slim.title || '',
-            price: slim.price || '',
-            badge: slim.badge || '',
-            category: slim.category || '',
-            seller: slim.seller || '',
-            college: slim.college || '',
-            status: slim.status || 'active'
-        });
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        console.log("Cannot toggle favorite: no authenticated user");
+        // Could show a login prompt here
+        return;
     }
 
-    saveFavorites(favorites);
-    renderProducts(filteredProducts); // Re-render to update heart colors
+    const normalizedId = String(productId);
+    const favoritesRef = firebase.database().ref(`favorites/${user.uid}/${normalizedId}`);
+
+    // Check if already favorited by trying to get the data
+    favoritesRef.once('value', (snapshot) => {
+        const exists = snapshot.exists();
+
+        if (exists) {
+            // Remove from favorites
+            console.log("Removing from favorites:", user.uid, normalizedId);
+            favoritesRef.remove()
+                .then(() => {
+                    console.log("Successfully removed from favorites");
+                    renderProducts(filteredProducts); // Re-render to update heart colors
+                })
+                .catch((error) => {
+                    console.error("Error removing from favorites:", error);
+                });
+        } else {
+            // Add to favorites
+            const favoriteData = {
+                id: normalizedId,
+                addedAt: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            console.log("Adding to favorites:", user.uid, normalizedId);
+            favoritesRef.set(favoriteData)
+                .then(() => {
+                    console.log("Successfully added to favorites");
+                    renderProducts(filteredProducts); // Re-render to update heart colors
+                })
+                .catch((error) => {
+                    console.error("Error adding to favorites:", error);
+                });
+        }
+    });
 }
 
 // ======================== Authentication Management ========================

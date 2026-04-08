@@ -149,6 +149,7 @@ function normalizeListing(item, index = 0) {
         sellerUid: item.sellerUid || null,
         sellerEmail: item.sellerEmail ? String(item.sellerEmail).toLowerCase() : '',
         status,
+        reserved: Boolean(item.reserved),
         listedDate: item.listedDate || item.listedAt || new Date().toISOString().split('T')[0],
         soldDate: item.soldDate || null
     };
@@ -501,7 +502,8 @@ function renderMySalesLoadingState(count = 6) {
 // Create sale card
 function createSaleCard(item) {
     const card = document.createElement('div');
-    card.className = 'product-card';
+    const isReserved = Boolean(item.reserved) && item.status === 'active';
+    card.className = isReserved ? 'product-card reserved-card' : 'product-card';
     const statusText = item.status === 'sold' ? 'SOLD' : (item.status === 'withdrawn' ? 'WITHDRAWN' : 'ACTIVE');
     const statusClass = item.status === 'sold' ? 'status-sold' : (item.status === 'withdrawn' ? 'status-withdrawn' : 'status-active');
 
@@ -537,8 +539,14 @@ function createSaleCard(item) {
         cardImage = '📦';
     }
 
+    const reservedOverlay = isReserved ? '<div class="reserved-overlay">RESERVED</div>' : '';
+    const reservedAction = (item.status === 'active')
+        ? `<button class="btn-reserve-toggle" onclick='event.stopPropagation(); toggleSaleReserved(${JSON.stringify(item.id)})'>${item.reserved ? 'Unreserve' : 'Mark as Reserved'}</button>`
+        : '';
+
     card.innerHTML = `
         <div class="product-image" onclick='openSalesModal(${JSON.stringify(item.id)})'>${cardImage}</div>
+        ${reservedOverlay}
         <div class="product-info">
             <span class="product-badge sale-status-badge ${statusClass}">${statusText}</span>
             <h3 class="product-title" onclick='openSalesModal(${JSON.stringify(item.id)})'>${item.title}</h3>
@@ -547,6 +555,7 @@ function createSaleCard(item) {
             ${extraInfo}
             <div class="product-actions">
                 <button onclick='openSalesModal(${JSON.stringify(item.id)})'>View Details</button>
+                ${reservedAction}
             </div>
         </div>
     `;
@@ -562,6 +571,42 @@ function getSalesItemImages(item) {
     if (Array.isArray(item.images) && item.images.length) return item.images.filter(Boolean);
     if (item.imageUrl) return [item.imageUrl];
     return [];
+}
+
+async function toggleSaleReserved(itemId) {
+    const item = getSalesItemById(itemId);
+    if (!item || item.status !== 'active') return;
+
+    const newReserved = !Boolean(item.reserved);
+    const button = document.getElementById('salesReservedToggleBtn');
+    if (button) {
+        button.disabled = true;
+        button.textContent = newReserved ? 'Reserving...' : 'Unreserving...';
+    }
+
+    try {
+        item.reserved = newReserved;
+        const success = await window.unimartListingsSync.updateListingInCloud(item.id, { reserved: newReserved });
+        if (!success) {
+            throw new Error('Failed to update reserved state');
+        }
+
+        filterSales();
+        updateSalesStats();
+
+        if (currentSalesItemId && String(currentSalesItemId) === String(itemId)) {
+            openSalesModal(itemId);
+        }
+    } catch (error) {
+        console.error('Error toggling reserved state:', error);
+        item.reserved = !newReserved;
+        alert('Unable to update reserved status. Please try again.');
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.textContent = item.reserved ? 'Unreserve' : 'Mark as Reserved';
+        }
+    }
 }
 
 function renderSalesModalImage() {
@@ -603,6 +648,7 @@ function openSalesModal(itemId) {
     document.getElementById('salesModalCategory').textContent = item.category;
     document.getElementById('salesModalQuantity').textContent = String(item.quantity || 1);
     document.getElementById('salesModalStatus').textContent = String(item.status || 'active').toUpperCase();
+    document.getElementById('salesModalReserved').textContent = item.reserved ? 'Yes' : 'No';
 
     const canManage = item.status === 'active';
     document.getElementById('salesEditBtn').style.display = canManage ? 'inline-flex' : 'none';
@@ -611,6 +657,11 @@ function openSalesModal(itemId) {
 
     document.getElementById('salesViewPanel').style.display = 'block';
     document.getElementById('salesEditPanel').style.display = 'none';
+    const reservedBtn = document.getElementById('salesReservedToggleBtn');
+    if (reservedBtn) {
+        reservedBtn.style.display = canManage ? 'inline-flex' : 'none';
+        reservedBtn.textContent = item.reserved ? 'Unreserve' : 'Mark as Reserved';
+    }
 
     renderSalesModalImage();
     renderSalesQR(item);
@@ -969,9 +1020,12 @@ function setupSalesModal() {
         });
     }
 
+    const reservedToggleBtn = document.getElementById('salesReservedToggleBtn');
+
     if (editBtn) editBtn.addEventListener('click', openSalesEditPanel);
     if (withdrawBtn) withdrawBtn.addEventListener('click', withdrawCurrentListing);
     if (markSoldBtn) markSoldBtn.addEventListener('click', markCurrentListingSold);
+    if (reservedToggleBtn) reservedToggleBtn.addEventListener('click', () => toggleSaleReserved(currentSalesItemId));
     if (cancelEditBtn) cancelEditBtn.addEventListener('click', closeSalesEditPanel);
     if (saveEditBtn) saveEditBtn.addEventListener('click', saveSalesEdit);
 

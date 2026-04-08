@@ -43,7 +43,8 @@ function unimartNormalizeListing(item, index = 0) {
         listedAt: item.listedAt || item.listedDate || new Date().toISOString(),
         listedDate: item.listedDate || item.listedAt || new Date().toISOString(),
         soldDate: item.soldDate || null,
-        userId: item.userId || item.sellerUid || null
+        userId: item.userId || item.sellerUid || null,
+        reserved: Boolean(item.reserved)
     };
 }
 

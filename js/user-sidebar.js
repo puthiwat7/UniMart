@@ -80,7 +80,7 @@ function isCurrentUserAdmin(userLike) {
 }
 
 function resolveAdminPanelPath() {
-    return '/pages/admin-panel';
+    return '/pages/admin-panel.html';
 }
 
 function ensureAdminNavItem(userLike) {

@@ -26,6 +26,7 @@ function renderListingsTable(container, listings) {
                 <td>${safeSeller}</td>
                 <td>${safePrice}</td>
                 <td><span class="admin-status-pill admin-status-${status}">${status}</span></td>
+                <td><span class="admin-status-pill ${listing.reserved && status === 'active' ? 'admin-status-reserved' : 'admin-status-active'}">${listing.reserved && status === 'active' ? 'Reserved' : 'Open'}</span></td>
                 <td class="admin-action-cell">
                     <button class="admin-table-btn" data-action="listing-status" data-id="${listing.id}" data-status="active">Active</button>
                     <button class="admin-table-btn" data-action="listing-status" data-id="${listing.id}" data-status="sold">Sold</button>
@@ -44,11 +45,12 @@ function renderListingsTable(container, listings) {
                     <th>Seller</th>
                     <th>Price</th>
                     <th>Status</th>
+                    <th>Reserved</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                ${rows || '<tr><td colspan="5">No listings found.</td></tr>'}
+                ${rows || '<tr><td colspan="6">No listings found.</td></tr>'}
             </tbody>
         </table>
     `;

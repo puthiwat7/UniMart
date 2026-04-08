@@ -3,14 +3,14 @@
 // Get these from Firebase Console: https://console.firebase.google.com/
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB05pJyXGh0y5Vpjd6EYeXsoIfXgBGChMs",
-  authDomain: "unimart-bccb5.firebaseapp.com",
-  projectId: "unimart-bccb5",
-  databaseURL: "https://unimart-bccb5-default-rtdb.asia-southeast1.firebasedatabase.app",
-  storageBucket: "unimart-bccb5.firebasestorage.app",
-  messagingSenderId: "395199091096",
-  appId: "1:395199091096:web:439f64e5dec4e83aaddbed",
-  measurementId: "G-2QJ09Q5M12"
+  apiKey: "AIzaSyAt50gvXpxqE1A4qdnnX3BqbMf1Q0x4i6o",
+  authDomain: "unimart-63bcc.firebaseapp.com",
+  projectId: "unimart-63bcc",
+  databaseURL: "https://unimart-63bcc-default-rtdb.asia-southeast1.firebasedatabase.app",
+  storageBucket: "unimart-63bcc.firebasestorage.app",
+  messagingSenderId: "275149343796",
+  appId: "1:275149343796:web:62476076206920ff5dce61",
+  measurementId: "G-T3T8JFF08Y"
 };
 
 // Global constants
@@ -28,7 +28,12 @@ const COLLEGES = [
 
 // Initialize Firebase - wait for SDK to be available
 if (typeof firebase !== 'undefined') {
-  firebase.initializeApp(firebaseConfig);
+  if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+      console.log('Firebase app initialized successfully');
+  } else {
+      console.log('Firebase app already initialized');
+  }
   
   // Get Firebase Auth instance
   const auth = firebase.auth();
@@ -46,8 +51,7 @@ if (typeof firebase !== 'undefined') {
       .catch((error) => {
           console.error('Error setting persistence:', error);
       });
-  
-  console.log('Firebase initialized successfully');
+
   if (analytics) {
       console.log('Analytics enabled');
   }

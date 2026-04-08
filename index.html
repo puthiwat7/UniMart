@@ -19,33 +19,21 @@
     <script defer src="js/profile-sync.js"></script>
     <script defer src="js/analytics.js"></script>
     
-    <!-- Auth Guard - Wait for Firebase to load -->
+    <!-- Auth state watcher - keep marketplace available while auth restores -->
     <script>
-        // Handle Chrome extension message passing to prevent async listener errors
-        if (window.chrome && chrome.runtime) {
-            chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-                sendResponse({});
-                return false;
-            });
-        }
-        
-        // Wait for Firebase to be ready, then check authentication
-        function initializeAuthGuard() {
+        function initializeAuthWatcher() {
             if (typeof firebase !== 'undefined' && firebase.auth) {
                 firebase.auth().onAuthStateChanged((user) => {
-                    if (!user) {
-                        // User not logged in, redirect to login page
-                        window.location.href = 'pages/login.html';
-                    }
+                    console.log('Marketplace auth state:', user ? 'signed in' : 'signed out');
+                    // Marketplace remains visible even if not authenticated;
+                    // authenticated-only actions are handled elsewhere.
                 });
             } else {
-                // Firebase not loaded yet, retry
-                setTimeout(initializeAuthGuard, 100);
+                setTimeout(initializeAuthWatcher, 100);
             }
         }
-        
-        // Start auth guard initialization
-        initializeAuthGuard();
+
+        initializeAuthWatcher();
     </script>
 </head>
 <body>
@@ -69,31 +57,31 @@
                         </a>
                     </li>
                     <li>
-                        <a href="pages/sell-item" class="nav-item">
+                        <a href="pages/sell-item.html" class="nav-item">
                             <i class="fas fa-plus"></i>
                             <span>Sell Item</span>
                         </a>
                     </li>
                     <li>
-                        <a href="pages/my-sales" class="nav-item">
+                        <a href="pages/my-sales.html" class="nav-item">
                             <i class="fas fa-chart-line"></i>
                             <span>My Sales</span>
                         </a>
                     </li>
                     <li>
-                        <a href="pages/my-favorites" class="nav-item">
+                        <a href="pages/my-favorites.html" class="nav-item">
                             <i class="fas fa-heart"></i>
                             <span>My Favorites</span>
                         </a>
                     </li>
                     <li>
-                        <a href="pages/profile" class="nav-item">
+                        <a href="pages/profile.html" class="nav-item">
                             <i class="fas fa-user"></i>
                             <span>Profile</span>
                         </a>
                     </li>
                     <li>
-                        <a href="pages/user-guide" class="nav-item">
+                        <a href="pages/user-guide.html" class="nav-item">
                             <i class="fas fa-book-open"></i>
                             <span>User Guide</span>
                         </a>
@@ -323,6 +311,11 @@
                             <p id="modalDescription">No description available</p>
                         </div>
 
+                        <div class="modal-section">
+                            <h4><i class="fas fa-bookmark" style="color: var(--primary-blue); margin-right: 6px;"></i>Availability</h4>
+                            <p id="modalReservedStatus">Available</p>
+                        </div>
+
                         <!-- Features/Security - Removed -->
 
                         <!-- QR Upload Warning -->
@@ -402,29 +395,30 @@
             <i class="fas fa-store"></i>
             <span>Marketplace</span>
         </a>
-        <a href="pages/sell-item" class="bottom-nav-item" data-page="sell">
+        <a href="pages/sell-item.html" class="bottom-nav-item" data-page="sell">
             <i class="fas fa-plus"></i>
             <span>Sell</span>
         </a>
-        <a href="pages/my-sales" class="bottom-nav-item" data-page="sales">
+        <a href="pages/my-sales.html" class="bottom-nav-item" data-page="sales">
             <i class="fas fa-chart-line"></i>
             <span>Sales</span>
         </a>
-        <a href="pages/my-favorites" class="bottom-nav-item" data-page="favorites">
+        <a href="pages/my-favorites.html" class="bottom-nav-item" data-page="favorites">
             <i class="fas fa-heart"></i>
             <span>Favorites</span>
         </a>
-        <a href="pages/profile" class="bottom-nav-item" data-page="profile">
+        <a href="pages/profile.html" class="bottom-nav-item" data-page="profile">
             <i class="fas fa-user"></i>
             <span>Profile</span>
         </a>
-        <a href="pages/user-guide" class="bottom-nav-item" data-page="guide">
+        <a href="pages/user-guide.html" class="bottom-nav-item" data-page="guide">
             <i class="fas fa-book-open"></i>
             <span>Guide</span>
         </a>
     </nav>
 
     <script defer src="js/listings-sync.js"></script>
+    <script defer src="js/product-card.js"></script>
     <script defer src="js/script.js"></script>
     <script defer src="js/user-sidebar.js"></script>
     <script defer src="js/bottom-nav.js"></script>

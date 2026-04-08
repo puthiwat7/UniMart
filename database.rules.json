@@ -14,6 +14,12 @@
         ".read": "auth != null",
         ".write": "auth != null && auth.uid == $uid"
       }
+    },
+    "favorites": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
     }
   }
 }

@@ -118,6 +118,8 @@ async function handleEmailAuth(e) {
     } catch (error) {
         hideLoading();
         console.error('Email auth error:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
 
         let errorText = 'Authentication failed. Please try again.';
         
@@ -133,6 +135,10 @@ async function handleEmailAuth(e) {
             errorText = 'Incorrect password. Please try again.';
         } else if (error.code === 'auth/too-many-requests') {
             errorText = 'Too many failed attempts. Please try again later.';
+        } else if (error.code === 'auth/operation-not-allowed') {
+            errorText = 'Email authentication is not enabled. Please contact support or try Google sign-in.';
+        } else if (error.code === 'auth/network-request-failed') {
+            errorText = 'Network error. Please check your connection.';
         }
 
         showError(errorText);

@@ -17,24 +17,22 @@
     <script defer src="../js/firebase-auth.js"></script>
     <script defer src="../js/profile-sync.js"></script>
 
-    <!-- Auth Guard - Wait for Firebase to load -->
+    <!-- Auth state watcher - keep favorites available while auth restores -->
     <script>
-        // Protect this page: redirect to login if not authenticated
-        function initializeAuthGuard() {
+        // Passive auth watcher that allows page to load
+        // Hard redirect is handled by DOMContentLoaded in my-favorites.js
+        function initializeAuthWatcher() {
             if (typeof firebase !== 'undefined' && firebase.auth) {
                 firebase.auth().onAuthStateChanged((user) => {
-                    if (!user) {
-                        window.location.href = 'login.html';
-                    }
+                    console.log('My Favorites auth state:', user ? 'signed in' : 'signed out');
+                    // Auth state is handled by DOMContentLoaded in my-favorites.js
                 });
             } else {
-                // Firebase not loaded yet, retry
-                setTimeout(initializeAuthGuard, 100);
+                setTimeout(initializeAuthWatcher, 100);
             }
         }
-        
-        // Start auth guard initialization
-        initializeAuthGuard();
+
+        initializeAuthWatcher();
     </script>
 </head>
 <body>
@@ -58,31 +56,31 @@
                         </a>
                     </li>
                     <li>
-                        <a href="sell-item" class="nav-item">
+                        <a href="sell-item.html" class="nav-item">
                             <i class="fas fa-plus"></i>
                             <span>Sell Item</span>
                         </a>
                     </li>
                     <li>
-                        <a href="my-sales" class="nav-item">
+                        <a href="my-sales.html" class="nav-item">
                             <i class="fas fa-chart-line"></i>
                             <span>My Sales</span>
                         </a>
                     </li>
                     <li>
-                        <a href="my-favorites" class="nav-item active">
+                        <a href="my-favorites.html" class="nav-item active">
                             <i class="fas fa-heart"></i>
                             <span>My Favorites</span>
                         </a>
                     </li>
                     <li>
-                        <a href="profile" class="nav-item">
+                        <a href="profile.html" class="nav-item">
                             <i class="fas fa-user"></i>
                             <span>Profile</span>
                         </a>
                     </li>
                     <li>
-                        <a href="user-guide" class="nav-item">
+                        <a href="user-guide.html" class="nav-item">
                             <i class="fas fa-book-open"></i>
                             <span>User Guide</span>
                         </a>
@@ -189,6 +187,11 @@
                             <p id="modalDescription">No description available</p>
                         </div>
 
+                        <div class="modal-section">
+                            <h4><i class="fas fa-bookmark" style="color: var(--primary-blue); margin-right: 6px;"></i>Availability</h4>
+                            <p id="modalReservedStatus">Available</p>
+                        </div>
+
                         <!-- Availability Status -->
                         <div class="modal-section" id="availabilitySection" style="display: none;">
                             <div class="availability-notice" id="availabilityNotice">
@@ -261,6 +264,7 @@
 
     <script defer src="../js/user-sidebar.js"></script>
     <script defer src="../js/listings-sync.js"></script>
+    <script defer src="../js/product-card.js"></script>
     <script defer src="../js/my-favorites.js"></script>
 
     <!-- Mobile Bottom Navigation -->
@@ -269,23 +273,23 @@
             <i class="fas fa-store"></i>
             <span>Marketplace</span>
         </a>
-        <a href="sell-item" class="bottom-nav-item" data-page="sell">
+        <a href="sell-item.html" class="bottom-nav-item" data-page="sell">
             <i class="fas fa-plus"></i>
             <span>Sell</span>
         </a>
-        <a href="my-sales" class="bottom-nav-item" data-page="sales">
+        <a href="my-sales.html" class="bottom-nav-item" data-page="sales">
             <i class="fas fa-chart-line"></i>
             <span>Sales</span>
         </a>
-        <a href="my-favorites" class="bottom-nav-item active" data-page="favorites">
+        <a href="my-favorites.html" class="bottom-nav-item active" data-page="favorites">
             <i class="fas fa-heart"></i>
             <span>Favorites</span>
         </a>
-        <a href="profile" class="bottom-nav-item" data-page="profile">
+        <a href="profile.html" class="bottom-nav-item" data-page="profile">
             <i class="fas fa-user"></i>
             <span>Profile</span>
         </a>
-        <a href="user-guide" class="bottom-nav-item" data-page="guide">
+        <a href="user-guide.html" class="bottom-nav-item" data-page="guide">
             <i class="fas fa-book-open"></i>
             <span>Guide</span>
         </a>
