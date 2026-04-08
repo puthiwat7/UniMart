@@ -314,6 +314,12 @@
         function enforceSellAccessOrRedirect(profileOverride) {
             const profile = profileOverride || currentExtendedProfile || getCurrentExtendedProfileLocal();
 
+            if (profile && profile.bannedFromSelling === true) {
+                alert('Your account has been banned from selling on this platform. Please contact support for assistance.');
+                window.location.href = '../';
+                return false;
+            }
+
             if (!profile || !String(profile.fullName || '').trim()) {
                 alert('Please set your display name in profile before listing items. You will be redirected now.');
                 window.location.href = 'profile';
@@ -349,15 +355,46 @@
             return canSell;
         }
 
+        let _sellBanRef = null;
+        let _sellBanHandler = null;
+
+        function startSellBanListener(uid) {
+            stopSellBanListener();
+            if (!uid || typeof firebase === 'undefined' || typeof firebase.database !== 'function') return;
+            _sellBanRef = firebase.database().ref(`unimartBans/${uid}`);
+            _sellBanHandler = (snap) => {
+                const data = snap.val();
+                if (data && data.bannedFromSelling === true) {
+                    canSell = false;
+                    stopSellBanListener();
+                    alert('Your account has been banned from selling on this platform. Please contact support.');
+                    window.location.href = '../';
+                }
+            };
+            _sellBanRef.on('value', _sellBanHandler);
+        }
+
+        function stopSellBanListener() {
+            if (_sellBanRef && _sellBanHandler) {
+                _sellBanRef.off('value', _sellBanHandler);
+                _sellBanRef = null;
+                _sellBanHandler = null;
+            }
+        }
+
         function initializeSellAccessGuard() {
             const runCheck = async (user) => {
                 if (!user || !user.uid) {
                     canSell = false;
                     sellAccessReady = false;
+                    stopSellBanListener();
                     return;
                 }
 
                 await refreshSellAccess(user.uid);
+                if (canSell) {
+                    startSellBanListener(user.uid);
+                }
             };
 
             if (typeof firebase !== 'undefined' && firebase.auth) {

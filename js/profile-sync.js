@@ -94,6 +94,8 @@ function normalizeProfile(profile, uid) {
         paymentQR: profile.paymentQR || null,
         hasAgreedPolicy: agreed,
         agreedToPolicies: agreed,
+        bannedFromSelling: profile.bannedFromSelling === true,
+        bannedFromLogin: profile.bannedFromLogin === true,
         updatedAt: profile.updatedAt || new Date().toISOString()
     };
 }

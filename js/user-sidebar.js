@@ -175,6 +175,45 @@ function applyUserToSidebar(userLike) {
     }
 }
 
+let _loginBanWatchRef = null;
+let _loginBanWatchHandler = null;
+
+function stopLoginBanWatch() {
+    if (_loginBanWatchRef && _loginBanWatchHandler) {
+        _loginBanWatchRef.off('value', _loginBanWatchHandler);
+        _loginBanWatchRef = null;
+        _loginBanWatchHandler = null;
+    }
+}
+
+function kickBannedUser() {
+    stopLoginBanWatch();
+    const path = window.location.pathname || '';
+    const onLoginPage = path.includes('login');
+    if (onLoginPage) return;
+
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+        firebase.auth().signOut().catch(() => {});
+    }
+
+    const loginUrl = path.includes('/pages/') ? 'login?banned=1' : 'pages/login?banned=1';
+    window.location.href = loginUrl;
+}
+
+function startLoginBanWatch(uid) {
+    if (!uid || typeof firebase === 'undefined' || typeof firebase.database !== 'function') return;
+    stopLoginBanWatch();
+
+    _loginBanWatchRef = firebase.database().ref(`unimartBans/${uid}`);
+    _loginBanWatchHandler = (snap) => {
+        const data = snap.val();
+        if (data && data.bannedFromLogin === true) {
+            kickBannedUser();
+        }
+    };
+    _loginBanWatchRef.on('value', _loginBanWatchHandler);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // 1) Immediately try to show cached user to avoid delay
     try {
@@ -198,6 +237,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     firebaseAuthManager.onAuthStateChanged(async (user) => {
         applyUserToSidebar(user);
+        if (user && user.uid) {
+            startLoginBanWatch(user.uid);
+        } else {
+            stopLoginBanWatch();
+        }
         await enforcePolicy(user);
     });
 

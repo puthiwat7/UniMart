@@ -1,7 +1,8 @@
 const COLLECTIONS = {
     users: 'unimartProfiles',
     listings: 'unimartListingsV1',
-    reports: 'unimartAdminV1/reports'
+    reports: 'unimartAdminV1/reports',
+    bans: 'unimartBans'
 };
 
 function getFirebaseAuth() {
@@ -45,6 +46,22 @@ function subscribeUsers(onData, onError) {
     const handler = (snapshot) => onData(mapObjectSnapshot(snapshot));
     const errorHandler = (error) => {
         console.error('users subscription failed', error);
+        if (typeof onError === 'function') onError(error);
+    };
+
+    ref.on('value', handler, errorHandler);
+    return () => ref.off('value', handler);
+}
+
+function subscribeBans(onData, onError) {
+    const db = getRealtimeDb();
+    const ref = db.ref(COLLECTIONS.bans);
+    const handler = (snapshot) => {
+        const value = snapshot && typeof snapshot.val === 'function' ? snapshot.val() : null;
+        onData(value && typeof value === 'object' ? value : {});
+    };
+    const errorHandler = (error) => {
+        console.error('bans subscription failed', error);
         if (typeof onError === 'function') onError(error);
     };
 
@@ -129,12 +146,49 @@ async function banUser(userId) {
     });
 }
 
+async function banUserFromSelling(userId) {
+    if (!userId) throw new Error('User id is required');
+    const db = getRealtimeDb();
+    await db.ref(`${COLLECTIONS.bans}/${String(userId)}`).update({
+        bannedFromSelling: true,
+        updatedAt: new Date().toISOString()
+    });
+}
+
+async function unbanUserFromSelling(userId) {
+    if (!userId) throw new Error('User id is required');
+    const db = getRealtimeDb();
+    await db.ref(`${COLLECTIONS.bans}/${String(userId)}`).update({
+        bannedFromSelling: false,
+        updatedAt: new Date().toISOString()
+    });
+}
+
+async function banUserFromLogin(userId) {
+    if (!userId) throw new Error('User id is required');
+    const db = getRealtimeDb();
+    await db.ref(`${COLLECTIONS.bans}/${String(userId)}`).update({
+        bannedFromLogin: true,
+        updatedAt: new Date().toISOString()
+    });
+}
+
+async function unbanUserFromLogin(userId) {
+    if (!userId) throw new Error('User id is required');
+    const db = getRealtimeDb();
+    await db.ref(`${COLLECTIONS.bans}/${String(userId)}`).update({
+        bannedFromLogin: false,
+        updatedAt: new Date().toISOString()
+    });
+}
+
 export {
     COLLECTIONS,
     getFirebaseAuth,
     getRealtimeDb,
     getUserById,
     subscribeUsers,
+    subscribeBans,
     subscribeListings,
     subscribeReports,
     fetchReports,
@@ -142,5 +196,9 @@ export {
     updateListingStatus,
     createReport,
     deleteReport,
-    banUser
+    banUser,
+    banUserFromSelling,
+    unbanUserFromSelling,
+    banUserFromLogin,
+    unbanUserFromLogin
 };

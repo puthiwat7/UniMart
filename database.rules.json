@@ -9,7 +9,12 @@
       ".read": "auth != null",
       ".write": "auth != null"
     },
+    "unimartBans": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
     "unimartProfiles": {
+      ".read": "auth != null",
       "$uid": {
         ".read": "auth != null",
         ".write": "auth != null && auth.uid == $uid"

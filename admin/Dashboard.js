@@ -3,14 +3,13 @@ function getStatusValue(listing) {
 }
 
 function buildDashboardStats(state) {
-    const users = Array.isArray(state.users) ? state.users : [];
     const listings = Array.isArray(state.listings) ? state.listings : [];
 
     return {
-        totalUsers: users.length,
         totalListings: listings.length,
         activeListings: listings.filter((item) => getStatusValue(item) === 'active').length,
-        soldListings: listings.filter((item) => getStatusValue(item) === 'sold').length
+        soldListings: listings.filter((item) => getStatusValue(item) === 'sold').length,
+        withdrawnListings: listings.filter((item) => getStatusValue(item) === 'withdrawn').length
     };
 }
 
@@ -22,10 +21,6 @@ function renderDashboard(container, state) {
             <h2>Dashboard</h2>
             <div class="admin-stats-grid">
                 <article class="admin-stat-card">
-                    <h3>Total Users</h3>
-                    <p>${stats.totalUsers}</p>
-                </article>
-                <article class="admin-stat-card">
                     <h3>Total Listings</h3>
                     <p>${stats.totalListings}</p>
                 </article>
@@ -36,6 +31,10 @@ function renderDashboard(container, state) {
                 <article class="admin-stat-card">
                     <h3>Sold Listings</h3>
                     <p>${stats.soldListings}</p>
+                </article>
+                <article class="admin-stat-card">
+                    <h3>Withdrawn Listings</h3>
+                    <p>${stats.withdrawnListings}</p>
                 </article>
             </div>
         </section>

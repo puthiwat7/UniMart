@@ -4,12 +4,18 @@ let isSignUpMode = false; // Toggle between sign in and sign up
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Login page loaded');
-    
+
+    // Show ban message if redirected here due to a login ban
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('banned')) {
+        showError('Your account has been banned from this platform. Please contact support for assistance.');
+    }
+
     // Check if already logged in
     firebaseAuthManager.onAuthStateChanged((user) => {
-        const params = new URLSearchParams(window.location.search);
         const justLoggedOut = params.has('loggedout');
-        if (user && !justLoggedOut) {
+        const isBanned = params.has('banned');
+        if (user && !justLoggedOut && !isBanned) {
             // User is logged in, redirect to home
             console.log('User already logged in:', user.email);
             window.location.href = '../';
@@ -105,6 +111,22 @@ async function handleEmailAuth(e) {
             }
         } else {
             user = await firebaseAuthManager.signInWithEmail(email, password);
+
+            // Check if the user is banned from logging in
+            try {
+                const db = firebase.database();
+                const snap = await db.ref(`unimartBans/${user.uid}`).once('value');
+                const banData = snap.val();
+                if (banData && banData.bannedFromLogin === true) {
+                    await firebase.auth().signOut();
+                    hideLoading();
+                    showError('Your account has been banned from this platform. Please contact support for assistance.');
+                    return;
+                }
+            } catch (banCheckError) {
+                console.warn('Could not verify login ban status:', banCheckError);
+            }
+
             showSuccess('Signed in successfully! Redirecting...');
         }
 

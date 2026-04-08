@@ -283,6 +283,33 @@ class FirebaseAuthManager {
         }
     }
 
+    async ensureRtdbUserRecord(user) {
+        if (!user || !user.uid) return;
+        if (typeof firebase === 'undefined' || typeof firebase.database !== 'function') return;
+
+        try {
+            const db = firebase.database();
+            const ref = db.ref(`unimartProfiles/${user.uid}`);
+            const snap = await ref.once('value');
+            const existing = snap.val();
+
+            const updates = {
+                email: String(user.email || ''),
+                displayName: String(user.displayName || ''),
+                photoURL: String(user.photoURL || ''),
+                lastLoginAt: new Date().toISOString()
+            };
+
+            if (!existing || !existing.createdAt) {
+                updates.createdAt = new Date().toISOString();
+            }
+
+            await ref.update(updates);
+        } catch (error) {
+            console.warn('Failed to ensure RTDB user record:', error);
+        }
+    }
+
     async isUserBanned(uid) {
         if (!uid) return false;
         if (typeof firebase.firestore !== 'function') return false;
@@ -295,6 +322,33 @@ class FirebaseAuthManager {
         } catch (error) {
             console.warn('Failed to check banned status:', error);
             return false;
+        }
+    }
+
+    startLoginBanListener(uid) {
+        if (!uid || typeof firebase === 'undefined' || typeof firebase.database !== 'function') return;
+
+        this.stopLoginBanListener();
+
+        const ref = firebase.database().ref(`unimartBans/${uid}`);
+        this._loginBanRef = ref;
+        this._loginBanHandler = (snap) => {
+            const data = snap.val();
+            if (data && data.bannedFromLogin === true) {
+                this.stopLoginBanListener();
+                firebase.auth().signOut().catch(() => {});
+                alert('Your account has been banned from this platform. You have been signed out.');
+                window.location.href = '/pages/login';
+            }
+        };
+        ref.on('value', this._loginBanHandler);
+    }
+
+    stopLoginBanListener() {
+        if (this._loginBanRef && this._loginBanHandler) {
+            this._loginBanRef.off('value', this._loginBanHandler);
+            this._loginBanRef = null;
+            this._loginBanHandler = null;
         }
     }
 
@@ -312,6 +366,10 @@ class FirebaseAuthManager {
 
             if (user) {
                 await this.ensureUserExists(user);
+                await this.ensureRtdbUserRecord(user);
+                this.startLoginBanListener(user.uid);
+            } else {
+                this.stopLoginBanListener();
             }
 
             // Cache basic user info so pages can show it immediately on load
