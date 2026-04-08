@@ -465,9 +465,30 @@
 /* Policy Agreement */
 .policy-agreement {
     padding: 20px;
-    background-color: var(--light-gray);
-    border-radius: 8px;
+    background: #ffffff;
+    border-radius: 12px;
     border: 1px solid var(--border-color);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.policy-agreement-header {
+    margin-bottom: 12px;
+}
+
+.policy-kicker {
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--primary-blue);
+}
+
+.policy-summary {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--dark-gray);
 }
 
 .checkbox-container {
@@ -479,6 +500,10 @@
     font-size: 14px;
     font-weight: 600;
     color: var(--text-color);
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #f9fafb;
 }
 
 .checkbox-container input {
@@ -511,9 +536,26 @@
 }
 
 .policy-text {
-    font-size: 13px;
+    font-size: 14px;
+    line-height: 1.6;
     color: var(--dark-gray);
     margin: 0;
+}
+
+.policy-quick-points {
+    margin: 14px 0 0;
+    padding-left: 20px;
+}
+
+.policy-quick-points li {
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: var(--dark-gray);
+    line-height: 1.5;
+}
+
+.policy-quick-points li:last-child {
+    margin-bottom: 0;
 }
 
 .policy-link {
@@ -537,7 +579,7 @@
     background: white;
     border-radius: 12px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    max-width: 700px;
+    max-width: 840px;
     width: 90%;
     max-height: 90vh;
     overflow-y: auto;
@@ -568,7 +610,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 24px;
+    padding: 20px 24px;
     border-bottom: 1px solid var(--border-color);
     position: sticky;
     top: 0;
@@ -577,7 +619,7 @@
 }
 
 .modal-header h2 {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--text-color);
     display: flex;
@@ -612,7 +654,7 @@
 }
 
 .modal-body {
-    padding: 24px;
+    padding: 18px 24px 24px;
     overflow-y: auto;
     flex: 1;
 }
@@ -620,18 +662,34 @@
 .modal-subtitle {
     font-size: 14px;
     color: var(--dark-gray);
-    margin: 0 0 24px 0;
+    margin: 0;
+}
+
+.policy-meta {
+    margin: 8px 0 16px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.policy-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
 }
 
 .policy-section {
-    margin-bottom: 24px;
+    margin-bottom: 0;
+    padding: 14px 16px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
 }
 
 .policy-section h3 {
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: 600;
     color: var(--text-color);
-    margin-bottom: 12px;
+    margin: 0 0 10px;
 }
 
 .policy-section ul {
@@ -641,7 +699,7 @@
 }
 
 .policy-section li {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--dark-gray);
     margin-bottom: 8px;
     padding-left: 20px;
@@ -658,12 +716,16 @@
 }
 
 .policy-footer {
-    font-size: 12px;
+    font-size: 13px;
     color: var(--dark-gray);
-    margin-top: 24px;
-    padding-top: 24px;
+    margin-top: 16px;
+    padding-top: 16px;
     border-top: 1px solid var(--border-color);
-    font-style: italic;
+    font-style: normal;
+    line-height: 1.6;
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 12px 14px;
 }
 
 .modal-footer {
@@ -758,6 +820,28 @@
     .modal {
         max-width: 95%;
         max-height: calc(100vh - 24px);
+    }
+
+    .modal-header {
+        padding: 16px;
+    }
+
+    .modal-header h2 {
+        font-size: 16px;
+        line-height: 1.4;
+    }
+
+    .modal-body {
+        padding: 14px 16px 16px;
+    }
+
+    .policy-section {
+        padding: 12px;
+    }
+
+    .modal-footer {
+        padding: 16px;
+        flex-wrap: wrap;
     }
 }
 

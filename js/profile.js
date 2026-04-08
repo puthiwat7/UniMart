@@ -497,7 +497,7 @@ function handleAgreeToPolicy() {
             // Store policy acceptance in localStorage for modal check
             localStorage.setItem("policyAccepted", "true");
             
-            showNotification('You have agreed to the marketplace policies!', 'success');
+            showNotification('You have agreed to the Terms of Use & Marketplace Policy!', 'success');
         })
         .catch(error => {
             console.error('Failed to save policy agreement:', error);
