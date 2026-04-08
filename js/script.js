@@ -631,6 +631,8 @@ function handleViewDetails(productId) {
     }
 }
 
+window.handleViewDetails = handleViewDetails;
+
 // Product Modal Functions
 let currentProduct = null;
 let currentImageIndex = 0;
@@ -993,6 +995,8 @@ function toggleFavorite(productId, product) {
         }
     });
 }
+
+window.toggleFavorite = toggleFavorite;
 
 // ======================== Authentication Management ========================
 // Check if user is logged in (from localStorage)
