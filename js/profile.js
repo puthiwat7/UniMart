@@ -1,4 +1,4 @@
-// ======================== Profile Page Logic ========================
+﻿// ======================== Profile Page Logic ========================
 // Uses Firebase auth for base user data and Firebase Realtime Database (by uid) for extended profile fields.
 // Persists across devices and browsers.
 
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
     firebaseAuthManager.onAuthStateChanged(async (user) => {
         if (!user) {
             // Auth guard in HTML will redirect, but just in case:
-            window.location.href = 'login.html';
+            window.location.href = 'login';
             return;
         }
 

@@ -1,4 +1,4 @@
-// Shared sidebar user display logic using FirebaseAuthManager
+﻿// Shared sidebar user display logic using FirebaseAuthManager
 // This script assumes firebase-config.js and firebase-auth.js have been loaded.
 
 const ADMIN_EMAILS_KEY = 'unimart_admin_emails';
@@ -80,7 +80,7 @@ function isCurrentUserAdmin(userLike) {
 }
 
 function resolveAdminPanelPath() {
-    return '/pages/admin-panel.html';
+    return '/pages/admin-panel';
 }
 
 function ensureAdminNavItem(userLike) {
@@ -239,7 +239,7 @@ async function handleSignOut() {
     console.log('sign-out initiated');
     const path = window.location.pathname || '';
     const inPagesDir = path.includes('/pages/');
-    const loginPath = inPagesDir ? 'login.html' : 'pages/login.html';
+    const loginPath = inPagesDir ? 'login' : 'pages/login';
 
     try {
         if (typeof firebaseAuthManager !== 'undefined') {

@@ -131,10 +131,12 @@ async function handleEmailAuth(e) {
             errorText = 'Password is too weak. Use at least 6 characters.';
         } else if (error.code === 'auth/user-not-found') {
             errorText = 'No account found with this email. Please sign up.';
-        } else if (error.code === 'auth/wrong-password') {
+        } else if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-login-credentials') {
             errorText = 'Incorrect password. Please try again.';
+            showForgotPasswordHint();
         } else if (error.code === 'auth/too-many-requests') {
             errorText = 'Too many failed attempts. Please try again later.';
+            showForgotPasswordHint();
         } else if (error.code === 'auth/operation-not-allowed') {
             errorText = 'Email authentication is not enabled. Please contact support or try Google sign-in.';
         } else if (error.code === 'auth/network-request-failed') {
@@ -233,4 +235,26 @@ function hideMessages() {
     const successDiv = document.getElementById('successMessage');
     if (errorDiv) errorDiv.style.display = 'none';
     if (successDiv) successDiv.style.display = 'none';
+    const hint = document.getElementById('forgotPasswordHint');
+    if (hint) hint.style.display = 'none';
 }
+
+function showForgotPasswordHint() {
+    const hint = document.getElementById('forgotPasswordHint');
+    if (hint) hint.style.display = 'block';
+}
+
+function openForgotPasswordPopup() {
+    const overlay = document.getElementById('forgotPasswordOverlay');
+    if (overlay) overlay.style.display = 'flex';
+}
+
+function closeForgotPasswordPopup(event) {
+    // Close when clicking the overlay background (not the popup card itself)
+    if (event && event.target !== document.getElementById('forgotPasswordOverlay')) return;
+    const overlay = document.getElementById('forgotPasswordOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+window.openForgotPasswordPopup = openForgotPasswordPopup;
+window.closeForgotPasswordPopup = closeForgotPasswordPopup;

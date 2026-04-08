@@ -32,7 +32,7 @@ function renderProductCard(product, options = {}) {
 
     const normalizedProduct = product || {};
     const productId = String(normalizedProduct.id || '');
-    const productIdLiteral = JSON.stringify(productId);
+    const productIdLiteral = `'${productId}'`;
     const isReserved = Boolean(normalizedProduct.reserved) && String(normalizedProduct.status || 'active').toLowerCase() === 'active';
     const conditionPercent = getConditionPercentage(normalizedProduct);
     const imageUrl = normalizedProduct.imageUrl || (Array.isArray(normalizedProduct.images) && normalizedProduct.images[0]) || '';

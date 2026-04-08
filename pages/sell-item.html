@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -26,12 +26,12 @@
             try {
                 firebase.auth().onAuthStateChanged((user) => {
                     if (!user) {
-                        window.location.href = 'login.html';
+                        window.location.href = 'login';
                     }
                 });
             } catch (error) {
                 console.error('Firebase not initialized:', error);
-                window.location.href = 'login.html';
+                window.location.href = 'login';
             }
         }, 100);
     </script>
@@ -57,31 +57,31 @@
                         </a>
                     </li>
                     <li>
-                        <a href="sell-item.html" class="nav-item active">
+                        <a href="sell-item" class="nav-item active">
                             <i class="fas fa-plus"></i>
                             <span>Sell Item</span>
                         </a>
                     </li>
                     <li>
-                        <a href="my-sales.html" class="nav-item">
+                        <a href="my-sales" class="nav-item">
                             <i class="fas fa-chart-line"></i>
                             <span>My Sales</span>
                         </a>
                     </li>
                     <li>
-                        <a href="my-favorites.html" class="nav-item">
+                        <a href="my-favorites" class="nav-item">
                             <i class="fas fa-heart"></i>
                             <span>My Favorites</span>
                         </a>
                     </li>
                     <li>
-                        <a href="profile.html" class="nav-item">
+                        <a href="profile" class="nav-item">
                             <i class="fas fa-user"></i>
                             <span>Profile</span>
                         </a>
                     </li>
                     <li>
-                        <a href="user-guide.html" class="nav-item">
+                        <a href="user-guide" class="nav-item">
                             <i class="fas fa-book-open"></i>
                             <span>User Guide</span>
                         </a>
@@ -94,7 +94,8 @@
                 <!-- User Profile (shown when logged in) -->
                 <div class="user-profile" id="userProfile" style="display: none;">
                     <div class="user-avatar">
-                        <i class="fas fa-user-circle"></i>
+                        <img id="userProfileImage" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: none;">
+                        <i class="fas fa-user-circle" id="userAvatarIcon"></i>
                     </div>
                     <div class="user-info">
                         <h4 id="userName">User Name</h4>
@@ -107,7 +108,7 @@
                 </div>
 
                 <!-- Login Button (shown when not logged in) -->
-                <button class="btn-login" id="loginBtn" onclick="window.location.href='login.html'">
+                <button class="btn-login" id="loginBtn" onclick="window.location.href='login'">
                     <i class="fab fa-google"></i>
                     <span>Sign in with Google</span>
                 </button>
@@ -315,19 +316,19 @@
 
             if (!profile || !String(profile.fullName || '').trim()) {
                 alert('Please set your display name in profile before listing items. You will be redirected now.');
-                window.location.href = 'profile.html';
+                window.location.href = 'profile';
                 return false;
             }
 
             if (!profile || profile.agreedToPolicies !== true) {
                 alert('You must agree to the Terms of Use & Marketplace Policy before selling. You will be redirected to your profile.');
-                window.location.href = 'profile.html';
+                window.location.href = 'profile';
                 return false;
             }
 
             if (!profile.paymentQR) {
                 alert('You must upload your QR code in profile before selling. You will be redirected now.');
-                window.location.href = 'profile.html';
+                window.location.href = 'profile';
                 return false;
             }
 
@@ -684,7 +685,7 @@
             try {
                 await saveListing(listing);
                 alert('Listing created successfully! Redirecting to marketplace...');
-                window.location.href = '../index.html';
+                window.location.href = '../index';
                 return;
             } catch (error) {
                 console.error('Failed to save listing:', error);
@@ -702,7 +703,7 @@
             //   .then(response => response.json())
             //   .then(data => {
             //       alert('Listing created successfully!');
-            //       window.location.href = '../index.html';
+            //       window.location.href = '../index';
             //   })
             //   .catch(error => {
             //       isSubmitting = false;
@@ -717,7 +718,7 @@
         // Cancel button
         document.querySelector('.btn-cancel').addEventListener('click', () => {
             if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
-                window.location.href = '../index.html';
+                window.location.href = '../index';
             }
         });
     </script>
@@ -728,23 +729,23 @@
             <i class="fas fa-store"></i>
             <span>Marketplace</span>
         </a>
-        <a href="sell-item.html" class="bottom-nav-item active" data-page="sell">
+        <a href="sell-item" class="bottom-nav-item active" data-page="sell">
             <i class="fas fa-plus"></i>
             <span>Sell</span>
         </a>
-        <a href="my-sales.html" class="bottom-nav-item" data-page="sales">
+        <a href="my-sales" class="bottom-nav-item" data-page="sales">
             <i class="fas fa-chart-line"></i>
             <span>Sales</span>
         </a>
-        <a href="my-favorites.html" class="bottom-nav-item" data-page="favorites">
+        <a href="my-favorites" class="bottom-nav-item" data-page="favorites">
             <i class="fas fa-heart"></i>
             <span>Favorites</span>
         </a>
-        <a href="profile.html" class="bottom-nav-item" data-page="profile">
+        <a href="profile" class="bottom-nav-item" data-page="profile">
             <i class="fas fa-user"></i>
             <span>Profile</span>
         </a>
-        <a href="user-guide.html" class="bottom-nav-item" data-page="guide">
+        <a href="user-guide" class="bottom-nav-item" data-page="guide">
             <i class="fas fa-book-open"></i>
             <span>Guide</span>
         </a>
