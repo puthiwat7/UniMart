@@ -8,246 +8,375 @@
     <link rel="shortcut icon" href="../favicon.svg">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
     <style>
+        /* ─────────────────────────────────────────
+           User Guide — Premium Design System
+        ───────────────────────────────────────── */
         :root {
-          --primary: #4f46e5;
-          --text-main: #1f2937;
-          --text-secondary: #6b7280;
-          --border: #e5e7eb;
-          --bg-hover: #f9fafb;
-          --surface: #ffffff;
+          --primary:       #4f46e5;
+          --primary-dark:  #3730a3;
+          --primary-light: #eef2ff;
+          --text-heading:  #0f172a;
+          --text-main:     #1e293b;
+          --text-secondary:#64748b;
+          --text-muted:    #94a3b8;
+          --border:        #e2e8f0;
+          --border-focus:  #a5b4fc;
+          --bg-page:       #f8fafc;
+          --bg-hover:      #f8fafc;
+          --surface:       #ffffff;
+          --shadow:        0 1px 2px rgba(0,0,0,0.04), 0 4px 16px rgba(15,23,42,0.05);
+          --shadow-hover:  0 2px 8px rgba(0,0,0,0.07), 0 8px 28px rgba(15,23,42,0.07);
+          --radius:        12px;
         }
 
+        .user-guide-page {
+          font-family: 'Inter', system-ui, -apple-system, sans-serif;
+          -webkit-font-smoothing: antialiased;
+          background: var(--bg-page);
+        }
+
+        /* ── Layout ── */
         .user-guide-page .guide-container {
-          max-width: 900px;
+          max-width: 780px;
           margin: 0 auto;
-          padding: 16px 20px 32px;
-          display: block;
+          padding: 16px 24px 56px;
         }
+        .user-guide-page .guide-main        { max-width: 780px; margin: 0 auto; }
+        .user-guide-page .guide-sidebar     { display: none; }
+        .user-guide-page .user-guide-container { max-width: 780px; margin: 0 auto; }
 
-        .user-guide-page .guide-main {
-          max-width: 900px;
-          margin: 0 auto;
-        }
-
-        .user-guide-page .guide-sidebar {
-          display: none;
-        }
-
+        /* ── Page header ── */
         .guide-page-header {
-          margin: 20px auto 0;
-          max-width: 900px;
-          padding: 0 20px;
+          max-width: 780px;
+          margin: 28px auto 0;
+          padding: 0 24px 20px;
+          border-bottom: 1px solid var(--border);
         }
-
-        .guide-page-header h1 {
-          margin: 0;
-          font-size: 18px;
+        .guide-page-header-eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 11px;
           font-weight: 600;
-          color: var(--text-main);
-          letter-spacing: -0.1px;
+          letter-spacing: 0.4px;
+          text-transform: uppercase;
+          color: var(--primary);
+          background: var(--primary-light);
+          padding: 3px 10px;
+          border-radius: 20px;
+          margin-bottom: 10px;
         }
-
+        .guide-page-header h1 {
+          margin: 0 0 5px;
+          font-size: 22px;
+          font-weight: 700;
+          color: var(--text-heading);
+          letter-spacing: -0.5px;
+          line-height: 1.2;
+        }
         .guide-page-header p {
-          margin: 8px 0 0;
+          margin: 0;
           font-size: 14px;
           color: var(--text-secondary);
-          line-height: 1.6;
+          line-height: 1.55;
+          font-weight: 400;
         }
 
-        .user-guide-page .user-guide-container {
-          max-width: 900px;
-          margin: 0 auto;
-          padding: 0;
-        }
-
+        /* ── Intro ── */
         .user-guide-page .guide-intro {
-          margin-bottom: 16px;
+          margin-bottom: 12px;
           background: var(--surface);
-          padding: 16px 18px;
-          border-radius: 12px;
+          padding: 18px 20px;
+          border-radius: var(--radius);
           border: 1px solid var(--border);
-          box-shadow: none;
+          border-left: 3px solid var(--primary);
+          box-shadow: var(--shadow);
         }
-
         .user-guide-page .guide-intro h2 {
-          font-size: 16px;
-          font-weight: 500;
-          margin: 0 0 8px;
-          color: var(--text-main);
+          font-size: 10.5px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.8px;
+          margin: 0 0 7px;
+          color: var(--primary);
         }
-
         .user-guide-page .guide-intro p {
-          margin: 0 0 8px;
+          margin: 0 0 5px;
           font-size: 14px;
+          font-weight: 400;
           color: var(--text-secondary);
-          line-height: 1.6;
+          line-height: 1.65;
         }
+        .user-guide-page .guide-intro p:last-child { margin-bottom: 0; }
 
-        .user-guide-page .guide-intro p:last-child {
-          margin-bottom: 0;
-        }
-
+        /* ── Accordion sections ── */
         .guide-section {
           background: var(--surface);
-          border-radius: 12px;
-          margin-bottom: 16px;
+          border-radius: var(--radius);
+          margin-bottom: 8px;
           border: 1px solid var(--border);
+          box-shadow: var(--shadow);
           overflow: hidden;
-          box-shadow: none;
-          transition: all 0.2s ease;
+          transition: border-color 0.18s, box-shadow 0.18s;
         }
-
         .guide-section:hover {
-          border-color: #d1d5db;
+          border-color: var(--border-focus);
+          box-shadow: var(--shadow-hover);
+        }
+        .guide-section.active {
+          border-color: var(--border-focus);
+          box-shadow: var(--shadow-hover);
         }
 
         .guide-section > .guide-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 14px 16px;
-          background: var(--surface);
+          padding: 17px 20px;
           cursor: pointer;
+          gap: 14px;
+          transition: background 0.15s;
+        }
+        .guide-section > .guide-header:hover  { background: #fafbff; }
+        .guide-section.active > .guide-header  { background: #fafbff; }
+
+        .guide-header-left {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          flex: 1;
+          min-width: 0;
         }
 
-        .guide-section > .guide-header:hover {
-          background: var(--bg-hover);
+        .section-badge {
+          width: 38px; height: 38px;
+          border-radius: 10px;
+          background: var(--primary-light);
+          color: var(--primary);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 15px;
+          flex-shrink: 0;
+          transition: background 0.2s, color 0.2s;
+        }
+        .guide-section.active .section-badge {
+          background: var(--primary);
+          color: #fff;
         }
 
-        .guide-section.active > .guide-header {
-          background: var(--bg-hover);
+        .section-meta { min-width: 0; }
+
+        .section-label {
+          display: block;
+          font-size: 10.5px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: var(--primary);
+          opacity: 0.7;
+          margin-bottom: 2px;
         }
 
         .guide-section > .guide-header h2 {
           margin: 0;
-          font-size: 16px;
-          font-weight: 500;
-          color: var(--text-main);
-          letter-spacing: -0.1px;
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--text-heading);
+          letter-spacing: -0.15px;
         }
 
         .toggle-btn {
-          width: 28px;
-          height: 28px;
-          border-radius: 6px;
+          width: 28px; height: 28px;
+          border-radius: 7px;
           border: 1px solid var(--border);
-          background: #ffffff;
-          color: var(--text-secondary);
-          font-size: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s ease;
+          background: var(--surface);
+          color: var(--text-muted);
+          font-size: 11px;
+          display: flex; align-items: center; justify-content: center;
+          transition: all 0.22s ease;
+          flex-shrink: 0;
+          cursor: pointer;
         }
-
-        .toggle-btn:hover {
-          background: #f3f4f6;
-          color: var(--text-main);
-        }
-
+        .toggle-btn i { transition: transform 0.22s ease; }
         .guide-section.active .toggle-btn {
-          color: var(--primary);
-          border-color: #c7d2fe;
-          background: #eef2ff;
+          background: var(--primary);
+          color: #fff;
+          border-color: var(--primary);
         }
+        .guide-section.active .toggle-btn i { transform: rotate(180deg); }
 
         .guide-content {
           max-height: 0;
           overflow: hidden;
-          padding: 0 16px;
+          padding: 0 20px;
           border-top: 1px solid transparent;
-          transition: max-height 0.28s ease, padding 0.24s ease, border-color 0.2s ease;
+          transition: max-height 0.32s ease, padding 0.26s ease, border-color 0.18s;
         }
-
         .guide-section.active .guide-content {
-          max-height: 1800px;
-          padding: 14px 16px 16px;
+          max-height: 3000px;
+          padding: 18px 20px 22px;
           border-top-color: var(--border);
         }
 
+        /* ── Timeline — numbered steps ── */
         .user-guide-page .timeline {
-          border-left: 2px solid #e5e7eb;
-          padding-left: 16px;
+          padding-left: 28px;
           margin: 0;
+          position: relative;
+          counter-reset: step;
         }
-
+        .user-guide-page .timeline::before {
+          content: '';
+          position: absolute;
+          left: 9px; top: 22px;
+          width: 1px;
+          height: calc(100% - 44px);
+          background: var(--border);
+        }
         .user-guide-page .timeline-item {
-          margin-bottom: 12px;
+          margin-bottom: 10px;
+          position: relative;
+          counter-increment: step;
         }
-
-        .user-guide-page .timeline-item:last-child {
-          margin-bottom: 0;
-        }
+        .user-guide-page .timeline-item:last-child { margin-bottom: 0; }
 
         .user-guide-page .dot {
-          left: -7px;
-          top: 14px;
-          width: 10px;
-          height: 10px;
-          background: #9ca3af;
-          border: 2px solid #ffffff;
-          box-shadow: 0 0 0 1px #d1d5db;
+          position: absolute;
+          left: -32px; top: 12px;
+          width: 20px; height: 20px;
+          border-radius: 50%;
+          background: var(--primary-light);
+          border: 1.5px solid var(--border-focus);
+          display: flex; align-items: center; justify-content: center;
+        }
+        .user-guide-page .dot::before {
+          content: counter(step);
+          font-size: 9.5px;
+          font-weight: 700;
+          color: var(--primary);
+          line-height: 1;
         }
 
+        /* ── Content cards ── */
         .user-guide-page .card {
-          background: #ffffff;
-          border: 1px solid #e5e7eb;
-          border-radius: 10px;
-          padding: 12px 14px;
-          box-shadow: none;
-          transition: border-color 0.2s ease;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          padding: 15px 17px;
+          box-shadow: var(--shadow);
+          transition: border-color 0.18s, box-shadow 0.18s;
+          margin-bottom: 10px;
         }
-
+        .user-guide-page .card:last-child { margin-bottom: 0; }
         .user-guide-page .card:hover {
-          border-color: #d1d5db;
-          box-shadow: none;
+          border-color: var(--border-focus);
+          box-shadow: var(--shadow-hover);
         }
-
         .user-guide-page .card h4 {
-          font-size: 16px;
-          font-weight: 500;
-          margin: 0 0 6px;
-          color: var(--text-main);
+          font-size: 13.5px;
+          font-weight: 600;
+          margin: 0 0 5px;
+          color: var(--text-heading);
+          letter-spacing: -0.1px;
         }
-
         .user-guide-page .card p,
         .user-guide-page .card li,
         .user-guide-page .guide-content p,
         .user-guide-page .guide-content li {
-          font-size: 14px;
-          font-weight: 400;
-          line-height: 1.6;
+          font-size: 13.5px;
+          line-height: 1.7;
           color: var(--text-secondary);
+          font-weight: 400;
         }
 
+        /* ── Policy grid (Terms section) ── */
+        .policy-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+        }
+        @media (max-width: 540px) { .policy-grid { grid-template-columns: 1fr; } }
+
+        .policy-card {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          padding: 16px 17px;
+          box-shadow: var(--shadow);
+          transition: border-color 0.18s, box-shadow 0.18s;
+        }
+        .policy-card:hover {
+          border-color: var(--border-focus);
+          box-shadow: var(--shadow-hover);
+        }
+
+        .policy-card-icon {
+          width: 32px; height: 32px;
+          background: var(--primary-light);
+          border-radius: 8px;
+          display: flex; align-items: center; justify-content: center;
+          color: var(--primary);
+          font-size: 13px;
+          margin-bottom: 11px;
+        }
+        .policy-card h4 {
+          font-size: 13.5px;
+          font-weight: 600;
+          margin: 0 0 8px;
+          color: var(--text-heading);
+          letter-spacing: -0.1px;
+        }
         .policy-list {
           margin: 0;
-          padding-left: 18px;
+          padding-left: 15px;
         }
-
         .policy-list li {
-          margin-bottom: 6px;
-        }
-
-        .policy-list li:last-child {
-          margin-bottom: 0;
-        }
-
-        .user-guide-page .guide-tip {
-          margin-top: 12px;
-          background: #f9fafb;
-          padding: 12px 14px;
-          border-radius: 10px;
-          border: 1px solid var(--border);
-          border-left: 1px solid var(--border);
-        }
-
-        .user-guide-page .guide-tip ul li {
+          font-size: 13px;
           color: var(--text-secondary);
+          line-height: 1.65;
+          margin-bottom: 5px;
         }
+        .policy-list li:last-child { margin-bottom: 0; }
+
+        /* ── Tip box ── */
+        .user-guide-page .guide-tip {
+          margin-top: 14px;
+          background: #fafbff;
+          padding: 12px 15px;
+          border-radius: var(--radius);
+          border: 1px solid #dde3f5;
+          display: flex;
+          gap: 10px;
+          align-items: flex-start;
+        }
+        .guide-tip-icon {
+          width: 24px; height: 24px;
+          background: var(--primary-light);
+          border-radius: 6px;
+          display: flex; align-items: center; justify-content: center;
+          color: var(--primary);
+          font-size: 11px;
+          flex-shrink: 0;
+          margin-top: 1px;
+        }
+        .guide-tip-body { flex: 1; }
+        .user-guide-page .guide-tip ul {
+          margin: 0;
+          padding-left: 14px;
+        }
+        .user-guide-page .guide-tip ul li {
+          font-size: 13px;
+          color: var(--text-secondary);
+          line-height: 1.65;
+          margin-bottom: 3px;
+          font-weight: 400;
+        }
+        .user-guide-page .guide-tip ul li:last-child { margin-bottom: 0; }
     </style>
 
     <!-- Firebase SDKs (Compat version for script tag compatibility) -->
@@ -353,8 +482,9 @@
 
         <main class="main-content">
             <div class="guide-page-header">
-                <h1>User Guide</h1>
-                <p>Official usage guide and marketplace terms for UniMart users.</p>
+              <span class="guide-page-header-eyebrow"><i class="fas fa-book-open"></i>&nbsp; Platform Guide</span>
+              <h1>User Guide</h1>
+              <p>How to buy and sell on UniMart, plus marketplace terms and safety guidelines.</p>
             </div>
 
             <div class="guide-container">
@@ -369,10 +499,16 @@
                       </div>
 
                       <!-- HOW TO SELL -->
-                      <div class="guide-section">
+                      <div class="guide-section" id="section-sell">
                         <div class="guide-header">
-                          <h2>How to Sell</h2>
-                          <button class="toggle-btn">+</button>
+                          <div class="guide-header-left">
+                            <div class="section-badge"><i class="fas fa-tag"></i></div>
+                            <div class="section-meta">
+                              <span class="section-label">Step by step</span>
+                              <h2>How to Sell</h2>
+                            </div>
+                          </div>
+                          <button class="toggle-btn"><i class="fas fa-chevron-down"></i></button>
                         </div>
                         <div class="guide-content">
 
@@ -381,7 +517,7 @@
                             <div class="dot"></div>
                             <div class="card">
                               <h4>Create a Listing</h4>
-                              <p>Provide clear details including name, price, category, condition, description, images, and contact QR code.</p>
+                              <p>Provide clear and accurate details about your item, including its name, price, category, condition, description, images, and your contact QR code.</p>
                             </div>
                           </div>
 
@@ -389,57 +525,82 @@
                             <div class="dot"></div>
                             <div class="card">
                               <h4>Publish Your Listing</h4>
-                              <p>Your item becomes visible to other users on the platform.</p>
+                              <p>Once submitted, your item will be visible to other users on the platform.</p>
                             </div>
                           </div>
 
                           <div class="timeline-item">
                             <div class="dot"></div>
                             <div class="card">
-                              <h4>Respond to Inquiries</h4>
-                              <p>Buyers contact you via QR code. Use WeChat for smooth communication.</p>
+                              <h4>Receive and Respond to Inquiries</h4>
+                              <p>Interested buyers may contact you by scanning your QR code. WeChat is recommended for smooth and efficient communication. Please respond politely and provide any necessary information.</p>
                             </div>
                           </div>
 
                           <div class="timeline-item">
                             <div class="dot"></div>
                             <div class="card">
-                              <h4>Arrange Meetup</h4>
-                              <p>Agree on a time and location, preferably within campus.</p>
+                              <h4>Agree on Transaction Terms</h4>
+                              <p>Once you and the buyer agree on the price and other details, proceed to arrange the transaction.</p>
                             </div>
                           </div>
 
                           <div class="timeline-item">
                             <div class="dot"></div>
                             <div class="card">
-                              <h4>Complete Transaction</h4>
-                              <p>Meet buyer, deliver item, and receive payment.</p>
+                              <h4>Mark Item as Reserved</h4>
+                              <p>After reaching an agreement and before meeting the buyer, please mark your item as "Reserved" through the My Sales page. This indicates to other users that the item is temporarily unavailable and helps avoid confusion.</p>
                             </div>
                           </div>
 
                           <div class="timeline-item">
                             <div class="dot"></div>
                             <div class="card">
-                              <h4>Mark as Sold</h4>
-                              <p>Update status via My Sales page after completion.</p>
+                              <h4>Arrange a Meetup</h4>
+                              <p>Schedule a suitable time and location, typically within the campus, to complete the transaction.</p>
+                            </div>
+                          </div>
+
+                          <div class="timeline-item">
+                            <div class="dot"></div>
+                            <div class="card">
+                              <h4>Complete the Transaction</h4>
+                              <p>Meet the buyer, allow them to inspect the item if necessary, then proceed with the exchange and payment.</p>
+                            </div>
+                          </div>
+
+                          <div class="timeline-item">
+                            <div class="dot"></div>
+                            <div class="card">
+                              <h4>Mark Item as Sold</h4>
+                              <p>Once the transaction is completed, update your listing status to "Sold" through the My Sales page.</p>
                             </div>
                           </div>
                         </div>
 
                         <div class="guide-tip">
-                          <ul>
-                            <li>Adjust price or improve description if item is not selling.</li>
-                            <li>Clear images increase selling speed.</li>
-                          </ul>
+                          <div class="guide-tip-icon"><i class="fas fa-lightbulb"></i></div>
+                          <div class="guide-tip-body">
+                            <ul>
+                              <li>Adjust price or improve description if item is not selling.</li>
+                              <li>Clear images increase selling speed.</li>
+                            </ul>
+                          </div>
                         </div>
                         </div>
                       </div>
 
                       <!-- HOW TO BUY -->
-                      <div class="guide-section">
+                      <div class="guide-section" id="section-buy">
                         <div class="guide-header">
-                          <h2>How to Buy</h2>
-                          <button class="toggle-btn">+</button>
+                          <div class="guide-header-left">
+                            <div class="section-badge"><i class="fas fa-shopping-bag"></i></div>
+                            <div class="section-meta">
+                              <span class="section-label">How it works</span>
+                              <h2>How to Buy</h2>
+                            </div>
+                          </div>
+                          <button class="toggle-btn"><i class="fas fa-chevron-down"></i></button>
                         </div>
                         <div class="guide-content">
 
@@ -494,96 +655,114 @@
                         </div>
 
                         <div class="guide-tip">
-                          <ul>
-                            <li>Compare multiple listings before buying.</li>
-                            <li>Always inspect items before payment.</li>
-                          </ul>
+                          <div class="guide-tip-icon"><i class="fas fa-lightbulb"></i></div>
+                          <div class="guide-tip-body">
+                            <ul>
+                              <li>Compare multiple listings before buying.</li>
+                              <li>Always inspect items before payment.</li>
+                            </ul>
+                          </div>
                         </div>
                         </div>
                       </div>
 
                       <!-- MY SALES -->
-                      <div class="guide-section">
+                      <div class="guide-section" id="section-sales">
                         <div class="guide-header">
-                          <h2>My Sales (Listing Management)</h2>
-                          <button class="toggle-btn">+</button>
+                          <div class="guide-header-left">
+                            <div class="section-badge"><i class="fas fa-chart-bar"></i></div>
+                            <div class="section-meta">
+                              <span class="section-label">Listing tools</span>
+                              <h2>My Sales (Listing Management)</h2>
+                            </div>
+                          </div>
+                          <button class="toggle-btn"><i class="fas fa-chevron-down"></i></button>
                         </div>
                         <div class="guide-content">
 
                         <div class="card simple">
                           <h4>Edit Listing</h4>
-                          <p>Update price, description, images anytime.</p>
+                          <p>You may update your listing details at any time, including the price, description, images, and other relevant information.</p>
+                        </div>
+
+                        <div class="card simple">
+                          <h4>Mark as Reserved</h4>
+                          <p>This function allows you to temporarily mark your item as "Reserved" after reaching an agreement with a buyer. It informs other users that the item is no longer available for new inquiries while awaiting completion of the transaction.</p>
+                          <p>If the transaction does not proceed (for example, after inspection or before handover), you may simply change the status back to available without needing to create a new listing.</p>
                         </div>
 
                         <div class="card simple">
                           <h4>Mark as Sold</h4>
-                          <p>Update status after successful sale.</p>
+                          <p>Once your item has been successfully sold, use this function to update the listing status to "Sold," ensuring the marketplace remains accurate and up to date.</p>
                         </div>
 
                         <div class="card simple">
                           <h4>Withdraw Listing</h4>
-                          <p>Remove listing if item is no longer available.</p>
+                          <p>If your item is no longer available or you no longer wish to sell it, you may withdraw (delete) the listing from the platform.</p>
                         </div>
 
                         <div class="guide-tip">
-                          <ul>
-                            <li>Keep listings updated to improve visibility.</li>
-                            <li>Remove inactive listings for better experience.</li>
-                          </ul>
+                          <div class="guide-tip-icon"><i class="fas fa-lightbulb"></i></div>
+                          <div class="guide-tip-body">
+                            <ul>
+                              <li>Keep listings updated to improve visibility.</li>
+                              <li>Remove inactive listings for better experience.</li>
+                            </ul>
+                          </div>
                         </div>
                         </div>
                       </div>
 
-                      <!-- TERMS HIGHLIGHTS -->
-                      <div class="guide-section">
+                      <!-- TERMS, SAFETY & PAYMENTS (combined) -->
+                      <div class="guide-section" id="section-terms">
                         <div class="guide-header">
-                          <h2>Terms of Use &amp; Marketplace Policy Highlights</h2>
-                          <button class="toggle-btn">+</button>
+                          <div class="guide-header-left">
+                            <div class="section-badge"><i class="fas fa-shield-alt"></i></div>
+                            <div class="section-meta">
+                              <span class="section-label">Rules &amp; guidelines</span>
+                              <h2>Terms, Safety &amp; Payments</h2>
+                            </div>
+                          </div>
+                          <button class="toggle-btn"><i class="fas fa-chevron-down"></i></button>
                         </div>
                         <div class="guide-content">
-                          <div class="card simple">
-                            <h4>Access &amp; Eligibility</h4>
-                            <ul class="policy-list">
-                              <li>Provide accurate personal information and maintain a valid WeChat contact.</li>
-                              <li>Agree to Terms before buying or selling.</li>
-                              <li>Comply with applicable laws and university regulations.</li>
-                            </ul>
-                          </div>
-
-                          <div class="card simple">
-                            <h4>Seller &amp; Buyer Responsibilities</h4>
-                            <ul class="policy-list">
-                              <li>Sellers must post truthful listings, clear images, and update status promptly.</li>
-                              <li>Buyers must review details, verify condition/authenticity, and inspect before payment.</li>
-                              <li>All users must communicate respectfully and avoid fraud, abuse, or fake accounts.</li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- SAFETY & LIABILITY -->
-                      <div class="guide-section">
-                        <div class="guide-header">
-                          <h2>Safety, Payments &amp; Liability</h2>
-                          <button class="toggle-btn">+</button>
-                        </div>
-                        <div class="guide-content">
-                          <div class="card simple">
-                            <h4>Payments and Transaction Risk</h4>
-                            <ul class="policy-list">
-                              <li>UniMart does not process payments or provide escrow.</li>
-                              <li>Users choose payment methods and verify payments at their own risk.</li>
-                              <li>UniMart is not liable for payment disputes, scams, non-payment, or chargebacks.</li>
-                            </ul>
-                          </div>
-
-                          <div class="card simple">
-                            <h4>Safety &amp; Enforcement</h4>
-                            <ul class="policy-list">
-                              <li>Meet in public campus locations and exercise caution with unfamiliar users.</li>
-                              <li>Illegal, counterfeit, unsafe, or restricted items are prohibited.</li>
-                              <li>UniMart may remove listings or suspend accounts for policy violations.</li>
-                            </ul>
+                          <div class="policy-grid">
+                            <div class="policy-card">
+                              <div class="policy-card-icon"><i class="fas fa-id-card"></i></div>
+                              <h4>Access &amp; Eligibility</h4>
+                              <ul class="policy-list">
+                                <li>Provide accurate personal information and maintain a valid WeChat contact.</li>
+                                <li>Agree to Terms before buying or selling.</li>
+                                <li>Comply with applicable laws and university regulations.</li>
+                              </ul>
+                            </div>
+                            <div class="policy-card">
+                              <div class="policy-card-icon"><i class="fas fa-handshake"></i></div>
+                              <h4>Seller &amp; Buyer Responsibilities</h4>
+                              <ul class="policy-list">
+                                <li>Sellers must post truthful listings, clear images, and update status promptly.</li>
+                                <li>Buyers must review details, verify condition/authenticity, and inspect before payment.</li>
+                                <li>All users must communicate respectfully and avoid fraud, abuse, or fake accounts.</li>
+                              </ul>
+                            </div>
+                            <div class="policy-card">
+                              <div class="policy-card-icon"><i class="fas fa-credit-card"></i></div>
+                              <h4>Payments &amp; Transaction Risk</h4>
+                              <ul class="policy-list">
+                                <li>UniMart does not process payments or provide escrow.</li>
+                                <li>Users choose payment methods and verify payments at their own risk.</li>
+                                <li>UniMart is not liable for payment disputes, scams, non-payment, or chargebacks.</li>
+                              </ul>
+                            </div>
+                            <div class="policy-card">
+                              <div class="policy-card-icon"><i class="fas fa-gavel"></i></div>
+                              <h4>Safety &amp; Enforcement</h4>
+                              <ul class="policy-list">
+                                <li>Meet in public campus locations and exercise caution with unfamiliar users.</li>
+                                <li>Illegal, counterfeit, unsafe, or restricted items are prohibited.</li>
+                                <li>UniMart may remove listings or suspend accounts for policy violations.</li>
+                              </ul>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -704,11 +883,7 @@
             document.querySelectorAll(".guide-section > .guide-header").forEach(h=>{
               h.onclick=()=>{
                 const s=h.parentElement;
-                const b=h.querySelector(".toggle-btn");
                 s.classList.toggle("active");
-                if (b) {
-                  b.textContent=s.classList.contains("active")?"−":"+";
-                }
               };
             });
 

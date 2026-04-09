@@ -12,6 +12,7 @@ const UNIMART_CACHE_KEY_PREFIX = 'unimart_listings_query_cache_v1_';
 
 const listingsReadCache = new Map();
 const listingsReadPromises = new Map();
+let _ensureResetPromise = null;
 
 function unimartNormalizeListing(item, index = 0) {
     if (!item || typeof item !== 'object') return null;
@@ -297,27 +298,36 @@ function invalidateListingsQueryCaches() {
 }
 
 async function ensureListingsResetApplied() {
-    const metaRef = getListingsMetaRef();
-    const listingsRef = getListingsDbRef();
-    if (!metaRef || !listingsRef) return;
+    // Singleton guard: prevent concurrent calls from racing to wipe the DB
+    if (_ensureResetPromise !== null) return _ensureResetPromise;
 
-    try {
-        const snapshot = await withTimeout(metaRef.child('resetVersion').once('value'));
-        const currentVersion = snapshot.val() || null;
-        if (currentVersion === UNIMART_LISTINGS_RESET_VERSION) {
+    _ensureResetPromise = (async () => {
+        const metaRef = getListingsMetaRef();
+        const listingsRef = getListingsDbRef();
+        if (!metaRef || !listingsRef) return;
+
+        try {
+            const snapshot = await withTimeout(metaRef.child('resetVersion').once('value'));
+            const currentVersion = snapshot.val() || null;
+            if (currentVersion === UNIMART_LISTINGS_RESET_VERSION) {
+                clearLegacyLocalListingCache();
+                return;
+            }
+
+            await withTimeout(listingsRef.set(null));
+            await withTimeout(metaRef.update({
+                resetVersion: UNIMART_LISTINGS_RESET_VERSION,
+                resetAt: new Date().toISOString()
+            }));
             clearLegacyLocalListingCache();
-            return;
+        } catch (error) {
+            // Allow retry on failure
+            _ensureResetPromise = null;
+            console.warn('Unable to apply one-time listings reset:', error);
         }
+    })();
 
-        await withTimeout(listingsRef.set(null));
-        await withTimeout(metaRef.update({
-            resetVersion: UNIMART_LISTINGS_RESET_VERSION,
-            resetAt: new Date().toISOString()
-        }));
-        clearLegacyLocalListingCache();
-    } catch (error) {
-        console.warn('Unable to apply one-time listings reset:', error);
-    }
+    return _ensureResetPromise;
 }
 
 async function readCloudListings(options = {}) {

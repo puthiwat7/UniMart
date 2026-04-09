@@ -5,6 +5,7 @@ let favDbListener = null;
 let currentFavProduct = null;
 let currentFavImages = [];
 let currentFavImageIndex = 0;
+let _fetchVersion = 0;
 
 // ======================== Helpers ========================
 function getFavCurrentUser() {
@@ -48,7 +49,7 @@ function startFavoritesListener(uid) {
     const ref = firebase.database().ref(`favorites/${uid}`);
     favDbListener = ref;
 
-    ref.on('value', async (snapshot) => {
+    ref.on('value', (snapshot) => {
         favoritedIds.clear();
         if (snapshot.exists()) {
             snapshot.forEach(child => favoritedIds.add(String(child.key)));
@@ -58,7 +59,9 @@ function startFavoritesListener(uid) {
             renderFavoritesGrid();
             return;
         }
-        await fetchFavoritedListings();
+        // Snapshot IDs immediately so concurrent events don't interfere
+        const snapshotIds = Array.from(favoritedIds);
+        fetchFavoritedListings(snapshotIds);
     }, (err) => {
         console.error('Favorites listener error:', err);
         renderErrorState('Failed to load favorites. Please try again.');
@@ -74,21 +77,52 @@ function stopFavoritesListener() {
 }
 
 // ======================== Fetch Listing Data ========================
-async function fetchFavoritedListings() {
-    if (!window.unimartListingsSync) {
-        renderErrorState('Listing data unavailable.');
+async function fetchFavoritedListings(ids) {
+    if (!ids || ids.length === 0) {
+        favoritedListings = [];
+        renderFavoritesGrid();
         return;
     }
-    const ids = Array.from(favoritedIds);
+
+    // Version counter: if a newer fetch starts before this one finishes, discard this result
+    const version = ++_fetchVersion;
+
     try {
-        const fetched = await window.unimartListingsSync.getListingsByIdsFromCloud(ids, {
-            cacheTtlMs: 30000,
-            timeoutMs: 12000
-        });
-        const found = new Map(fetched.map(l => [String(l.id), l]));
-        // For IDs not found in DB (deleted), create placeholder
-        favoritedListings = ids.map(id => {
-            if (found.has(id)) return found.get(id);
+        const db = firebase.database();
+        const snapshots = await Promise.all(
+            ids.map(id =>
+                db.ref('unimartListingsV1/' + id).once('value').catch(() => null)
+            )
+        );
+
+        // Discard if a newer call has started
+        if (version !== _fetchVersion) return;
+
+        favoritedListings = ids.map((id, i) => {
+            const snap = snapshots[i];
+            if (snap && snap.exists()) {
+                const val = snap.val();
+                const rawStatus = String(val.status || 'active').toLowerCase();
+                const status = rawStatus === 'withdrawed' ? 'withdrawn' : rawStatus;
+                const images = Array.isArray(val.images) ? val.images.filter(Boolean) : [];
+                return {
+                    ...val,
+                    id: String(snap.key),
+                    title: String(val.title || 'Untitled Item'),
+                    price: String(val.price || '¥0.00'),
+                    category: String(val.category || 'Other'),
+                    seller: String(val.seller || 'Campus Seller'),
+                    sellerUid: val.sellerUid || null,
+                    college: String(val.college || ''),
+                    image: String(val.image || '📦'),
+                    imageUrl: val.imageUrl || images[0] || '',
+                    images,
+                    badge: String(val.badge || 'Used'),
+                    description: String(val.description || ''),
+                    status,
+                    sellerPaymentQR: val.sellerPaymentQR || ''
+                };
+            }
             return {
                 id,
                 title: 'Item no longer available',
@@ -108,6 +142,7 @@ async function fetchFavoritedListings() {
         });
         renderFavoritesGrid();
     } catch (error) {
+        if (version !== _fetchVersion) return;
         console.error('Error fetching favorited listings:', error);
         renderErrorState('Failed to load listings. Please refresh.');
     }
@@ -129,7 +164,8 @@ async function refreshFavorites() {
             renderFavoritesGrid();
             return;
         }
-        await fetchFavoritedListings();
+        const ids = Array.from(favoritedIds);
+        await fetchFavoritedListings(ids);
     } catch (err) {
         renderErrorState('Refresh failed. Please try again.');
     }
