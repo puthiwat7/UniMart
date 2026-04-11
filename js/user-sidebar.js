@@ -111,6 +111,41 @@ function ensureAdminNavItem(userLike) {
         `;
         list.appendChild(li);
     });
+
+    ensureAdminBottomNavItem(userLike);
+}
+
+function ensureAdminBottomNavItem(userLike) {
+    const shouldShow = isCurrentUserAdmin(userLike);
+    const bottomNav = document.getElementById('bottomNav');
+    if (!bottomNav) return;
+
+    const existing = bottomNav.querySelector('[data-admin-nav-item="true"]');
+    if (!shouldShow) {
+        if (existing) existing.remove();
+        return;
+    }
+
+    if (existing) return;
+
+    const adminPath = resolveAdminPanelPath();
+    const isActive = (window.location.pathname || '').includes('admin-panel');
+    const anchor = document.createElement('a');
+    anchor.href = adminPath;
+    anchor.className = `bottom-nav-item${isActive ? ' active' : ''}`;
+    anchor.dataset.page = 'admin';
+    anchor.setAttribute('data-admin-nav-item', 'true');
+    anchor.innerHTML = `
+        <i class="fas fa-user-shield"></i>
+        <span>Admin</span>
+    `;
+
+    const guideItem = bottomNav.querySelector('[data-page="guide"]');
+    if (guideItem) {
+        bottomNav.insertBefore(anchor, guideItem);
+    } else {
+        bottomNav.appendChild(anchor);
+    }
 }
 
 window.unimartAdminAccess = {

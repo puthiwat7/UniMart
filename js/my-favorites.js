@@ -51,16 +51,21 @@ function startFavoritesListener(uid) {
 
     ref.on('value', (snapshot) => {
         favoritedIds.clear();
-        if (snapshot.exists()) {
-            snapshot.forEach(child => favoritedIds.add(String(child.key)));
-        }
+        const favoriteData = snapshot.val() || {};
+        Object.keys(favoriteData).forEach(key => {
+            if (key !== null && key !== undefined && key !== '') {
+                favoritedIds.add(String(key));
+            }
+        });
+
         if (favoritedIds.size === 0) {
             favoritedListings = [];
             renderFavoritesGrid();
             return;
         }
-        // Snapshot IDs immediately so concurrent events don't interfere
+
         const snapshotIds = Array.from(favoritedIds);
+        console.debug('Loading favorites for user', uid, 'count=', snapshotIds.length);
         fetchFavoritedListings(snapshotIds);
     }, (err) => {
         console.error('Favorites listener error:', err);
@@ -78,7 +83,8 @@ function stopFavoritesListener() {
 
 // ======================== Fetch Listing Data ========================
 async function fetchFavoritedListings(ids) {
-    if (!ids || ids.length === 0) {
+    const validIds = Array.isArray(ids) ? ids.filter(id => id !== null && id !== undefined && String(id).trim() !== '') : [];
+    if (validIds.length === 0) {
         favoritedListings = [];
         renderFavoritesGrid();
         return;
@@ -90,7 +96,7 @@ async function fetchFavoritedListings(ids) {
     try {
         const db = firebase.database();
         const snapshots = await Promise.all(
-            ids.map(id =>
+            validIds.map(id =>
                 db.ref('unimartListingsV1/' + id).once('value').catch(() => null)
             )
         );
@@ -98,7 +104,7 @@ async function fetchFavoritedListings(ids) {
         // Discard if a newer call has started
         if (version !== _fetchVersion) return;
 
-        favoritedListings = ids.map((id, i) => {
+        favoritedListings = validIds.map((id, i) => {
             const snap = snapshots[i];
             if (snap && snap.exists()) {
                 const val = snap.val();
@@ -120,6 +126,7 @@ async function fetchFavoritedListings(ids) {
                     badge: String(val.badge || 'Used'),
                     description: String(val.description || ''),
                     status,
+                    reserved: Boolean(val.reserved),
                     sellerPaymentQR: val.sellerPaymentQR || ''
                 };
             }
@@ -137,6 +144,7 @@ async function fetchFavoritedListings(ids) {
                 image: '📦',
                 imageUrl: '',
                 images: [],
+                reserved: false,
                 sellerPaymentQR: ''
             };
         });
@@ -156,15 +164,19 @@ async function refreshFavorites() {
     const ref = firebase.database().ref(`favorites/${user.uid}`);
     try {
         const snapshot = await ref.once('value');
-        if (snapshot.exists()) {
-            snapshot.forEach(child => favoritedIds.add(String(child.key)));
-        }
+        const favoriteData = snapshot.val() || {};
+        Object.keys(favoriteData).forEach(key => {
+            if (key !== null && key !== undefined && key !== '') {
+                favoritedIds.add(String(key));
+            }
+        });
         if (favoritedIds.size === 0) {
             favoritedListings = [];
             renderFavoritesGrid();
             return;
         }
         const ids = Array.from(favoritedIds);
+        console.debug('Refreshing favorites for user', user.uid, 'count=', ids.length);
         await fetchFavoritedListings(ids);
     } catch (err) {
         renderErrorState('Refresh failed. Please try again.');
@@ -209,6 +221,7 @@ function createFavCard(listing) {
     const productIdLiteral = `'${productId}'`;
     const status = String(listing.status || 'active').toLowerCase();
     const isActive = status === 'active';
+    const isReserved = Boolean(listing.reserved) && isActive;
     const imageUrl = listing.imageUrl || (Array.isArray(listing.images) && listing.images[0]) || '';
 
     let cardImage;
@@ -219,16 +232,23 @@ function createFavCard(listing) {
     }
 
     const overlayBg = status === 'sold' ? '#dc2626cc' : status === 'withdrawn' ? '#6b7280cc' : '#374151cc';
-    const overlay = !isActive
+    const statusOverlay = !isActive
         ? `<div class="reserved-overlay" style="background:${overlayBg};">${status.toUpperCase()}</div>`
         : '';
+    const reservedOverlay = isReserved
+        ? '<div class="reserved-overlay" style="background:#d97706cc;">RESERVED</div>'
+        : '';
+    const overlay = statusOverlay || reservedOverlay;
 
     const unavailBadge = !isActive
         ? `<span class="product-badge" style="background:#fef2f2;color:#dc2626;border-color:#fecaca;">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`
         : '';
+    const reservedBadge = isReserved
+        ? `<span class="product-badge" style="background:#ffedd5;color:#c2410c;border-color:#fecaca;">Reserved</span>`
+        : '';
 
     const card = document.createElement('div');
-    card.className = 'product-card' + (!isActive ? ' fav-unavailable-card' : '');
+    card.className = 'product-card' + (!isActive ? ' fav-unavailable-card' : isReserved ? ' reserved-card' : '');
     card.innerHTML = `
         <div class="product-image" onclick="openFavModal(${productIdLiteral})" style="position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;">
             ${cardImage}
@@ -241,6 +261,7 @@ function createFavCard(listing) {
         <div class="product-info">
             <div class="product-meta-row">
                 <span class="product-badge">${escHtml(listing.badge || 'Used')}</span>
+                ${reservedBadge}
                 ${unavailBadge}
             </div>
             <h3 class="product-title" onclick="openFavModal(${productIdLiteral})" style="cursor:pointer;">${escHtml(listing.title)}</h3>

@@ -925,4 +925,59 @@
     .modal-footer .btn-primary {
         width: 100%;
     }
+
+    /* Profile policy layout improvements for small screens */
+    .policy-agreement {
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .policy-agreement-header {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .policy-kicker {
+        font-size: 11px;
+    }
+
+    .policy-summary,
+    .policy-text {
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .checkbox-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 14px;
+    }
+
+    .checkbox-container span:last-child {
+        display: block;
+        margin-top: 4px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .checkmark {
+        width: 18px;
+        height: 18px;
+    }
+
+    .policy-quick-points {
+        margin-top: 14px;
+        padding-left: 18px;
+    }
+
+    .policy-quick-points li {
+        margin-bottom: 10px;
+        font-size: 13px;
+    }
+
+    .policy-link {
+        font-size: 13px;
+    }
 }
