@@ -4,36 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UniMart - Campus Marketplace</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Firebase SDKs (Compat version for script tag compatibility) - Defer loading -->
-    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    
-    <!-- Firebase Config & Auth - Defer loading -->
-    <script defer src="js/firebase-config.js"></script>
-    <script defer src="js/firebase-auth.js"></script>
-    <script defer src="js/profile-sync.js"></script>
-    <script defer src="js/analytics.js"></script>
-    
-    <!-- Auth state watcher - keep marketplace available while auth restores -->
+    <!-- Placeholder for future Google Sign-In integration -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
-        function initializeAuthWatcher() {
-            if (typeof firebase !== 'undefined' && firebase.auth) {
-                firebase.auth().onAuthStateChanged((user) => {
-                    console.log('Marketplace auth state:', user ? 'signed in' : 'signed out');
-                    // Marketplace remains visible even if not authenticated;
-                    // authenticated-only actions are handled elsewhere.
-                });
+    function handleCredentialResponse(response) {
+        // Send the ID token to your backend for verification and login/signup
+        fetch('/auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ credential: response.credential })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Optionally update UI or redirect
+                window.location.reload();
             } else {
-                setTimeout(initializeAuthWatcher, 100);
+                alert('Google login failed');
             }
-        }
+        });
+    }
 
-        initializeAuthWatcher();
+    function handleGoogleAuth() {
+        google.accounts.id.initialize({
+            client_id: 'YOUR_GOOGLE_CLIENT_ID', // <-- Replace with your client ID
+            callback: handleCredentialResponse
+        });
+        google.accounts.id.prompt();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var btn = document.getElementById('loginBtn');
+        if (btn) btn.onclick = handleGoogleAuth;
+    });
     </script>
 </head>
 <body>
@@ -42,7 +47,7 @@
         <aside class="sidebar">
             <div class="logo">
                 <div class="logo-placeholder">
-                    <img src="assets/sidebar-logo.png" alt="UniMart logo" class="logo-image">
+                    <i class="fas fa-shopping-bag"></i>
                 </div>
                 <h1>UNIMART</h1>
             </div>
@@ -51,39 +56,51 @@
                 <h3>NAVIGATION</h3>
                 <ul>
                     <li>
-                        <a href="/" class="nav-item active">
+                        <a href="#" class="nav-item">
                             <i class="fas fa-store"></i>
                             <span>Marketplace</span>
                         </a>
                     </li>
                     <li>
-                        <a href="pages/sell-item" class="nav-item">
+                        <a href="#" class="nav-item">
                             <i class="fas fa-plus"></i>
                             <span>Sell Item</span>
                         </a>
                     </li>
                     <li>
-                        <a href="pages/my-sales" class="nav-item">
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-boxes"></i>
+                            <span>My Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
                             <i class="fas fa-chart-line"></i>
                             <span>My Sales</span>
                         </a>
                     </li>
                     <li>
-                        <a href="pages/my-favorites" class="nav-item">
+                        <a href="#" class="nav-item">
                             <i class="fas fa-heart"></i>
                             <span>My Favorites</span>
                         </a>
                     </li>
                     <li>
-                        <a href="pages/profile" class="nav-item">
-                            <i class="fas fa-user"></i>
-                            <span>Profile</span>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-question-circle"></i>
+                            <span>User Guide</span>
                         </a>
                     </li>
                     <li>
-                        <a href="pages/user-guide" class="nav-item">
-                            <i class="fas fa-book-open"></i>
-                            <span>User Guide</span>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-comment"></i>
+                            <span>Feedback</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
                         </a>
                     </li>
                 </ul>
@@ -92,23 +109,18 @@
             <!-- User Profile / Login Section -->
             <div id="userSection">
                 <!-- User Profile (shown when logged in) -->
-                <div class="user-profile-card" id="userProfileCard" style="display: none;">
-                    <div class="user-avatar-large">
-                        <img id="userProfileImage" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: none;">
-                        <i class="fas fa-user-circle" id="userAvatarIcon" style="font-size: 48px; color: white;"></i>
+                <div class="user-profile" id="userProfile" style="display: none;">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
                     </div>
                     <div class="user-info">
                         <h4 id="userName">User Name</h4>
                         <p id="userEmail">user@email.com</p>
                     </div>
-                    <button class="btn-logout" id="logoutBtn" onclick="handleSignOut()">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Sign Out</span>
-                    </button>
                 </div>
 
                 <!-- Login Button (shown when not logged in) -->
-                <button class="btn-login" id="loginBtn" onclick="window.location.href='pages/login'" style="display: none;">
+                <button class="btn-login" id="loginBtn">
                     <i class="fab fa-google"></i>
                     <span>Sign in with Google</span>
                 </button>
@@ -127,42 +139,35 @@
             <div class="search-filter-section">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search for items, e.g. 'textbook'...">
+                    <input id="searchInput" type="text" placeholder="Search for items, e.g. 'textbook'...">
                 </div>
-                    
+
                 <div class="filters">
-                    <select class="filter-select">
+                    <select id="sortSelect" class="filter-select">
                         <option>Newest First</option>
                         <option>Oldest First</option>
                         <option>Price Low to High</option>
                         <option>Price High to Low</option>
                     </select>
 
-                    <select class="filter-select" id="collegeSelect">
-                        <!-- Options populated by JavaScript -->
+                    <select id="collegeSelect" class="filter-select">
+                        <option>All Colleges</option>
+                        <option>Minerva</option>
+                        <option>Muse</option>
+                        <option>Diligentia</option>
                     </select>
+
+                    <label class="toggle-switch">
+                        <input id="hideReservedToggle" type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-text">Hide Reserved</span>
+                    </label>
 
                     <button class="btn-refresh">
                         <i class="fas fa-redo"></i>
                         Refresh
                     </button>
                 </div>
-            </div>
-
-            <!-- Mobile Category Dropdown -->
-            <div class="category-select-wrapper">
-                <select id="categorySelect" class="category-select">
-                    <option value="all">All Items</option>
-                    <option value="textbooks">Textbooks</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="furniture">Furniture</option>
-                    <option value="clothing">Clothing</option>
-                    <option value="sports">Sports</option>
-                    <option value="stationery">Stationery</option>
-                    <option value="kitchen">Kitchen</option>
-                    <option value="vehicles">Vehicles</option>
-                    <option value="other">Other</option>
-                </select>
             </div>
 
             <!-- Categories Section -->
@@ -251,176 +256,62 @@
             <!-- Products Grid -->
             <div class="products-section">
                 <h2>Featured Items</h2>
-                <div class="marketplace-warning-banner" id="marketplaceWarningBanner" style="display:none;"></div>
                 <div class="products-grid" id="productsGrid">
                     <!-- Products will be dynamically loaded here -->
                 </div>
             </div>
-
-            <!-- Scroll to Top Button -->
-            <button class="scroll-to-top" id="scrollToTopBtn" title="Scroll to top">
-                <i class="fas fa-arrow-up"></i>
-            </button>
         </main>
+    </div>
 
-        <!-- Product Detail Modal -->
-        <div class="product-modal" id="productModal">
-            <div class="modal-overlay" id="modalOverlay"></div>
-            <div class="modal-content">
-                <button class="modal-close" id="modalCloseBtn">
-                    <i class="fas fa-times"></i>
-                </button>
-
-                <div class="modal-body">
-                    <!-- Image Carousel -->
-                    <div class="modal-image-section">
-                        <div class="image-carousel">
-                            <button class="carousel-btn prev-btn" id="prevBtn">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <div class="carousel-image" id="carouselImage">📱</div>
-                            <button class="carousel-btn next-btn" id="nextBtn">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
-                        <div class="badge-group">
-                            <span class="badge" id="modalBadge">Brand New</span>
-                        </div>
-                    </div>
-
-                    <!-- Product Details -->
-                    <div class="modal-details-section">
-                        <h2 id="modalProductTitle">Product Title</h2>
-                        <div class="modal-price" id="modalProductPrice">$0.00</div>
-
-                        <!-- Seller Info -->
-                        <div class="seller-info" style="display: none;">
-                            <div class="seller-item">
-                                <i class="fas fa-user-circle"></i>
-                                <span id="modalSeller">Seller Name</span>
-                            </div>
-                            <div class="seller-item">
-                                <i class="fas fa-check-circle" style="color: #10b981;"></i>
-                                <span>Verified</span>
-                            </div>
-                        </div>
-
-                        <!-- Description -->
-                        <div class="modal-section">
-                            <h4><i class="fas fa-info-circle" style="color: var(--primary-blue); margin-right: 6px;"></i>Description</h4>
-                            <p id="modalDescription">No description available</p>
-                        </div>
-
-                        <div class="modal-section">
-                            <h4><i class="fas fa-bookmark" style="color: var(--primary-blue); margin-right: 6px;"></i>Availability</h4>
-                            <p id="modalReservedStatus">Available</p>
-                        </div>
-
-                        <!-- Features/Security - Removed -->
-
-                        <!-- QR Upload Warning -->
-                        <div class="qr-warning" id="qrWarning" style="display: none;">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <div>
-                                <strong>Upload QR first</strong>
-                                <p>Please upload your Profile QR code in your <a href="pages/profile">profile</a> to complete orders.</p>
-                            </div>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="modal-actions">
-                            <button class="btn-order" id="modalOrderBtn" disabled>
-                                <i class="fas fa-check-circle"></i>
-                                Contact Seller
-                            </button>
-                            <button class="btn-save" id="modalSaveBtn">
-                                <i class="fas fa-heart"></i>
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                </div>
+    <!-- User Guide Modal -->
+    <div id="userGuideModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" id="closeUserGuide">&times;</span>
+            <h2>User Guide</h2>
+            <div class="guide-buttons">
+                <button onclick="showGuideSection('buy')">How to Buy</button>
+                <button onclick="showGuideSection('sell')">How to Sell</button>
+                <button onclick="showGuideSection('refund')">Refund Process</button>
+                <button onclick="showGuideSection('policies')">Marketplace Policies</button>
+                <button onclick="showGuideSection('about')">About UniMart</button>
             </div>
-        </div>
-
-        <!-- Payment Modal -->
-        <div class="payment-modal" id="paymentModal">
-            <div class="payment-modal-overlay" id="paymentModalOverlay"></div>
-            <div class="payment-modal-content">
-                <button class="payment-modal-close" id="paymentModalClose">
-                    <i class="fas fa-times"></i>
-                </button>
-
-                <div class="payment-header">
-                    <div class="payment-title">
-                        <i class="fas fa-qrcode"></i>
-                        <span>Seller Profile QR</span>
-                    </div>
-                </div>
-
-                <div class="payment-body">
-                    <!-- Order Summary -->
-                    <div class="payment-order-summary">
-                        <h3 id="paymentItemName">Product Name</h3>
-                    </div>
-
-                    <!-- QR Code Display -->
-                    <div class="payment-qr-section">
-                        <div class="qr-code-container">
-                            <div class="qr-code-title">Seller Profile QR Code</div>
-                            <div class="qr-code-image" id="paymentQRCode">
-                                <i class="fas fa-qrcode" style="font-size: 120px; color: #ddd;"></i>
-                            </div>
-                            <div class="wechat-pay-logo">
-                                <i class="fab fa-weixin"></i>
-                                <span>微信支付</span>
-                            </div>
-                        </div>
-                        <div class="payment-official-text">Use this QR to communicate with the seller directly.</div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="payment-actions">
-                        <button class="btn-cancel-order" id="btnCancelOrder">Cancel Order</button>
-                        <button class="btn-payment-made" id="btnPaymentMade">Contact Seller</button>
-                    </div>
-                </div>
+            <div id="guideContent" style="margin-top:20px;">
+                <!-- Guide details will appear here -->
             </div>
         </div>
     </div>
+    <script>
+    // User Guide Modal logic
+    document.addEventListener('DOMContentLoaded', function() {
+        var userGuideBtn = document.querySelector('.nav-item i.fa-question-circle').parentElement.parentElement;
+        var modal = document.getElementById('userGuideModal');
+        var closeBtn = document.getElementById('closeUserGuide');
+        userGuideBtn.onclick = function(e) {
+            e.preventDefault();
+            modal.style.display = 'block';
+            showGuideSection('buy'); // Show default section when opening
+        };
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        };
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        };
+    });
+    function showGuideSection(section) {
+        var content = {
+            buy: '<h3>How to Buy</h3><p>Details coming soon...</p>',
+            sell: '<h3>How to Sell</h3><p>Details coming soon...</p>',
+            refund: '<h3>Refund Process</h3><p>Details coming soon...</p>',
+            policies: '<h3>Marketplace Policies</h3><p>Details coming soon...</p>',
+            about: '<h3>About UniMart</h3><p>Details coming soon...</p>'
+        };
+        document.getElementById('guideContent').innerHTML = content[section];
+    }
+    </script>
 
-    <!-- Mobile Bottom Navigation -->
-    <nav class="bottom-nav" id="bottomNav">
-        <a href="/" class="bottom-nav-item active" data-page="marketplace">
-            <i class="fas fa-store"></i>
-            <span>Marketplace</span>
-        </a>
-        <a href="pages/sell-item" class="bottom-nav-item" data-page="sell">
-            <i class="fas fa-plus"></i>
-            <span>Sell</span>
-        </a>
-        <a href="pages/my-sales" class="bottom-nav-item" data-page="sales">
-            <i class="fas fa-chart-line"></i>
-            <span>Sales</span>
-        </a>
-        <a href="pages/my-favorites" class="bottom-nav-item" data-page="favorites">
-            <i class="fas fa-heart"></i>
-            <span>Favorites</span>
-        </a>
-        <a href="pages/profile" class="bottom-nav-item" data-page="profile">
-            <i class="fas fa-user"></i>
-            <span>Profile</span>
-        </a>
-        <a href="pages/user-guide" class="bottom-nav-item" data-page="guide">
-            <i class="fas fa-book-open"></i>
-            <span>Guide</span>
-        </a>
-    </nav>
-
-    <script defer src="js/listings-sync.js"></script>
-    <script defer src="js/product-card.js"></script>
-    <script defer src="js/script.js"></script>
-    <script defer src="js/user-sidebar.js"></script>
-    <script defer src="js/bottom-nav.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
