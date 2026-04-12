@@ -41,16 +41,15 @@ function renderProductCard(product, options = {}) {
 
     let cardImage;
     if (imageUrl) {
-        cardImage = `<img src="${imageUrl}" alt="${String(normalizedProduct.title || '')}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover;">`;
+        cardImage = `<img src="${imageUrl}" alt="${String(normalizedProduct.title || '')}" loading="lazy">`;
     } else if (normalizedProduct.image) {
         cardImage = normalizedProduct.image;
     } else {
         cardImage = '📦';
     }
 
-    const heartColor = isFavorited ? '#ef4444' : '#9ca3af';
     const favoriteButton = showFavoriteIcon
-        ? `<button class="favorite-btn" onclick="event.stopPropagation(); ${onFavoriteToggle}(${productIdLiteral})" style="position: absolute; top: 8px; right: 8px; background-color: transparent; border: none; color: ${heartColor}; font-size: 20px; cursor: pointer; z-index: 10;">
+        ? `<button class="favorite-btn ${isFavorited ? 'favorited' : ''}" onclick="event.stopPropagation(); ${onFavoriteToggle}(${productIdLiteral})">
                 <i class="fas fa-heart"></i>
            </button>`
         : '';
@@ -64,14 +63,14 @@ function renderProductCard(product, options = {}) {
         : '';
 
     card.innerHTML = `
-        <div class="product-image" onclick="${onViewDetails}(${productIdLiteral})" style="position: relative; cursor: pointer;">
+        <div class="product-image" onclick="${onViewDetails}(${productIdLiteral})">
             ${cardImage}
+            <div class="product-image-badge">${String(normalizedProduct.badge || 'Used')}</div>
             ${favoriteButton}
             ${reservedOverlay}
         </div>
         <div class="product-info">
             <div class="product-meta-row">
-                <span class="product-badge">${String(normalizedProduct.badge || 'Used')}</span>
                 ${conditionPercent !== null ? `<span class="product-badge condition-badge">${conditionPercent}%</span>` : ''}
             </div>
             <h3 class="product-title">${String(normalizedProduct.title || 'Untitled Item')}</h3>
