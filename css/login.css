@@ -6,14 +6,30 @@
     box-sizing: border-box;
 }
 
+:root {
+    --primary: #4f46e5;
+    --primary-dark: #4338ca;
+    --primary-soft: #eef2ff;
+    --surface: #ffffff;
+    --surface-muted: #f8fafc;
+    --border-color: #e5e7eb;
+    --text-color: #111827;
+    --text-secondary: #4b5563;
+    --danger-red: #ef4444;
+    --success: #10b981;
+    --shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+    --radius-sm: 12px;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 20px;
+    color: var(--text-color);
 }
 
 .login-container {
@@ -34,10 +50,10 @@ body {
 }
 
 .login-card {
-    background: white;
-    border-radius: 16px;
+    background: var(--surface);
+    border-radius: 24px;
     padding: 48px 32px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow);
     text-align: center;
 }
 
@@ -49,7 +65,7 @@ body {
 .logo-circle {
     width: 100px;
     height: 100px;
-    background: linear-gradient(135deg, #2d3a8f, #4a5fc1);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -57,7 +73,7 @@ body {
     font-size: 48px;
     color: white;
     margin: 0 auto 24px;
-    box-shadow: 0 10px 30px rgba(45, 58, 143, 0.3);
+    box-shadow: 0 10px 30px rgba(79, 70, 229, 0.2);
 }
 
 .login-logo-image {
@@ -123,18 +139,20 @@ h2 {
 
 .form-group input {
     width: 100%;
-    padding: 12px 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
     font-size: 15px;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     font-family: inherit;
+    background: var(--surface);
+    color: var(--text-color);
 }
 
 .form-group input:focus {
     outline: none;
-    border-color: #4a5fc1;
-    box-shadow: 0 0 0 3px rgba(74, 95, 193, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
 }
 
 .form-group small {
@@ -147,23 +165,23 @@ h2 {
 .btn-primary {
     width: 100%;
     padding: 14px 20px;
-    background: linear-gradient(135deg, #4a5fc1, #2d3a8f);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 15px;
     font-weight: 600;
     color: white;
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(74, 95, 193, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(79, 70, 229, 0.18);
 }
 
 .btn-primary:active {
@@ -177,12 +195,12 @@ h2 {
 
 .toggle-auth p {
     font-size: 14px;
-    color: #6b7280;
+    color: var(--text-secondary);
     margin: 0;
 }
 
 .toggle-auth a {
-    color: #4a5fc1;
+    color: var(--primary);
     font-weight: 600;
     text-decoration: none;
 }
@@ -208,24 +226,24 @@ h2 {
 .btn-google {
     width: 100%;
     padding: 14px 20px;
-    background: white;
-    border: 1px solid #dadce0;
-    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
-    transition: all 0.3s ease;
-    color: #202124;
+    transition: all 0.2s ease;
+    color: var(--text-color);
 }
 
 .btn-google:hover {
-    border-color: #4285f4;
-    background: #f8f9fa;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-color: var(--primary);
+    background: var(--surface-strong);
+    box-shadow: 0 10px 24px rgba(79, 70, 229, 0.12);
 }
 
 .btn-google:active {
