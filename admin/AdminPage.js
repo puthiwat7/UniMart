@@ -68,7 +68,6 @@ function renderActiveView() {
 function setActiveView(view) {
     state.activeView = view || 'dashboard';
     renderActiveView();
-}
 
 function renderShell() {
     const mainContent = document.querySelector('.main-content');
