@@ -159,6 +159,25 @@ function getConditionPercentage(product) {
 
 const CACHE_KEY = 'unimart_marketplace_cache';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const HIDE_RESERVED_KEY = 'unimart_hide_reserved_filter';
+
+function getReservedFilterState() {
+    try {
+        const raw = localStorage.getItem(HIDE_RESERVED_KEY);
+        if (raw === null) return true;
+        return raw === 'true';
+    } catch (error) {
+        return true;
+    }
+}
+
+function setReservedFilterState(value) {
+    try {
+        localStorage.setItem(HIDE_RESERVED_KEY, value ? 'true' : 'false');
+    } catch (error) {
+        // Ignore storage errors
+    }
+}
 
 async function loadMarketplaceProducts() {
     window.marketplaceLoadError = null;
@@ -298,6 +317,7 @@ async function initializeApp() {
     setupCategoryFilters();
     setupCategoryDropdown();
     setupSearch();
+    setupReservedFilterToggle();
     setupRefresh();
     setupScrollToTop();
     setupProductModal();
@@ -559,13 +579,15 @@ function filterProducts() {
     currentPage = 1; // Reset pagination when filtering
     const searchInput = document.querySelector('.search-box input').value.toLowerCase();
     const selectedCollege = document.getElementById('collegeSelect').value;
+    const hideReserved = document.getElementById('hideReservedToggle')?.checked ?? true;
     
     filteredProducts = products.filter(product => {
         const matchCategory = currentCategory === 'All Items' || product.category === currentCategory;
         const matchSearch = product.title.toLowerCase().includes(searchInput) || 
                           product.seller.toLowerCase().includes(searchInput);
         const matchCollege = selectedCollege === 'All Colleges' || product.college === selectedCollege;
-        return matchCategory && matchSearch && matchCollege;
+        const matchReserved = !hideReserved || !product.reserved;
+        return matchCategory && matchSearch && matchCollege && matchReserved;
     });
 
     renderProducts(filteredProducts, 1);
@@ -616,6 +638,17 @@ function updateCategoryCounts() {
 function setupSearch() {
     const searchInput = document.querySelector('.search-box input');
     searchInput.addEventListener('input', () => {
+        filterProducts();
+    });
+}
+
+function setupReservedFilterToggle() {
+    const toggleInput = document.getElementById('hideReservedToggle');
+    if (!toggleInput) return;
+
+    toggleInput.checked = getReservedFilterState();
+    toggleInput.addEventListener('change', () => {
+        setReservedFilterState(toggleInput.checked);
         filterProducts();
     });
 }
