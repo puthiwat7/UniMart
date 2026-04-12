@@ -83,6 +83,57 @@ function resolveAdminPanelPath() {
     return '/pages/admin-panel';
 }
 
+function resolveReportPagePath() {
+    return '/pages/report';
+}
+
+function ensureReportNavItem() {
+    const reportPath = resolveReportPagePath();
+    const navLists = document.querySelectorAll('.navigation ul');
+
+    navLists.forEach((list) => {
+        if (!(list instanceof HTMLElement)) return;
+
+        const existing = list.querySelector('li[data-report-nav-item="true"]');
+        if (existing) return;
+
+        const li = document.createElement('li');
+        li.setAttribute('data-report-nav-item', 'true');
+
+        const isActive = (window.location.pathname || '').includes('report');
+        li.innerHTML = `
+            <a href="${reportPath}" class="nav-item ${isActive ? 'active' : ''}">
+                <i class="fas fa-flag"></i>
+                <span>Report</span>
+            </a>
+        `;
+        list.appendChild(li);
+    });
+
+    const bottomNav = document.getElementById('bottomNav');
+    if (!bottomNav) return;
+
+    const existingBottom = bottomNav.querySelector('[data-report-nav-item="true"]');
+    if (existingBottom) return;
+
+    const anchor = document.createElement('a');
+    anchor.href = reportPath;
+    anchor.className = `bottom-nav-item${(window.location.pathname || '').includes('/pages/report') ? ' active' : ''}`;
+    anchor.dataset.page = 'report';
+    anchor.setAttribute('data-report-nav-item', 'true');
+    anchor.innerHTML = `
+        <i class="fas fa-flag"></i>
+        <span>Report</span>
+    `;
+
+    const guideItem = bottomNav.querySelector('[data-page="guide"]');
+    if (guideItem) {
+        bottomNav.insertBefore(anchor, guideItem);
+    } else {
+        bottomNav.appendChild(anchor);
+    }
+}
+
 function ensureAdminNavItem(userLike) {
     const shouldShow = isCurrentUserAdmin(userLike);
     const navLists = document.querySelectorAll('.navigation ul');
@@ -208,45 +259,8 @@ function applyUserToSidebar(userLike) {
         if (loginBtn) loginBtn.style.display = 'flex';
         ensureAdminNavItem(null);
     }
-}
 
-let _loginBanWatchRef = null;
-let _loginBanWatchHandler = null;
-
-function stopLoginBanWatch() {
-    if (_loginBanWatchRef && _loginBanWatchHandler) {
-        _loginBanWatchRef.off('value', _loginBanWatchHandler);
-        _loginBanWatchRef = null;
-        _loginBanWatchHandler = null;
-    }
-}
-
-function kickBannedUser() {
-    stopLoginBanWatch();
-    const path = window.location.pathname || '';
-    const onLoginPage = path.includes('login');
-    if (onLoginPage) return;
-
-    if (typeof firebase !== 'undefined' && firebase.auth) {
-        firebase.auth().signOut().catch(() => {});
-    }
-
-    const loginUrl = path.includes('/pages/') ? 'login?banned=1' : 'pages/login?banned=1';
-    window.location.href = loginUrl;
-}
-
-function startLoginBanWatch(uid) {
-    if (!uid || typeof firebase === 'undefined' || typeof firebase.database !== 'function') return;
-    stopLoginBanWatch();
-
-    _loginBanWatchRef = firebase.database().ref(`unimartBans/${uid}`);
-    _loginBanWatchHandler = (snap) => {
-        const data = snap.val();
-        if (data && data.bannedFromLogin === true) {
-            kickBannedUser();
-        }
-    };
-    _loginBanWatchRef.on('value', _loginBanWatchHandler);
+    ensureReportNavItem();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -258,10 +272,12 @@ document.addEventListener('DOMContentLoaded', () => {
             applyUserToSidebar(cachedUser);
         } else {
             ensureAdminNavItem(null);
+            ensureReportNavItem();
         }
     } catch (e) {
         console.error('Error reading cached user info:', e);
         ensureAdminNavItem(null);
+        ensureReportNavItem();
     }
 
     // 2) Then wire up real-time Firebase auth listener for live updates

@@ -2,7 +2,10 @@ import {
     subscribeListings,
     subscribeUsers,
     subscribeBans,
+    subscribeReports,
+    fetchReports,
     deleteListing,
+    deleteReport,
     updateListingStatus,
     banUserFromSelling,
     unbanUserFromSelling,
@@ -12,16 +15,19 @@ import {
 import { renderDashboard } from './Dashboard.js';
 import { renderListingsManager } from './ListingsManager.js';
 import { renderUsersManager } from './UsersManager.js';
+import { renderReportsManager } from './ReportsManager.js';
 
 const state = {
     listings: [],
     users: [],
     bans: {},
+    reports: [],
+    activeView: 'dashboard',
     unsubscribers: []
 };
 
 function setMainLoading(message) {
-    const panel = document.getElementById('adminModulePanel');
+    const panel = getPanel();
     if (!panel) return;
     panel.innerHTML = `<div class="admin-loading">${message}</div>`;
 }
@@ -30,14 +36,38 @@ function getPanel() {
     return document.getElementById('adminModulePanel');
 }
 
+function updateModuleNav() {
+    const buttons = document.querySelectorAll('.admin-module-nav');
+    buttons.forEach((button) => {
+        button.classList.toggle('active', button.dataset.nav === state.activeView);
+    });
+}
+
 function renderActiveView() {
     const panel = getPanel();
     if (!panel) return;
 
-    panel.innerHTML = '<div id="adminDashSection"></div><div id="adminListingsSection" style="margin-top:32px"></div><div id="adminUsersSection" style="margin-top:32px"></div>';
-    renderDashboard(document.getElementById('adminDashSection'), state);
-    renderListingsManager(document.getElementById('adminListingsSection'), state);
-    renderUsersManager(document.getElementById('adminUsersSection'), state);
+    updateModuleNav();
+
+    switch (state.activeView) {
+        case 'listings':
+            renderListingsManager(panel, state);
+            break;
+        case 'users':
+            renderUsersManager(panel, state);
+            break;
+        case 'reports':
+            renderReportsManager(panel, state);
+            break;
+        default:
+            renderDashboard(panel, state);
+            break;
+    }
+}
+
+function setActiveView(view) {
+    state.activeView = view || 'dashboard';
+    renderActiveView();
 }
 
 function renderShell() {
@@ -45,17 +75,43 @@ function renderShell() {
     if (!mainContent) return;
 
     mainContent.innerHTML = `
-        <section class="admin-module-main" id="adminModulePanel"></section>
+        <div class="admin-module-layout">
+            <aside class="admin-module-sidebar">
+                <button class="admin-module-nav active" data-nav="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </button>
+                <button class="admin-module-nav" data-nav="listings">
+                    <i class="fas fa-boxes"></i>
+                    Listings
+                </button>
+                <button class="admin-module-nav" data-nav="users">
+                    <i class="fas fa-users"></i>
+                    Users
+                </button>
+                <button class="admin-module-nav" data-nav="reports">
+                    <i class="fas fa-flag"></i>
+                    Feedback
+                </button>
+            </aside>
+            <section class="admin-module-main" id="adminModulePanel"></section>
+        </div>
     `;
 }
 
 function attachStaticEvents() {
-    const panel = getPanel();
-    if (!panel) return;
+    const container = document.querySelector('.admin-module-layout');
+    if (!container) return;
 
-    panel.addEventListener('click', async (event) => {
+    container.addEventListener('click', async (event) => {
         const target = event.target;
         if (!(target instanceof HTMLElement)) return;
+
+        const navButton = target.closest('button[data-nav]');
+        if (navButton) {
+            setActiveView(navButton.dataset.nav);
+            return;
+        }
 
         const actionButton = target.closest('button[data-action]');
         if (!actionButton) return;
@@ -66,29 +122,39 @@ function attachStaticEvents() {
         try {
             actionButton.disabled = true;
 
-            if (action === 'listing-delete') {
-                if (id) await deleteListing(id);
+            if (action === 'listing-delete' && id) {
+                await deleteListing(id);
             }
 
-            if (action === 'listing-status') {
+            if (action === 'listing-status' && id) {
                 const status = actionButton.dataset.status;
-                if (id && status) await updateListingStatus(id, status);
+                if (status) await updateListingStatus(id, status);
             }
 
-            if (action === 'user-ban-selling') {
-                if (id) await banUserFromSelling(id);
+            if (action === 'user-ban-selling' && id) {
+                await banUserFromSelling(id);
             }
 
-            if (action === 'user-unban-selling') {
-                if (id) await unbanUserFromSelling(id);
+            if (action === 'user-unban-selling' && id) {
+                await unbanUserFromSelling(id);
             }
 
-            if (action === 'user-ban-login') {
-                if (id) await banUserFromLogin(id);
+            if (action === 'user-ban-login' && id) {
+                await banUserFromLogin(id);
             }
 
-            if (action === 'user-unban-login') {
-                if (id) await unbanUserFromLogin(id);
+            if (action === 'user-unban-login' && id) {
+                await unbanUserFromLogin(id);
+            }
+
+            if (action === 'report-delete' && id) {
+                await deleteReport(id);
+            }
+
+            if (action === 'reports-refresh') {
+                const reports = await fetchReports();
+                state.reports = reports;
+                renderActiveView();
             }
         } catch (error) {
             console.error(`Admin action failed: ${action}`, error);
@@ -115,7 +181,12 @@ function subscribeCollectionsOnce() {
         renderActiveView();
     });
 
-    state.unsubscribers.push(listingsUnsub, usersUnsub, bansUnsub);
+    const reportsUnsub = subscribeReports((reports) => {
+        state.reports = reports;
+        renderActiveView();
+    });
+
+    state.unsubscribers.push(listingsUnsub, usersUnsub, bansUnsub, reportsUnsub);
 }
 
 function cleanupSubscriptions() {

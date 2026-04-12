@@ -62,6 +62,8 @@ function renderProductCard(product, options = {}) {
         ? `<button class="product-action-btn remove-btn" onclick="event.stopPropagation(); ${onRemove}(${productIdLiteral})">Remove</button>`
         : '';
 
+    const reportUrl = `/pages/report?listingId=${encodeURIComponent(productId)}`;
+
     card.innerHTML = `
         <div class="product-image" onclick="${onViewDetails}(${productIdLiteral})">
             ${cardImage}
@@ -82,6 +84,7 @@ function renderProductCard(product, options = {}) {
             ${collegeTag}
             <div class="product-actions">
                 <button onclick="event.stopPropagation(); ${onViewDetails}(${productIdLiteral})">View Details</button>
+                <button class="product-action-btn report-btn" onclick="event.stopPropagation(); window.location.href='${reportUrl}'">Report</button>
                 ${removeButton}
             </div>
         </div>

@@ -116,16 +116,23 @@ async function updateListingStatus(id, status) {
     });
 }
 
-async function createReport({ listingId, reason, reporterId }) {
-    if (!listingId || !reason || !reporterId) {
-        throw new Error('listingId, reason, and reporterId are required');
+async function createReport({ listingId = null, reason = '', reporterId = '', reporterEmail = '', reportedUser = null, type = 'general', message = '' }) {
+    const cleanReason = String(reason || '').trim();
+    const cleanMessage = String(message || '').trim();
+
+    if (!cleanReason && !cleanMessage) {
+        throw new Error('A report reason or description is required');
     }
 
     const db = getRealtimeDb();
     await db.ref(COLLECTIONS.reports).push({
-        listingId: String(listingId),
-        reason: String(reason),
-        reporterId: String(reporterId),
+        type: String(type || 'general'),
+        listingId: listingId ? String(listingId) : null,
+        reportedUser: reportedUser ? String(reportedUser) : null,
+        reporterId: reporterId ? String(reporterId) : 'anonymous',
+        reporterEmail: reporterEmail ? String(reporterEmail) : null,
+        reason: cleanReason || (cleanMessage.length > 120 ? cleanMessage.slice(0, 120) : cleanMessage),
+        message: cleanMessage || null,
         createdAt: new Date().toISOString()
     });
 }

@@ -803,6 +803,15 @@ function setupProductModal() {
         });
     }
 
+    const modalReportBtn = document.getElementById('modalReportBtn');
+    if (modalReportBtn) {
+        modalReportBtn.addEventListener('click', () => {
+            if (currentProduct) {
+                window.location.href = `/pages/report?listingId=${encodeURIComponent(String(currentProduct.id || ''))}`;
+            }
+        });
+    }
+
     // Order button
     const modalOrderBtn = document.getElementById('modalOrderBtn');
     if (modalOrderBtn) {
