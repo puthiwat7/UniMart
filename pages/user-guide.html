@@ -13,358 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
-    <style>
-        /* ─────────────────────────────────────────
-           User Guide — Premium Design System
-        ───────────────────────────────────────── */
-        :root {
-          --primary:       #4f46e5;
-          --primary-light: #eef2ff;
-          --text-heading:  #111827;
-          --text-main:     #111827;
-          --text-secondary:#6b7280;
-          --border:        #e5e7eb;
-          --border-focus:  #d1d5db;
-          --bg-page:       #f9fafb;
-          --bg-hover:      #ffffff;
-          --surface:       #ffffff;
-          --shadow:        0 1px 2px rgba(15,23,42,0.04);
-          --shadow-hover:  0 6px 18px rgba(15,23,42,0.06);
-          --radius:        12px;
-        }
-
-        .user-guide-page {
-          font-family: 'Inter', system-ui, -apple-system, sans-serif;
-          -webkit-font-smoothing: antialiased;
-          background: var(--bg-page);
-          color: var(--text-main);
-        }
-
-        /* ── Layout ── */
-        .user-guide-page .guide-container {
-          max-width: 900px;
-          margin: 0 auto;
-          padding: 28px 24px 56px;
-        }
-        .user-guide-page .guide-main        { max-width: 900px; margin: 0 auto; }
-        .user-guide-page .guide-sidebar     { display: none; }
-        .user-guide-page .user-guide-container { max-width: 900px; margin: 0 auto; }
-
-        /* ── Page header ── */
-        .guide-page-header {
-          max-width: 900px;
-          margin: 32px auto 32px;
-          padding: 28px 28px 24px;
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: 20px;
-          box-shadow: var(--shadow);
-          position: relative;
-        }
-        .guide-page-header h1 {
-          margin: 0 0 10px;
-          font-size: 30px;
-          font-weight: 700;
-          color: var(--text-heading);
-          line-height: 1.1;
-        }
-        .guide-page-header p {
-          margin: 0;
-          font-size: 15px;
-          color: var(--text-secondary);
-          line-height: 1.8;
-          max-width: 760px;
-          font-weight: 400;
-        }
-        .guide-page-header::after {
-          content: '';
-          display: block;
-          margin-top: 24px;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        /* ── Intro ── */
-        .user-guide-page .guide-intro {
-          margin-bottom: 28px;
-          background: var(--surface);
-          padding: 20px 22px;
-          border-radius: var(--radius);
-          border: 1px solid var(--border);
-          box-shadow: none;
-        }
-        .user-guide-page .guide-intro h2 {
-          font-size: 11px;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.18em;
-          margin: 0 0 10px;
-          color: var(--text-secondary);
-        }
-        .user-guide-page .guide-intro p {
-          margin: 0 0 10px;
-          font-size: 14px;
-          color: var(--text-secondary);
-          line-height: 1.75;
-        }
-        .user-guide-page .guide-intro p:last-child { margin-bottom: 0; }
-
-        /* ── Accordion sections ── */
-        .guide-section {
-          background: var(--surface);
-          border-radius: var(--radius);
-          margin-bottom: 28px;
-          border: 1px solid var(--border);
-          overflow: hidden;
-          transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-          box-shadow: var(--shadow);
-          transform: translateY(0);
-        }
-        .guide-section:hover {
-          border-color: var(--border-focus);
-          box-shadow: var(--shadow-hover);
-          transform: translateY(-2px);
-        }
-        .guide-section.active {
-          border-color: var(--border-focus);
-        }
-
-        .guide-section > .guide-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 18px 22px;
-          font-size: 16px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: background 0.2s ease;
-        }
-        .guide-section > .guide-header:hover  { background: #ffffff; }
-        .guide-section.active > .guide-header  { background: #ffffff; }
-
-        .guide-header-left {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          flex: 1;
-          min-width: 0;
-        }
-
-        .section-badge {
-          width: 36px; height: 36px;
-          border-radius: 12px;
-          background: #eef2ff;
-          color: #4f46e5;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 14px;
-          flex-shrink: 0;
-        }
-
-        .section-meta { min-width: 0; }
-
-        .section-label {
-          display: block;
-          font-size: 12px;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          color: var(--text-secondary);
-          margin-bottom: 2px;
-        }
-
-        .guide-section > .guide-header h2 {
-          margin: 0;
-          font-size: 17px;
-          font-weight: 600;
-          color: var(--text-heading);
-          letter-spacing: -0.02em;
-        }
-
-        .toggle-btn {
-          width: 28px; height: 28px;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-          background: var(--surface);
-          color: #6b7280;
-          font-size: 11px;
-          display: flex; align-items: center; justify-content: center;
-          transition: all 0.18s ease;
-          flex-shrink: 0;
-          cursor: pointer;
-        }
-        .toggle-btn i { transition: transform 0.22s ease; }
-        .guide-section.active .toggle-btn {
-          background: var(--surface);
-          color: #4f46e5;
-          border-color: var(--border);
-        }
-        .guide-section.active .toggle-btn i { transform: rotate(180deg); }
-
-        .guide-content {
-          max-height: 0;
-          overflow: hidden;
-          padding: 0 24px;
-          border-top: 1px solid transparent;
-          transition: max-height 0.32s ease, padding 0.26s ease, border-color 0.18s ease;
-        }
-        .guide-section.active .guide-content {
-          max-height: 3000px;
-          padding: 18px 24px 22px;
-          border-top-color: var(--border);
-        }
-
-        /* ── Timeline — numbered steps ── */
-        .user-guide-page .timeline {
-          padding-left: 28px;
-          margin: 0;
-          position: relative;
-          counter-reset: step;
-        }
-        .user-guide-page .timeline::before {
-          content: '';
-          position: absolute;
-          left: 9px; top: 22px;
-          width: 1px;
-          height: calc(100% - 44px);
-          background: var(--border);
-        }
-        .user-guide-page .timeline-item {
-          margin-bottom: 10px;
-          position: relative;
-          counter-increment: step;
-        }
-        .user-guide-page .timeline-item:last-child { margin-bottom: 0; }
-
-        .user-guide-page .dot {
-          position: absolute;
-          left: -32px; top: 12px;
-          width: 20px; height: 20px;
-          border-radius: 50%;
-          background: #f3f4f6;
-          border: 1.5px solid #e5e7eb;
-          display: flex; align-items: center; justify-content: center;
-        }
-        .user-guide-page .dot::before {
-          content: counter(step);
-          font-size: 9.5px;
-          font-weight: 700;
-          color: #6b7280;
-          line-height: 1;
-        }
-
-        /* ── Content cards ── */
-        .user-guide-page .card {
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: 16px;
-          box-shadow: none;
-          transition: border-color 0.18s ease;
-          margin-bottom: 10px;
-        }
-        .user-guide-page .card:last-child { margin-bottom: 0; }
-        .user-guide-page .card:hover {
-          border-color: var(--border-focus);
-        }
-        .user-guide-page .card h4 {
-          font-size: 15px;
-          font-weight: 600;
-          margin: 0 0 8px;
-          color: var(--text-heading);
-          letter-spacing: -0.02em;
-        }
-        .user-guide-page .card p,
-        .user-guide-page .card li,
-        .user-guide-page .guide-content p,
-        .user-guide-page .guide-content li {
-          font-size: 14px;
-          line-height: 1.75;
-          color: var(--text-secondary);
-          font-weight: 400;
-        }
-
-        /* ── Policy grid (Terms section) ── */
-        .policy-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 10px;
-        }
-        @media (max-width: 540px) { .policy-grid { grid-template-columns: 1fr; } }
-
-        .policy-card {
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: 16px;
-          box-shadow: none;
-          transition: border-color 0.18s ease;
-        }
-        .policy-card:hover {
-          border-color: var(--border-focus);
-        }
-
-        .policy-card-icon {
-          width: 32px; height: 32px;
-          background: #f3f4f6;
-          border-radius: 8px;
-          display: flex; align-items: center; justify-content: center;
-          color: #6b7280;
-          font-size: 13px;
-          margin-bottom: 12px;
-        }
-        .policy-card h4 {
-          font-size: 14px;
-          font-weight: 600;
-          margin: 0 0 8px;
-          color: var(--text-heading);
-          letter-spacing: -0.02em;
-        }
-        .policy-list {
-          margin: 0;
-          padding-left: 15px;
-        }
-        .policy-list li {
-          font-size: 14px;
-          color: var(--text-secondary);
-          line-height: 1.75;
-          margin-bottom: 6px;
-        }
-        .policy-list li:last-child { margin-bottom: 0; }
-
-        /* ── Tip box ── */
-        .user-guide-page .guide-tip {
-          margin-top: 14px;
-          background: var(--surface);
-          padding: 14px 16px;
-          border-radius: var(--radius);
-          border: 1px solid var(--border);
-          display: flex;
-          gap: 12px;
-          align-items: flex-start;
-        }
-        .guide-tip-icon {
-          width: 28px; height: 28px;
-          background: #f3f4f6;
-          border-radius: 8px;
-          display: flex; align-items: center; justify-content: center;
-          color: #6b7280;
-          font-size: 12px;
-          flex-shrink: 0;
-          margin-top: 1px;
-        }
-        .guide-tip-body { flex: 1; }
-        .user-guide-page .guide-tip ul {
-          margin: 0;
-          padding-left: 14px;
-        }
-        .user-guide-page .guide-tip ul li {
-          font-size: 14px;
-          color: var(--text-secondary);
-          line-height: 1.75;
-          margin-bottom: 6px;
-          font-weight: 400;
-        }
-        .user-guide-page .guide-tip ul li:last-child { margin-bottom: 0; }
-    </style>
 
     <!-- Firebase SDKs (Compat version for script tag compatibility) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -494,9 +142,9 @@
                               <h2>How to Sell</h2>
                             </div>
                           </div>
-                          <button class="toggle-btn"><i class="fas fa-chevron-down"></i></button>
+                          <button type="button" class="toggle-btn" aria-expanded="false" aria-controls="content-sell"><i class="fas fa-chevron-down"></i></button>
                         </div>
-                        <div class="guide-content">
+                        <div class="guide-content" id="content-sell" aria-hidden="true">
 
                         <div class="timeline">
                           <div class="timeline-item">
@@ -586,9 +234,9 @@
                               <h2>How to Buy</h2>
                             </div>
                           </div>
-                          <button class="toggle-btn"><i class="fas fa-chevron-down"></i></button>
+                          <button type="button" class="toggle-btn" aria-expanded="false" aria-controls="content-buy"><i class="fas fa-chevron-down"></i></button>
                         </div>
-                        <div class="guide-content">
+                        <div class="guide-content" id="content-buy" aria-hidden="true">
 
                         <div class="timeline">
                           <div class="timeline-item">
@@ -662,9 +310,9 @@
                               <h2>My Sales (Listing Management)</h2>
                             </div>
                           </div>
-                          <button class="toggle-btn"><i class="fas fa-chevron-down"></i></button>
+                          <button type="button" class="toggle-btn" aria-expanded="false" aria-controls="content-sales"><i class="fas fa-chevron-down"></i></button>
                         </div>
-                        <div class="guide-content">
+                        <div class="guide-content" id="content-sales" aria-hidden="true">
 
                         <div class="card simple">
                           <h4>Edit Listing</h4>
@@ -709,9 +357,9 @@
                               <h2>Terms, Safety &amp; Payments</h2>
                             </div>
                           </div>
-                          <button class="toggle-btn"><i class="fas fa-chevron-down"></i></button>
+                          <button type="button" class="toggle-btn" aria-expanded="false" aria-controls="content-terms"><i class="fas fa-chevron-down"></i></button>
                         </div>
-                        <div class="guide-content">
+                        <div class="guide-content" id="content-terms" aria-hidden="true">
                           <div class="policy-grid">
                             <div class="policy-card">
                               <div class="policy-card-icon"><i class="fas fa-id-card"></i></div>
@@ -866,11 +514,32 @@
     <!-- Accordion Functionality -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll(".guide-section > .guide-header").forEach(h=>{
-              h.onclick=()=>{
-                const s=h.parentElement;
-                s.classList.toggle("active");
-              };
+            document.querySelectorAll('.guide-section').forEach((section) => {
+                const header = section.querySelector('.guide-header');
+                const button = section.querySelector('.toggle-btn');
+                const content = section.querySelector('.guide-content');
+
+                if (!header || !button || !content) {
+                    return;
+                }
+
+                button.setAttribute('type', 'button');
+                button.setAttribute('aria-expanded', 'false');
+                button.setAttribute('aria-controls', content.id || '');
+                content.setAttribute('aria-hidden', 'true');
+
+                const toggleSection = () => {
+                    section.classList.toggle('active');
+                    const expanded = section.classList.contains('active');
+                    button.setAttribute('aria-expanded', expanded);
+                    content.setAttribute('aria-hidden', !expanded);
+                };
+
+                header.addEventListener('click', toggleSection);
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    toggleSection();
+                });
             });
 
             // Initialize Lucide icons
