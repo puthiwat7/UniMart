@@ -84,7 +84,6 @@ function renderProductCard(product, options = {}) {
             ${collegeTag}
             <div class="product-actions">
                 <button onclick="event.stopPropagation(); ${onViewDetails}(${productIdLiteral})">View Details</button>
-                <button class="product-action-btn report-btn" onclick="event.stopPropagation(); window.location.href='${reportUrl}'">Report</button>
                 ${removeButton}
             </div>
         </div>
