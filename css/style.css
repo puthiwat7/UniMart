@@ -240,11 +240,11 @@ textarea:focus {
 
 /* ======================== Sidebar ======================== */
 .sidebar {
-    width: 260px;
+    width: 240px;
     flex-shrink: 0;
-    background-color: var(--surface);
-    border-right: 1px solid var(--border-color-strong);
-    padding: 28px 20px;
+    background-color: #fff;
+    border-right: 1px solid var(--border-color);
+    padding: 24px 16px;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
@@ -252,20 +252,19 @@ textarea:focus {
     height: 100vh;
     left: 0;
     top: 0;
-    box-shadow: 0 24px 80px rgba(15, 23, 42, 0.06);
 }
 
 .logo {
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin-bottom: 36px;
+    gap: 12px;
+    margin-bottom: 32px;
     cursor: pointer;
 }
 
 .logo-placeholder {
-    width: 52px;
-    height: 52px;
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -273,25 +272,25 @@ textarea:focus {
 }
 
 .logo-placeholder .logo-image {
-    width: 52px;
-    height: 52px;
+    width: 48px;
+    height: 48px;
     object-fit: contain;
     display: block;
 }
 
 .logo h1 {
-    font-size: 20px;
-    font-weight: 800;
+    font-size: 18px;
+    font-weight: 700;
     color: var(--text-color);
 }
 
 .navigation h3 {
     font-size: 12px;
-    font-weight: 700;
-    color: var(--text-secondary);
-    margin-bottom: 18px;
+    font-weight: 600;
+    color: var(--dark-gray);
+    margin-bottom: 16px;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
 .navigation ul {
@@ -303,33 +302,32 @@ textarea:focus {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 14px 14px;
-    color: var(--text-secondary);
+    padding: 12px 12px;
+    color: var(--dark-gray);
     text-decoration: none;
-    border-radius: var(--radius-sm);
-    transition: all 0.2s ease;
+    border-radius: 8px;
+    transition: all 0.3s ease;
     font-size: 15px;
 }
 
 .nav-item:hover {
     background-color: var(--light-gray);
-    color: var(--primary);
+    color: var(--primary-blue);
 }
 
 .nav-item.active {
-    background-color: var(--primary);
-    color: white;
+    background-color: rgba(74, 95, 193, 0.12);
+    color: var(--primary-blue);
 }
 
 .nav-item.active i {
-    color: white;
+    color: var(--primary-blue);
 }
 
 .nav-item i {
     width: 20px;
     text-align: center;
     font-size: 18px;
-    color: var(--text-secondary);
 }
 /* ======================== User Section ======================== */
 #userSection {
@@ -343,12 +341,12 @@ textarea:focus {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 14px;
-    padding: 22px;
+    gap: 12px;
+    padding: 18px;
     background-color: var(--surface);
-    border-radius: var(--radius);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
-    box-shadow: var(--shadow);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
     text-align: center;
 }
 
@@ -389,9 +387,9 @@ textarea:focus {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
     border: none;
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-sm);
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -399,12 +397,11 @@ textarea:focus {
     gap: 10px;
     margin-top: auto;
     transition: all 0.2s ease;
-    box-shadow: 0 14px 36px rgba(74, 95, 193, 0.18);
 }
 
 .btn-login:hover {
     transform: translateY(-1px);
-    box-shadow: 0 18px 42px rgba(74, 95, 193, 0.22);
+    box-shadow: 0 12px 28px rgba(74, 95, 193, 0.18);
 }
 
 .btn-login:active {
@@ -441,12 +438,12 @@ textarea:focus {
 .btn-logout {
     width: 100%;
     padding: 12px 16px;
-    background-color: var(--danger-red-soft);
-    color: var(--danger-red-dark);
-    border: 1px solid rgba(239, 68, 68, 0.18);
-    border-radius: var(--radius-pill);
+    background-color: var(--danger-red);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -457,9 +454,9 @@ textarea:focus {
 }
 
 .btn-logout:hover {
-    background-color: rgba(239, 68, 68, 0.12);
+    background-color: var(--danger-red-dark);
     transform: translateY(-1px);
-    box-shadow: 0 12px 28px rgba(239, 68, 68, 0.16);
+    box-shadow: 0 12px 28px rgba(239, 68, 68, 0.22);
 }
 
 .btn-logout:active {
@@ -473,8 +470,8 @@ textarea:focus {
 /* ======================== Main Content ======================== */
 .main-content {
     flex: 1;
-    margin-left: 260px;
-    width: calc(100% - 260px);
+    margin-left: 240px;
+    width: calc(100% - 240px);
     max-width: 100%;
     overflow-y: auto;
     background-color: #fff;
@@ -497,23 +494,12 @@ textarea:focus {
 .profile-header,
 .sales-header,
 .favorites-header {
-    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary) 55%, #8b5cf6 100%);
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 45%, #8b5cf6 100%);
     color: white;
-    padding: 56px 48px;
-    border-radius: calc(var(--radius) + 10px);
-    box-shadow: 0 32px 96px rgba(74, 95, 193, 0.2);
-    margin-bottom: 36px;
-    backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-}
-.header-banner::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at top left, rgba(255,255,255,0.18), transparent 35%);
-    opacity: 0.45;
-    pointer-events: none;
+    padding: 44px 40px;
+    border-radius: 28px;
+    box-shadow: 0 30px 80px rgba(79, 70, 229, 0.18);
+    margin-bottom: 32px;
 }
 
 .page-hero h1,
@@ -541,21 +527,7 @@ textarea:focus {
 }
 
 .header-banner {
-    text-align: left;
-}
-
-.header-banner h1 {
-    font-size: clamp(2.8rem, 4vw, 4.4rem);
-    font-weight: 800;
-    margin-bottom: 16px;
-}
-
-.header-banner p {
-    font-size: 1.05rem;
-    color: rgba(255, 255, 255, 0.92);
-    opacity: 1;
-    max-width: 760px;
-    margin: 0;
+    text-align: center;
 }
 
 .sell-header,
@@ -664,21 +636,17 @@ textarea:focus {
 
 /* ======================== Search & Filter ======================== */
 .search-filter-section {
-    padding: 28px 32px 32px;
-    margin-left: 0;
+    padding: 24px 48px 32px 48px;
+    margin-left: 16px;
     display: flex;
-    gap: 18px;
-    align-items: center;
+    gap: 16px;
+    align-items: flex-end;
     flex-wrap: wrap;
-    background: rgba(255, 255, 255, 0.96);
-    border: 1px solid var(--border-color);
-    border-radius: calc(var(--radius) + 4px);
-    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
 }
 
 .search-box {
     flex: 1;
-    min-width: 280px;
+    min-width: 250px;
     position: relative;
     display: flex;
     align-items: center;
@@ -686,31 +654,26 @@ textarea:focus {
 
 .search-box i {
     position: absolute;
-    left: 18px;
-    color: var(--text-secondary);
+    left: 16px;
+    color: var(--dark-gray);
     font-size: 16px;
 }
 
 .search-box input {
     width: 100%;
-    padding: 15px 18px 15px 46px;
-    border: 1px solid transparent;
-    border-radius: var(--radius-pill);
+    padding: 14px 16px 14px 42px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
     font-size: 14px;
     background-color: var(--surface);
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
     transition: all 0.2s ease;
-}
-
-.search-box input::placeholder {
-    color: rgba(75, 85, 99, 0.7);
 }
 
 .search-box input:focus {
     outline: none;
-    border-color: rgba(79, 70, 229, 0.35);
+    border-color: var(--primary);
     background-color: var(--surface);
-    box-shadow: 0 0 0 3px rgba(74, 95, 193, 0.12);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
 }
 
 .filters {
@@ -720,23 +683,21 @@ textarea:focus {
 }
 
 .filter-select {
-    padding: 14px 18px;
+    padding: 12px 16px;
     border: 1px solid var(--border-color);
-    border-radius: var(--radius);
+    border-radius: var(--radius-sm);
     font-size: 14px;
     background-color: var(--surface);
     cursor: pointer;
     transition: all 0.2s ease;
     color: var(--text-color);
-    min-height: 50px;
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
 }
 
 .filter-select:hover,
 .filter-select:focus {
-    border-color: var(--primary);
+    border-color: var(--primary-blue);
     outline: none;
-    box-shadow: 0 8px 24px rgba(74, 95, 193, 0.12);
+    box-shadow: 0 0 0 3px rgba(74, 95, 193, 0.1);
 }
 
 .toggle-switch {
@@ -792,25 +753,23 @@ textarea:focus {
 }
 
 .btn-refresh {
-    padding: 14px 22px;
-    min-height: 50px;
-    background-image: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    padding: 12px 24px;
+    background-color: var(--primary);
     color: white;
     border: none;
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-sm);
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     transition: all 0.2s ease;
-    box-shadow: 0 14px 40px rgba(74, 95, 193, 0.18);
 }
 
 .btn-refresh:hover {
-    filter: brightness(1.05);
-    box-shadow: 0 18px 46px rgba(74, 95, 193, 0.24);
+    background-color: var(--primary-dark);
+    box-shadow: 0 12px 28px rgba(74, 95, 193, 0.18);
 }
 
 .btn-clear-favorites {
@@ -835,11 +794,11 @@ textarea:focus {
 
 /* ======================== Categories ======================== */
 .categories-section {
-    padding: 18px 20px 40px;
+    padding: 12px 20px 40px 20px;
     margin-left: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 14px;
+    gap: 12px;
     align-items: center;
     justify-content: flex-start;
 }
@@ -851,7 +810,7 @@ textarea:focus {
 .category-select {
     width: 100%;
     padding: 12px 14px;
-    border-radius: var(--radius);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
     font-size: 14px;
     background-color: var(--surface);
@@ -860,36 +819,34 @@ textarea:focus {
 }
 
 .category-card {
-    padding: 12px 18px;
-    border: 1px solid transparent;
-    border-radius: var(--radius);
+    padding: 10px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 25px;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    gap: 10px;
-    font-size: 14px;
-    background-color: var(--surface-strong);
+    gap: 8px;
+    font-size: 13px;
+    background-color: white;
     white-space: nowrap;
-    min-height: 44px;
-    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.04);
+    height: 40px;
 }
 
 .category-card:hover {
-    border-color: rgba(79, 70, 229, 0.18);
-    background-color: var(--surface);
-    transform: translateY(-1px) scale(1.01);
-    box-shadow: 0 16px 28px rgba(15, 23, 42, 0.08);
+    border-color: var(--primary-blue);
+    background-color: var(--light-gray);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(74, 95, 193, 0.15);
 }
 
 .category-card.active {
-    background: var(--primary);
+    background: var(--primary-blue);
     color: white;
-    border-color: var(--primary);
+    border-color: var(--primary-blue);
     font-weight: 600;
-    box-shadow: 0 18px 38px rgba(74, 95, 193, 0.18);
 }
 
 .category-icon {
@@ -909,16 +866,16 @@ textarea:focus {
 }
 
 .count {
-    font-size: 12px;
-    background-color: var(--surface);
+    font-size: 11px;
+    background-color: rgba(74, 95, 193, 0.15);
     color: var(--primary-blue);
-    padding: 4px 10px;
-    border-radius: var(--radius-pill);
-    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 600;
 }
 
 .category-card.active .count {
-    background-color: rgba(255, 255, 255, 0.22);
+    background-color: rgba(255, 255, 255, 0.3);
     color: white;
 }
 
@@ -981,26 +938,25 @@ textarea:focus {
 
 .product-card {
     background: var(--surface);
-    border: 1px solid rgba(229, 231, 235, 0.9);
-    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
     overflow: hidden;
     transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
     cursor: pointer;
     position: relative;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--shadow);
 }
 
 .product-card:hover {
     transform: translateY(-6px);
-    box-shadow: var(--shadow-strong);
-    border-color: rgba(79, 70, 229, 0.14);
+    box-shadow: 0 26px 60px rgba(15, 23, 42, 0.16);
+    border-color: #d1d5db;
 }
 
 .reserved-card {
     filter: grayscale(75%);
-    opacity: 0.78;
+    opacity: 0.75;
 }
 
 .reserved-overlay {
@@ -1022,13 +978,13 @@ textarea:focus {
 .product-image {
     width: 100%;
     aspect-ratio: 4 / 3;
-    min-height: 240px;
-    background: linear-gradient(135deg, var(--surface-strong) 0%, var(--primary-soft) 100%);
+    min-height: 220px;
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 64px;
-    color: var(--text-secondary);
+    color: var(--dark-gray);
     overflow: hidden;
     position: relative;
     cursor: pointer;
@@ -1041,7 +997,7 @@ textarea:focus {
     right: 0;
     bottom: 0;
     height: 50%;
-    background: linear-gradient(180deg, transparent, rgba(15, 23, 42, 0.14));
+    background: linear-gradient(180deg, transparent, rgba(15, 23, 42, 0.18));
     pointer-events: none;
 }
 
@@ -1061,10 +1017,10 @@ textarea:focus {
     top: 14px;
     left: 14px;
     z-index: 15;
-    background: var(--surface);
-    color: var(--text-color);
-    border-radius: var(--radius-pill);
-    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #0f172a;
+    border-radius: 999px;
+    padding: 6px 13px;
     font-size: 12px;
     font-weight: 700;
     border: 1px solid rgba(229, 231, 235, 0.95);
@@ -1075,11 +1031,11 @@ textarea:focus {
     position: absolute;
     top: 14px;
     right: 14px;
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.96);
-    border: 1px solid rgba(229, 231, 235, 0.9);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(229, 231, 235, 0.95);
     color: var(--text-secondary);
     font-size: 16px;
     cursor: pointer;
@@ -1092,7 +1048,7 @@ textarea:focus {
 
 .favorite-btn:hover {
     transform: translateY(-1px);
-    background: white;
+    background: #ffffff;
 }
 
 .favorite-btn.favorited {
@@ -1100,10 +1056,10 @@ textarea:focus {
 }
 
 .product-info {
-    padding: 24px;
+    padding: 20px 20px 22px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
 }
 
 .product-meta-row {
@@ -1117,19 +1073,18 @@ textarea:focus {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: var(--surface-strong);
-    color: var(--primary-blue);
+    background: #eff6ff;
+    color: #2563eb;
     padding: 6px 12px;
     border-radius: 999px;
     font-size: 12px;
     font-weight: 700;
-    border: 1px solid rgba(79, 70, 229, 0.12);
 }
 
 .product-badge.condition-badge {
-    background: var(--success-soft);
-    color: var(--success);
-    border: 1px solid rgba(16, 185, 129, 0.18);
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
 }
 
 .product-detail-chip {
@@ -1167,7 +1122,7 @@ textarea:focus {
 }
 
 .product-title {
-    font-size: 1.1rem;
+    font-size: 1.08rem;
     font-weight: 800;
     color: var(--text-color);
     margin: 0;
@@ -1175,9 +1130,9 @@ textarea:focus {
 }
 
 .product-price {
-    font-size: 1.28rem;
+    font-size: 1.18rem;
     font-weight: 800;
-    color: var(--primary);
+    color: var(--primary-blue);
 }
 
 .product-details-row {
@@ -1190,20 +1145,20 @@ textarea:focus {
 
 .product-seller {
     font-size: 0.95rem;
-    color: var(--text-secondary);
+    color: #6b7280;
     font-weight: 600;
 }
 
 .product-quantity {
     font-size: 0.88rem;
-    color: var(--text-secondary);
+    color: #475569;
     font-weight: 700;
 }
 
 .product-college {
     font-size: 0.8rem;
-    color: var(--primary-blue);
-    background-color: var(--primary-soft);
+    color: #2563eb;
+    background-color: #eff6ff;
     padding: 6px 10px;
     border-radius: 999px;
     font-weight: 600;
@@ -1221,29 +1176,27 @@ textarea:focus {
 
 .product-actions button {
     width: 100%;
-    padding: 14px 18px;
-    border-radius: var(--radius-pill);
-    background-image: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    padding: 12px 16px;
+    border-radius: 999px;
+    background-color: var(--primary-blue);
     color: white;
     font-weight: 700;
     border: none;
-    transition: all 0.2s ease;
-    box-shadow: 0 12px 32px rgba(74, 95, 193, 0.16);
+    transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .product-actions button:hover {
     transform: translateY(-1px);
-    filter: brightness(1.05);
+    background-color: var(--primary-dark);
 }
 
 .product-actions .remove-btn {
-    background-color: var(--surface-strong);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
+    background-color: #f3f4f6;
+    color: #374151;
 }
 
 .product-actions .remove-btn:hover {
-    background-color: var(--surface);
+    background-color: #e5e7eb;
 }
 
 /* Product card styles are defined above and intentionally not redefined here. */
@@ -3121,20 +3074,19 @@ textarea:focus {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(15, 23, 42, 0.72);
-    backdrop-filter: blur(6px);
+    background-color: rgba(0, 0, 0, 0.6);
     cursor: pointer;
 }
 
 .modal-content {
     position: relative;
     background: var(--surface);
-    border-radius: calc(var(--radius) + 4px);
+    border-radius: var(--radius);
     width: 90%;
     max-width: 900px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: var(--shadow-strong);
+    box-shadow: 0 26px 80px rgba(15, 23, 42, 0.18);
     display: flex;
     flex-direction: column;
     animation: slideUp 0.3s ease-out;
@@ -3258,10 +3210,7 @@ textarea:focus {
 .modal-details-section {
     display: flex;
     flex-direction: column;
-    gap: 24px;
-    padding: 30px 32px;
-    background: var(--surface);
-    border-radius: var(--radius);
+    gap: 28px;
 }
 
 .modal-view-content {
@@ -3277,17 +3226,17 @@ textarea:focus {
 }
 
 .modal-details-section h2 {
-    font-size: 2.4rem;
-    font-weight: 800;
+    font-size: 32px;
+    font-weight: 700;
     color: var(--text-color);
     margin: 0;
-    line-height: 1.15;
+    line-height: 1.2;
 }
 
 .modal-price {
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--primary);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary-blue);
 }
 
 .seller-info {
@@ -3547,22 +3496,21 @@ textarea:focus {
 .btn-order {
     flex: 2;
     padding: 14px 20px;
-    background-image: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    background: var(--primary);
     color: white;
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-sm);
     font-size: 15px;
     font-weight: 600;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     border: none;
-    box-shadow: 0 14px 36px rgba(74, 95, 193, 0.18);
 }
 
 .btn-order:hover:not(:disabled) {
-    filter: brightness(1.05);
-    box-shadow: 0 16px 42px rgba(74, 95, 193, 0.24);
+    background: var(--primary-dark);
+    box-shadow: 0 12px 28px rgba(74, 95, 193, 0.22);
 }
 
 .btn-order:disabled {
@@ -3578,7 +3526,7 @@ textarea:focus {
     background: var(--surface);
     color: var(--text-color);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-sm);
     font-size: 14px;
     font-weight: 600;
     display: inline-flex;
