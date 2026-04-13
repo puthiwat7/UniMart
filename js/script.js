@@ -164,10 +164,10 @@ const HIDE_RESERVED_KEY = 'unimart_hide_reserved_filter';
 function getReservedFilterState() {
     try {
         const raw = localStorage.getItem(HIDE_RESERVED_KEY);
-        if (raw === null) return true;
+        if (raw === null) return false;
         return raw === 'true';
     } catch (error) {
-        return true;
+        return false;
     }
 }
 
@@ -184,6 +184,7 @@ async function loadMarketplaceProducts() {
     window.marketplaceLoadWarning = null;
 
     if (!window.unimartListingsSync || typeof window.unimartListingsSync.getActiveListingsFromCloud !== 'function') {
+        console.warn('Marketplace sync module is unavailable. Check that js/listings-sync.js is loading correctly.');
         products = [...DEFAULT_PRODUCTS];
         filteredProducts = [...products];
         return;
@@ -253,34 +254,20 @@ async function refreshMarketplaceProducts() {
     filterProducts();
 }
 
-const HIDE_RESERVED_KEY = 'unimart_hide_reserved_filter';
-
-function getReservedFilterState() {
-    try {
-        const raw = localStorage.getItem(HIDE_RESERVED_KEY);
-        if (raw === null) return true;
-        return raw === 'true';
-    } catch (error) {
-        return true;
-    }
-}
-
-function setReservedFilterState(value) {
-    try {
-        localStorage.setItem(HIDE_RESERVED_KEY, value ? 'true' : 'false');
-    } catch (error) {
-        // ignore storage errors
-    }
-}
-
 function parsePrice(price) {
     const numericPrice = String(price).replace(/[^\d.]/g, '');
     return parseFloat(numericPrice) || 0;
 }
 
 async function initializeMarketplaceData() {
+    console.log('Marketplace initialize:', {
+        hasListingsSync: Boolean(window.unimartListingsSync),
+        firebaseLoaded: typeof firebase !== 'undefined',
+        firebaseAuth: typeof firebase?.auth === 'function'
+    });
     renderMarketplaceLoadingState();
     await loadMarketplaceProducts();
+    console.log('Marketplace initial load:', products.length, 'products');
     updateCategoryCounts();
     filterProducts();
     

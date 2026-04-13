@@ -34,17 +34,25 @@ if (typeof firebase !== 'undefined') {
   } else {
       console.log('Firebase app already initialized');
   }
+
+  window.firebaseInitialized = true;
+  console.log('Firebase SDK state:', {
+      auth: typeof firebase.auth,
+      database: typeof firebase.database,
+      analytics: typeof firebase.analytics
+  });
   
   // Get Firebase Auth instance
   const auth = firebase.auth();
   
-    // Initialize Firebase Analytics only when available on this page
-    let analytics = null;
-    if (typeof firebase.analytics === 'function') {
+  // Initialize Firebase Analytics only when available on this page
+  let analytics = null;
+  if (typeof firebase.analytics === 'function') {
       analytics = firebase.analytics();
-    } else {
-      console.warn('Firebase Analytics SDK not loaded on this page. Skipping analytics initialization.');
-    }
+      console.log('Firebase Analytics initialized');
+  } else {
+      console.info('Firebase Analytics SDK not loaded on this page. Analytics is disabled for this page.');
+  }
   
   // Enable persistence
   firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)

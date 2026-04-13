@@ -4,9 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UniMart - Campus Marketplace</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Placeholder for future Google Sign-In integration -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/firebase-auth.js"></script>
+    <script src="js/listings-sync.js"></script>
+    <script src="js/product-card.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
     function handleCredentialResponse(response) {
@@ -56,57 +63,51 @@
                 <h3>NAVIGATION</h3>
                 <ul>
                     <li>
-                        <a href="#" class="nav-item">
+                        <a href="/" class="nav-item active">
                             <i class="fas fa-store"></i>
                             <span>Marketplace</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="nav-item">
+                        <a href="pages/sell-item" class="nav-item">
                             <i class="fas fa-plus"></i>
                             <span>Sell Item</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="nav-item">
+                        <a href="pages/my-sales" class="nav-item">
                             <i class="fas fa-boxes"></i>
                             <span>My Orders</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="nav-item">
+                        <a href="pages/my-sales" class="nav-item">
                             <i class="fas fa-chart-line"></i>
                             <span>My Sales</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="nav-item">
+                        <a href="pages/my-favorites" class="nav-item">
                             <i class="fas fa-heart"></i>
                             <span>My Favorites</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="nav-item">
+                        <a href="pages/user-guide" class="nav-item">
                             <i class="fas fa-question-circle"></i>
                             <span>User Guide</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="nav-item">
+                        <a href="pages/feedback" class="nav-item">
                             <i class="fas fa-comment"></i>
                             <span>Feedback</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="nav-item">
+                        <a href="pages/profile" class="nav-item">
                             <i class="fas fa-user"></i>
                             <span>Profile</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="pages/feedback" class="nav-item">
-                            <i class="fas fa-flag"></i>
-                            <span>Feedback</span>
                         </a>
                     </li>
                 </ul>
@@ -145,7 +146,7 @@
             <div class="search-filter-section">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search for items, e.g. 'textbook'...">
+                    <input id="searchInput" type="text" placeholder="Search for items, e.g. 'textbook'...">
                 </div>
 
                 <div class="filters">
@@ -164,7 +165,7 @@
                     </select>
 
                     <label class="toggle-switch">
-                        <input id="hideReservedToggle" type="checkbox" checked>
+                        <input id="hideReservedToggle" type="checkbox">
                         <span class="toggle-slider"></span>
                         <span class="toggle-text">Hide Reserved</span>
                     </label>
@@ -269,74 +270,69 @@
         </main>
     </div>
 
-                    <!-- Product Details -->
-                    <div class="modal-details-section">
-                        <h2 id="modalProductTitle">Product Title</h2>
-                        <div class="modal-price" id="modalProductPrice">$0.00</div>
+    <!-- Product Details -->
+    <div class="modal-details-section">
+        <h2 id="modalProductTitle">Product Title</h2>
+        <div class="modal-price" id="modalProductPrice">$0.00</div>
 
-                        <!-- Seller Info -->
-                        <div class="seller-info" style="display: none;">
-                            <div class="seller-item">
-                                <i class="fas fa-user-circle"></i>
-                                <span id="modalSeller">Seller Name</span>
-                            </div>
-                            <div class="seller-item">
-                                <i class="fas fa-check-circle" style="color: #10b981;"></i>
-                                <span>Verified</span>
-                            </div>
-                        </div>
-
-                        <!-- Description -->
-                        <div class="modal-section">
-                            <h4><i class="fas fa-info-circle" style="color: var(--primary-blue); margin-right: 6px;"></i>Description</h4>
-                            <p id="modalDescription">No description available</p>
-                        </div>
-
-                        <div class="modal-section">
-                            <h4><i class="fas fa-bookmark" style="color: var(--primary-blue); margin-right: 6px;"></i>Availability</h4>
-                            <p id="modalReservedStatus">Available</p>
-                        </div>
-
-                        <!-- Features/Security - Removed -->
-
-                        <!-- QR Upload Warning -->
-                        <div class="qr-warning" id="qrWarning" style="display: none;">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <div>
-                                <strong>Upload QR first</strong>
-                                <p>Please upload your Profile QR code in your <a href="pages/profile">profile</a> to complete orders.</p>
-                            </div>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="modal-actions">
-                            <button class="btn-order" id="modalOrderBtn" disabled>
-                                <i class="fas fa-check-circle"></i>
-                                Contact Seller
-                            </button>
-                            <button class="btn-save" id="modalSaveBtn">
-                                <i class="fas fa-heart"></i>
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                </div>
+        <!-- Seller Info -->
+        <div class="seller-info" style="display: none;">
+            <div class="seller-item">
+                <i class="fas fa-user-circle"></i>
+                <span id="modalSeller">Seller Name</span>
             </div>
-            <div id="guideContent" style="margin-top:20px;">
-                <!-- Guide details will appear here -->
+            <div class="seller-item">
+                <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                <span>Verified</span>
             </div>
         </div>
+
+        <!-- Description -->
+        <div class="modal-section">
+            <h4><i class="fas fa-info-circle" style="color: var(--primary-blue); margin-right: 6px;"></i>Description</h4>
+            <p id="modalDescription">No description available</p>
+        </div>
+
+        <div class="modal-section">
+            <h4><i class="fas fa-bookmark" style="color: var(--primary-blue); margin-right: 6px;"></i>Availability</h4>
+            <p id="modalReservedStatus">Available</p>
+        </div>
+
+        <div class="qr-warning" id="qrWarning" style="display: none;">
+            <i class="fas fa-exclamation-circle"></i>
+            <div>
+                <strong>Upload QR first</strong>
+                <p>Please upload your Profile QR code in your <a href="pages/profile">profile</a> to complete orders.</p>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-order" id="modalOrderBtn" disabled>
+                <i class="fas fa-check-circle"></i>
+                Contact Seller
+            </button>
+            <button class="btn-save" id="modalSaveBtn">
+                <i class="fas fa-heart"></i>
+                Save
+            </button>
+        </div>
     </div>
+
+    <div id="guideContent" style="margin-top:20px;">
+        <!-- Guide details will appear here -->
+    </div>
+
     <script>
     // User Guide Modal logic
     document.addEventListener('DOMContentLoaded', function() {
         var userGuideBtn = document.querySelector('.nav-item i.fa-question-circle').parentElement.parentElement;
         var modal = document.getElementById('userGuideModal');
         var closeBtn = document.getElementById('closeUserGuide');
+        if (!userGuideBtn || !modal || !closeBtn) return;
         userGuideBtn.onclick = function(e) {
             e.preventDefault();
             modal.style.display = 'block';
-            showGuideSection('buy'); // Show default section when opening
+            showGuideSection('buy');
         };
         closeBtn.onclick = function() {
             modal.style.display = 'none';
@@ -355,10 +351,11 @@
             policies: '<h3>Marketplace Policies</h3><p>Details coming soon...</p>',
             about: '<h3>About UniMart</h3><p>Details coming soon...</p>'
         };
-        document.getElementById('guideContent').innerHTML = content[section];
+        var target = document.getElementById('guideContent');
+        if (target) target.innerHTML = content[section] || '';
     }
     </script>
 
-    <script src="script.js"></script>
+    <script src="js/script.js"></script>
 </body>
 </html>
