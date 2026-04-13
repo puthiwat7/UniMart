@@ -87,53 +87,6 @@ function resolveReportPagePath() {
     return '/pages/report';
 }
 
-function ensureReportNavItem() {
-    const reportPath = resolveReportPagePath();
-    const navLists = document.querySelectorAll('.navigation ul');
-
-    navLists.forEach((list) => {
-        if (!(list instanceof HTMLElement)) return;
-
-        const existing = list.querySelector('li[data-report-nav-item="true"]');
-        if (existing) return;
-
-        const li = document.createElement('li');
-        li.setAttribute('data-report-nav-item', 'true');
-
-        const isActive = (window.location.pathname || '').includes('report');
-        li.innerHTML = `
-            <a href="${reportPath}" class="nav-item ${isActive ? 'active' : ''}">
-                <i class="fas fa-flag"></i>
-                <span>Report</span>
-            </a>
-        `;
-        list.appendChild(li);
-    });
-
-    const bottomNav = document.getElementById('bottomNav');
-    if (!bottomNav) return;
-
-    const existingBottom = bottomNav.querySelector('[data-report-nav-item="true"]');
-    if (existingBottom) return;
-
-    const anchor = document.createElement('a');
-    anchor.href = reportPath;
-    anchor.className = `bottom-nav-item${(window.location.pathname || '').includes('/pages/report') ? ' active' : ''}`;
-    anchor.dataset.page = 'report';
-    anchor.setAttribute('data-report-nav-item', 'true');
-    anchor.innerHTML = `
-        <i class="fas fa-flag"></i>
-        <span>Report</span>
-    `;
-
-    const guideItem = bottomNav.querySelector('[data-page="guide"]');
-    if (guideItem) {
-        bottomNav.insertBefore(anchor, guideItem);
-    } else {
-        bottomNav.appendChild(anchor);
-    }
-}
-
 function ensureAdminNavItem(userLike) {
     const shouldShow = isCurrentUserAdmin(userLike);
     const navLists = document.querySelectorAll('.navigation ul');
@@ -259,8 +212,6 @@ function applyUserToSidebar(userLike) {
         if (loginBtn) loginBtn.style.display = 'flex';
         ensureAdminNavItem(null);
     }
-
-    ensureReportNavItem();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -272,12 +223,10 @@ document.addEventListener('DOMContentLoaded', () => {
             applyUserToSidebar(cachedUser);
         } else {
             ensureAdminNavItem(null);
-            ensureReportNavItem();
         }
     } catch (e) {
         console.error('Error reading cached user info:', e);
         ensureAdminNavItem(null);
-        ensureReportNavItem();
     }
 
     // 2) Then wire up real-time Firebase auth listener for live updates

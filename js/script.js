@@ -1114,60 +1114,6 @@ function toggleFavorite(productId, product) {
 
 window.toggleFavorite = toggleFavorite;
 
-// ======================== Authentication Management ========================
-// Check if user is logged in (from localStorage)
-function checkAuthStatus() {
-    const userProfile = localStorage.getItem('userProfile');
-    if (userProfile) {
-        showUserProfile(JSON.parse(userProfile));
-    } else {
-        showLoginButton();
-    }
-}
-
-// Display user profile
-function showUserProfile(user) {
-    const userProfile = document.getElementById('userProfileCard');
-    const loginBtn = document.getElementById('loginBtn');
-    
-    if (userProfile) userProfile.style.display = 'flex';
-    if (loginBtn) loginBtn.style.display = 'none';
-    
-    const nameEl = document.getElementById('userName');
-    const emailEl = document.getElementById('userEmail');
-    if (nameEl) nameEl.textContent = user.name || 'User';
-    if (emailEl) emailEl.textContent = user.email || '';
-}
-
-// Display login button
-function showLoginButton() {
-    const userProfile = document.getElementById('userProfileCard');
-    const loginBtn = document.getElementById('loginBtn');
-    
-    if (userProfile) userProfile.style.display = 'none';
-    if (loginBtn) loginBtn.style.display = 'flex';
-}
-
-// Handle login button click
-const loginBtn = document.getElementById('loginBtn');
-if (loginBtn) {
-    loginBtn.addEventListener('click', () => {
-        alert('Login button clicked! (Placeholder for future Google Sign-In integration)');
-    });
-}
-
-// Handle logout (optional - can be triggered from profile menu)
-function logout() {
-    localStorage.removeItem('userProfile');
-    showLoginButton();
-    alert('Signed out successfully!');
-}
-
-// Initialize auth status on page load
-window.addEventListener('DOMContentLoaded', () => {
-    checkAuthStatus();
-});
-
 window.addEventListener('storage', (event) => {
     if (event.key === USER_LISTINGS_KEY || event.key === LEGACY_LISTINGS_KEY) {
         refreshMarketplaceProducts();

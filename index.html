@@ -12,41 +12,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
     <script src="js/firebase-config.js"></script>
     <script src="js/firebase-auth.js"></script>
+    <script src="js/user-sidebar.js"></script>
     <script src="js/listings-sync.js"></script>
     <script src="js/product-card.js"></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script>
-    function handleCredentialResponse(response) {
-        // Send the ID token to your backend for verification and login/signup
-        fetch('/auth/google', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ credential: response.credential })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                // Optionally update UI or redirect
-                window.location.reload();
-            } else {
-                alert('Google login failed');
-            }
-        });
-    }
-
-    function handleGoogleAuth() {
-        google.accounts.id.initialize({
-            client_id: 'YOUR_GOOGLE_CLIENT_ID', // <-- Replace with your client ID
-            callback: handleCredentialResponse
-        });
-        google.accounts.id.prompt();
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        var btn = document.getElementById('loginBtn');
-        if (btn) btn.onclick = handleGoogleAuth;
-    });
-    </script>
 </head>
 <body>
     <div class="container">
@@ -54,7 +22,7 @@
         <aside class="sidebar">
             <div class="logo">
                 <div class="logo-placeholder">
-                    <i class="fas fa-shopping-bag"></i>
+                    <img src="assets/sidebar-logo.png" alt="UniMart logo" class="logo-image">
                 </div>
                 <h1>UNIMART</h1>
             </div>
@@ -76,12 +44,6 @@
                     </li>
                     <li>
                         <a href="pages/my-sales" class="nav-item">
-                            <i class="fas fa-boxes"></i>
-                            <span>My Orders</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="pages/my-sales" class="nav-item">
                             <i class="fas fa-chart-line"></i>
                             <span>My Sales</span>
                         </a>
@@ -93,21 +55,21 @@
                         </a>
                     </li>
                     <li>
+                        <a href="pages/profile" class="nav-item">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="pages/user-guide" class="nav-item">
                             <i class="fas fa-question-circle"></i>
                             <span>User Guide</span>
                         </a>
                     </li>
                     <li>
-                        <a href="pages/feedback" class="nav-item">
-                            <i class="fas fa-comment"></i>
-                            <span>Feedback</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="pages/profile" class="nav-item">
-                            <i class="fas fa-user"></i>
-                            <span>Profile</span>
+                        <a href="pages/report" class="nav-item">
+                            <i class="fas fa-flag"></i>
+                            <span>Report</span>
                         </a>
                     </li>
                 </ul>
@@ -118,12 +80,17 @@
                 <!-- User Profile (shown when logged in) -->
                 <div class="user-profile" id="userProfile" style="display: none;">
                     <div class="user-avatar">
-                        <i class="fas fa-user-circle"></i>
+                        <img id="userProfileImage" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: none;">
+                        <i class="fas fa-user-circle" id="userAvatarIcon"></i>
                     </div>
                     <div class="user-info">
                         <h4 id="userName">User Name</h4>
                         <p id="userEmail">user@email.com</p>
                     </div>
+                    <button class="btn-logout" onclick="handleSignOut()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Sign Out</span>
+                    </button>
                 </div>
 
                 <!-- Login Button (shown when not logged in) -->
@@ -184,7 +151,7 @@
                         <i class="fas fa-th"></i>
                     </div>
                     <span>All Items</span>
-                    <span class="count">2</span>
+                    <span class="count">0</span>
                 </div>
 
                 <div class="category-card">
@@ -256,7 +223,7 @@
                         <i class="fas fa-box"></i>
                     </div>
                     <span>Other</span>
-                    <span class="count">2</span>
+                    <span class="count">0</span>
                 </div>
             </div>
 
