@@ -83,8 +83,8 @@ function resolveAdminPanelPath() {
     return '/pages/admin-panel';
 }
 
-function resolveReportPagePath() {
-    return '/pages/report';
+function resolveFeedbackPagePath() {
+    return '/pages/feedback';
 }
 
 function ensureAdminNavItem(userLike) {

@@ -23,8 +23,8 @@ function initializeBottomNav() {
         currentPage = 'profile';
     } else if (currentPath.includes('admin-panel')) {
         currentPage = 'admin';
-    } else if (currentPath.includes('report')) {
-        currentPage = 'report';
+    } else if (currentPath.includes('feedback')) {
+        currentPage = 'feedback';
     } else if (currentPath.includes('user-guide')) {
         currentPage = 'guide';
     } else if (currentPath.includes('index') || currentPath.endsWith('/')) {

@@ -62,7 +62,7 @@ function renderProductCard(product, options = {}) {
         ? `<button class="product-action-btn remove-btn" onclick="event.stopPropagation(); ${onRemove}(${productIdLiteral})">Remove</button>`
         : '';
 
-    const reportUrl = `/pages/report?listingId=${encodeURIComponent(productId)}`;
+    const reportUrl = `/pages/feedback?listingId=${encodeURIComponent(productId)}`;
 
     card.innerHTML = `
         <div class="product-image" onclick="${onViewDetails}(${productIdLiteral})">

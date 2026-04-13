@@ -873,7 +873,7 @@ function setupProductModal() {
     if (modalReportBtn) {
         modalReportBtn.addEventListener('click', () => {
             if (currentProduct) {
-                window.location.href = `/pages/report?listingId=${encodeURIComponent(String(currentProduct.id || ''))}`;
+                window.location.href = `/pages/feedback?listingId=${encodeURIComponent(String(currentProduct.id || ''))}`;
             }
         });
     }
