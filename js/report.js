@@ -15,8 +15,9 @@ function getQueryParam(key) {
 
 function setFieldVisibility(type) {
     const reportedUserRow = document.getElementById('reportedUserRow');
-    if (!reportedUserRow) return;
-    reportedUserRow.style.display = type === 'user' ? 'block' : 'none';
+    const listingIdRow = document.getElementById('listingIdRow');
+    if (reportedUserRow) reportedUserRow.style.display = type === 'user' ? 'block' : 'none';
+    if (listingIdRow) listingIdRow.style.display = type === 'listing' ? 'block' : 'none';
 }
 
 function showFormMessage(message, isError = false) {
@@ -56,6 +57,10 @@ function validateReportForm(payload) {
 
     if (payload.type === 'user' && !payload.reportedUser) {
         return 'Please enter the reported user display name.';
+    }
+
+    if (payload.type === 'listing' && !payload.listingId) {
+        return 'Please enter the listing ID for the listing issue report.';
     }
 
     return null;

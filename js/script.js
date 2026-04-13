@@ -253,6 +253,26 @@ async function refreshMarketplaceProducts() {
     filterProducts();
 }
 
+const HIDE_RESERVED_KEY = 'unimart_hide_reserved_filter';
+
+function getReservedFilterState() {
+    try {
+        const raw = localStorage.getItem(HIDE_RESERVED_KEY);
+        if (raw === null) return true;
+        return raw === 'true';
+    } catch (error) {
+        return true;
+    }
+}
+
+function setReservedFilterState(value) {
+    try {
+        localStorage.setItem(HIDE_RESERVED_KEY, value ? 'true' : 'false');
+    } catch (error) {
+        // ignore storage errors
+    }
+}
+
 function parsePrice(price) {
     const numericPrice = String(price).replace(/[^\d.]/g, '');
     return parseFloat(numericPrice) || 0;
@@ -317,7 +337,7 @@ async function initializeApp() {
     setupCategoryFilters();
     setupCategoryDropdown();
     setupSearch();
-    setupReservedFilterToggle();
+    setupReservedFilterButton();
     setupRefresh();
     setupScrollToTop();
     setupProductModal();
@@ -604,13 +624,16 @@ function updateCategoryCounts() {
     const categoryCounts = new Map();
     let totalCount = 0;
     
+    const hideReserved = document.getElementById('hideReservedToggle')?.checked ?? true;
+
     products.forEach(product => {
         const matchesSearch = !searchInput || 
             product.title.toLowerCase().includes(searchInput) || 
             product.seller.toLowerCase().includes(searchInput);
         const matchesCollege = selectedCollege === 'All Colleges' || product.college === selectedCollege;
+        const matchesReserved = !hideReserved || !product.reserved;
         
-        if (matchesSearch && matchesCollege) {
+        if (matchesSearch && matchesCollege && matchesReserved) {
             const category = product.category;
             categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1);
             totalCount++;
@@ -642,15 +665,38 @@ function setupSearch() {
     });
 }
 
-function setupReservedFilterToggle() {
-    const toggleInput = document.getElementById('hideReservedToggle');
-    if (!toggleInput) return;
+function updateReservedToggleButton() {
+    const button = document.getElementById('reservedToggleBtn');
+    const hideReserved = document.getElementById('hideReservedToggle')?.checked ?? true;
+    if (!button) return;
+    button.textContent = hideReserved ? 'Hide Reserved' : 'Show Reserved';
+}
 
-    toggleInput.checked = getReservedFilterState();
-    toggleInput.addEventListener('change', () => {
-        setReservedFilterState(toggleInput.checked);
-        filterProducts();
-    });
+function toggleReservedVisibility() {
+    const toggle = document.getElementById('hideReservedToggle');
+    if (!toggle) return;
+    const nextState = !toggle.checked;
+    toggle.checked = nextState;
+    setReservedFilterState(nextState);
+    updateReservedToggleButton();
+    filterProducts();
+}
+
+function setupReservedFilterButton() {
+    const toggle = document.getElementById('hideReservedToggle');
+    const button = document.getElementById('reservedToggleBtn');
+    if (toggle) {
+        toggle.checked = getReservedFilterState();
+        toggle.addEventListener('change', () => {
+            setReservedFilterState(toggle.checked);
+            updateReservedToggleButton();
+            filterProducts();
+        });
+    }
+    if (button) {
+        button.addEventListener('click', toggleReservedVisibility);
+    }
+    updateReservedToggleButton();
 }
 
 // Setup refresh button
