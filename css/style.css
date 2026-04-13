@@ -494,11 +494,11 @@ textarea:focus {
 .profile-header,
 .sales-header,
 .favorites-header {
-    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 45%, #8b5cf6 100%);
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 45%, #c084fc 100%);
     color: white;
-    padding: 44px 40px;
-    border-radius: 28px;
-    box-shadow: 0 30px 80px rgba(79, 70, 229, 0.18);
+    padding: 56px 40px;
+    border-radius: 32px;
+    box-shadow: 0 32px 90px rgba(79, 70, 229, 0.2);
     margin-bottom: 32px;
 }
 
@@ -508,10 +508,11 @@ textarea:focus {
 .profile-header h1,
 .sales-header h1,
 .favorites-header h1 {
-    font-size: clamp(2.6rem, 3.5vw, 4rem);
+    font-size: clamp(2.7rem, 4.4vw, 4.4rem);
     font-weight: 800;
     margin-bottom: 12px;
-    line-height: 1.05;
+    line-height: 1;
+    letter-spacing: -0.06em;
 }
 
 .page-hero p,
@@ -3830,6 +3831,10 @@ textarea:focus {
     color: #ffffff;
     box-shadow: 0 32px 90px rgba(79,70,229,0.2);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
 
 .user-guide-page .guide-page-header::before {
