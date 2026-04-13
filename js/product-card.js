@@ -56,9 +56,6 @@ function renderProductCard(product, options = {}) {
 
     const reservedOverlay = isReserved ? '<div class="reserved-overlay">RESERVED</div>' : '';
     const collegeTag = normalizedProduct.college ? `<div class="product-college">${normalizedProduct.college}</div>` : '';
-    const categoryTag = normalizedProduct.category ? `<span class="product-detail-chip product-category">${normalizedProduct.category}</span>` : '';
-    const qualityTag = normalizedProduct.badge ? `<span class="product-detail-chip product-quality">${normalizedProduct.badge}</span>` : '';
-    const descriptionText = normalizedProduct.description ? `<p class="product-description">${normalizedProduct.description}</p>` : '';
     const quantityTag = Number.isFinite(Number(normalizedProduct.quantity)) ? `<span class="product-quantity">Qty: ${Number(normalizedProduct.quantity)}</span>` : '';
 
     const removeButton = showRemoveButton
@@ -77,11 +74,8 @@ function renderProductCard(product, options = {}) {
         <div class="product-info">
             <div class="product-meta-row">
                 ${conditionPercent !== null ? `<span class="product-badge condition-badge">${conditionPercent}%</span>` : ''}
-                ${categoryTag}
-                ${qualityTag}
             </div>
             <h3 class="product-title">${String(normalizedProduct.title || 'Untitled Item')}</h3>
-            ${descriptionText}
             <div class="product-price">${String(normalizedProduct.price || '¥0.00')}</div>
             <div class="product-details-row">
                 <span class="product-seller">by ${String(normalizedProduct.seller || 'Campus Seller')}</span>
