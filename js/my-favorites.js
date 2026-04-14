@@ -318,6 +318,8 @@ function openFavModal(productId) {
     const product = favoritedListings.find(l => String(l.id) === id);
     if (!product) return;
 
+    console.log('[DEBUG] openFavModal product:', product);
+
     currentFavProduct = product;
     currentFavImages = Array.isArray(product.images) && product.images.length > 0
         ? product.images
@@ -326,21 +328,46 @@ function openFavModal(productId) {
 
     const status = String(product.status || 'active').toLowerCase();
     const isActive = status === 'active';
+    const conditionValue = getConditionPercentage ? getConditionPercentage(product) : null;
+    const quantityValue = Number.isFinite(Number(product.quantity)) ? Number(product.quantity) : null;
 
-    document.getElementById('favModalTitle').textContent = product.title;
-    document.getElementById('favModalPrice').textContent = product.price;
+    document.getElementById('favModalTitle').textContent = product.title || 'Product';
+    document.getElementById('favModalPrice').textContent = product.price || '¥0.00';
     document.getElementById('favModalBadge').textContent = product.badge || 'Used';
-    document.getElementById('favModalDescription').textContent =
-        product.description || `A ${(product.badge || '').toLowerCase()} item.`;
-    document.getElementById('favModalCategory').textContent = product.category || '—';
-    document.getElementById('favModalSeller').textContent = product.seller || '—';
-    document.getElementById('favModalStatus').textContent = status.toUpperCase();
-    document.getElementById('favModalCollege').textContent = product.college || '—';
+    document.getElementById('favModalDescription').textContent = product.description ? product.description : 'N/A';
+    document.getElementById('favModalCategory').textContent = product.category ? product.category : 'N/A';
+    document.getElementById('favModalCollege').textContent = product.college ? product.college : 'N/A';
+    document.getElementById('favModalSeller').textContent = product.seller ? product.seller : 'N/A';
+    document.getElementById('favModalStatus').textContent = status ? status.toUpperCase() : 'N/A';
 
-    // Carousel
+    const conditionPercent = document.getElementById('favModalCondition');
+    const conditionBar = document.getElementById('favModalConditionBar');
+    if (conditionValue !== null && conditionValue !== undefined) {
+        conditionPercent.textContent = `${conditionValue}%`;
+        conditionBar.style.width = `${conditionValue}%`;
+        if (conditionValue >= 70) {
+            conditionBar.style.backgroundColor = '#10b981';
+        } else if (conditionValue >= 40) {
+            conditionBar.style.backgroundColor = '#f59e0b';
+        } else {
+            conditionBar.style.backgroundColor = '#ef4444';
+        }
+    } else {
+        conditionPercent.textContent = 'N/A';
+        conditionBar.style.width = '0%';
+        conditionBar.style.backgroundColor = '#d1d5db';
+    }
+
+    const quantityBadge = document.getElementById('favModalQuantity');
+    quantityBadge.className = 'quality-badge quality-used';
+    if (quantityValue !== null) {
+        quantityBadge.textContent = quantityValue;
+    } else {
+        quantityBadge.textContent = 'N/A';
+    }
+
     renderFavModalImage();
 
-    // Availability notice
     const availSection = document.getElementById('favAvailabilitySection');
     const availText = document.getElementById('favAvailabilityText');
     const availNotice = document.getElementById('favAvailabilityNotice');
@@ -359,7 +386,6 @@ function openFavModal(productId) {
         availSection.style.display = 'none';
     }
 
-    // QR Code
     renderFavQR(product);
 
     document.getElementById('favModal').classList.add('active');
