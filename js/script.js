@@ -691,22 +691,107 @@ function openProductModal(product) {
     currentProduct = product;
     currentImageIndex = 0;
 
-    // Update modal content
-    document.getElementById('modalProductTitle').textContent = product.title;
-    document.getElementById('modalProductPrice').textContent = product.price;
-    document.getElementById('modalBadge').textContent = product.badge;
+    // ===== TITLE & PRICE =====
+    document.getElementById('modalProductTitle').textContent = product.title || 'Product';
+    document.getElementById('modalProductPrice').textContent = product.price || '$0.00';
+    document.getElementById('modalBadge').textContent = product.badge || 'Used';
     
-    // Display uploaded image(s)
+    // ===== DISPLAY IMAGE =====
     renderCurrentModalImage();
     
-    // Use seller-provided description
-    document.getElementById('modalDescription').textContent = product.description || 'No description available.';
-    const modalReservedElem = document.getElementById('modalReservedStatus');
-    if (modalReservedElem) {
-        modalReservedElem.textContent = product.reserved ? 'Reserved' : 'Available';
+    // ===== DESCRIPTION =====
+    const descriptionSection = document.getElementById('descriptionSection');
+    if (product.description) {
+        document.getElementById('modalDescription').textContent = product.description;
+        descriptionSection.style.display = 'block';
+    } else {
+        descriptionSection.style.display = 'none';
     }
 
-    // Update favorite button state
+    // ===== CATEGORY =====
+    const categoryItem = document.getElementById('categoryItem');
+    if (product.category) {
+        document.getElementById('modalCategory').textContent = product.category;
+        categoryItem.style.display = 'flex';
+    } else {
+        categoryItem.style.display = 'none';
+    }
+
+    // ===== COLLEGE =====
+    const collegeItem = document.getElementById('collegeItem');
+    if (product.college) {
+        document.getElementById('modalCollege').textContent = product.college;
+        collegeItem.style.display = 'flex';
+    } else {
+        collegeItem.style.display = 'none';
+    }
+
+    // ===== SELLER NAME =====
+    const sellerItem = document.getElementById('sellerItem');
+    if (product.seller) {
+        document.getElementById('modalSellerName').textContent = product.seller;
+        sellerItem.style.display = 'flex';
+    } else {
+        sellerItem.style.display = 'none';
+    }
+
+    // ===== CONDITION (Percentage & Color Code) =====
+    const conditionItem = document.getElementById('conditionItem');
+    const conditionValue = getConditionPercentage(product);
+    if (conditionValue !== null) {
+        const conditionPercent = document.getElementById('modalCondition');
+        const conditionBar = document.getElementById('modalConditionBar');
+        
+        conditionPercent.textContent = `${conditionValue}%`;
+        conditionBar.style.width = `${conditionValue}%`;
+        
+        // Color code: Green (>70%), Yellow (40-70%), Red (<40%)
+        if (conditionValue >= 70) {
+            conditionBar.style.backgroundColor = '#10b981'; // Green
+        } else if (conditionValue >= 40) {
+            conditionBar.style.backgroundColor = '#f59e0b'; // Yellow/Amber
+        } else {
+            conditionBar.style.backgroundColor = '#ef4444'; // Red
+        }
+        
+        conditionItem.style.display = 'flex';
+    } else {
+        conditionItem.style.display = 'none';
+    }
+
+    // ===== QUALITY (New / Like New / Used) =====
+    const qualityItem = document.getElementById('qualityItem');
+    if (product.quality) {
+        const qualityBadge = document.getElementById('modalQuality');
+        qualityBadge.textContent = product.quality;
+        
+        // Color quality badges
+        qualityBadge.className = 'quality-badge';
+        const quality = String(product.quality).toLowerCase();
+        if (quality === 'new' || quality === 'brand new') {
+            qualityBadge.classList.add('quality-new');
+        } else if (quality === 'like new') {
+            qualityBadge.classList.add('quality-like-new');
+        } else {
+            qualityBadge.classList.add('quality-used');
+        }
+        
+        qualityItem.style.display = 'flex';
+    } else {
+        qualityItem.style.display = 'none';
+    }
+
+    // ===== AVAILABILITY =====
+    const availabilityItem = document.getElementById('availabilityItem');
+    const statusText = product.reserved ? 'Reserved' : 'Available';
+    const statusClass = product.reserved ? 'status-reserved' : 'status-available';
+    
+    const statusSpan = document.getElementById('modalReservedStatus');
+    statusSpan.textContent = statusText;
+    statusSpan.className = statusClass;
+    availabilityItem.style.display = 'flex';
+
+    // ===== FAVORITE BUTTON =====
     const saveBtn = document.getElementById('modalSaveBtn');
     if (checkIfFavorited(product.id)) {
         saveBtn.classList.add('favorited');
