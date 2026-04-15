@@ -148,6 +148,64 @@ function ensureAdminBottomNavItem(userLike) {
     }
 }
 
+function resolveFeedbackPath() {
+    const currentPath = window.location.pathname || '';
+    if (currentPath.startsWith('/pages/') || currentPath.startsWith('pages/')) {
+        return 'feedback.html';
+    }
+    return 'pages/feedback.html';
+}
+
+function ensureFeedbackNavItem() {
+    const navLists = document.querySelectorAll('.navigation ul');
+    const currentPath = window.location.pathname || '';
+    const isFeedbackPage = currentPath.includes('/feedback');
+
+    navLists.forEach((list) => {
+        if (!(list instanceof HTMLElement)) return;
+
+        let feedbackListItem = list.querySelector('li[data-feedback-nav-item="true"]');
+        if (!feedbackListItem) {
+            const existingLink = Array.from(list.querySelectorAll('a.nav-item')).find((anchor) => {
+                const href = String(anchor.getAttribute('href') || '').toLowerCase();
+                return href.includes('feedback');
+            });
+            if (existingLink) {
+                feedbackListItem = existingLink.closest('li');
+                if (feedbackListItem) {
+                    feedbackListItem.dataset.feedbackNavItem = 'true';
+                }
+            }
+        }
+
+        if (feedbackListItem) {
+            const link = feedbackListItem.querySelector('a.nav-item');
+            if (link) {
+                if (isFeedbackPage) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            }
+            return;
+        }
+
+        const li = document.createElement('li');
+        li.setAttribute('data-feedback-nav-item', 'true');
+        const feedbackPath = resolveFeedbackPath();
+        const feedbackActive = isFeedbackPage ? 'active' : '';
+
+        li.innerHTML = `
+            <a href="${feedbackPath}" class="nav-item ${feedbackActive}">
+                <i class="fas fa-comment"></i>
+                <span>Feedback</span>
+            </a>
+        `;
+
+        list.appendChild(li);
+    });
+}
+
 window.unimartAdminAccess = {
     normalizeEmail,
     getAdminEmails,
@@ -201,12 +259,14 @@ function applyUserToSidebar(userLike) {
         }
 
         ensureAdminNavItem(userLike);
+        ensureFeedbackNavItem();
     } else {
         // Not logged in: hide profile containers, show login button
         if (userProfileCard) userProfileCard.style.display = 'none';
         if (userProfile) userProfile.style.display = 'none';
         if (loginBtn) loginBtn.style.display = 'flex';
         ensureAdminNavItem(null);
+        ensureFeedbackNavItem();
     }
 }
 
@@ -258,10 +318,12 @@ document.addEventListener('DOMContentLoaded', () => {
             applyUserToSidebar(cachedUser);
         } else {
             ensureAdminNavItem(null);
+            ensureFeedbackNavItem();
         }
     } catch (e) {
         console.error('Error reading cached user info:', e);
         ensureAdminNavItem(null);
+        ensureFeedbackNavItem();
     }
 
     // 2) Then wire up real-time Firebase auth listener for live updates

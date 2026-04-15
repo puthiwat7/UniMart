@@ -2,7 +2,10 @@ import {
     subscribeListings,
     subscribeUsers,
     subscribeBans,
+    subscribeReports,
+    fetchReports,
     deleteListing,
+    deleteReport,
     updateListingStatus,
     banUserFromSelling,
     unbanUserFromSelling,
@@ -12,11 +15,13 @@ import {
 import { renderDashboard } from './Dashboard.js';
 import { renderListingsManager } from './ListingsManager.js';
 import { renderUsersManager } from './UsersManager.js';
+import { renderReportsManager } from './ReportsManager.js';
 
 const state = {
     listings: [],
     users: [],
     bans: {},
+    reports: [],
     unsubscribers: []
 };
 
@@ -34,10 +39,11 @@ function renderActiveView() {
     const panel = getPanel();
     if (!panel) return;
 
-    panel.innerHTML = '<div id="adminDashSection"></div><div id="adminListingsSection" style="margin-top:32px"></div><div id="adminUsersSection" style="margin-top:32px"></div>';
+    panel.innerHTML = '<div id="adminDashSection"></div><div id="adminListingsSection" style="margin-top:32px"></div><div id="adminUsersSection" style="margin-top:32px"></div><div id="adminReportsSection" style="margin-top:32px"></div>';
     renderDashboard(document.getElementById('adminDashSection'), state);
     renderListingsManager(document.getElementById('adminListingsSection'), state);
     renderUsersManager(document.getElementById('adminUsersSection'), state);
+    renderReportsManager(document.getElementById('adminReportsSection'), state);
 }
 
 function renderShell() {
@@ -90,6 +96,15 @@ function attachStaticEvents() {
             if (action === 'user-unban-login') {
                 if (id) await unbanUserFromLogin(id);
             }
+
+            if (action === 'reports-refresh') {
+                state.reports = await fetchReports();
+                renderActiveView();
+            }
+
+            if (action === 'report-delete') {
+                if (id) await deleteReport(id);
+            }
         } catch (error) {
             console.error(`Admin action failed: ${action}`, error);
             alert('Admin action failed. Please try again.');
@@ -115,7 +130,12 @@ function subscribeCollectionsOnce() {
         renderActiveView();
     });
 
-    state.unsubscribers.push(listingsUnsub, usersUnsub, bansUnsub);
+    const reportsUnsub = subscribeReports((reports) => {
+        state.reports = reports;
+        renderActiveView();
+    });
+
+    state.unsubscribers.push(listingsUnsub, usersUnsub, bansUnsub, reportsUnsub);
 }
 
 function cleanupSubscriptions() {
