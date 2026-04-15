@@ -35,6 +35,19 @@ function updateAuthStatus(user) {
     }
 }
 
+function updateReportFormState(user) {
+    const status = document.getElementById('reportFormStatus');
+    if (!status) return;
+    if (user) {
+        status.textContent = 'Ready to submit your feedback.';
+        status.style.color = '#475569';
+    } else {
+        status.textContent = 'Sign in before submitting feedback.';
+        status.style.color = '#475569';
+    }
+    setReportFormEnabled(Boolean(user));
+}
+
 async function submitFeedback(payload) {
     if (!payload) throw new Error('Feedback payload is required.');
     const db = firebase.database();
@@ -93,8 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    setReportFormEnabled(false);
     firebase.auth().onAuthStateChanged((user) => {
         updateAuthStatus(user);
+        updateReportFormState(user);
     });
 
     if (!form) return;
@@ -137,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (reportCategory) {
-        reportCategory.addEventListener('change', () => {
+        const updateHelpText = () => {
             const helpText = document.getElementById('reportHelpText');
             if (!helpText) return;
             if (reportCategory.value === 'user') {
@@ -147,6 +162,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 helpText.textContent = 'Share general feedback about UniMart, improvements, or feature requests.';
             }
-        });
+        };
+
+        reportCategory.addEventListener('change', updateHelpText);
+        updateHelpText();
     }
 });
