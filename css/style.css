@@ -3338,8 +3338,8 @@ textarea:focus {
 }
 
 .btn-order {
-    flex: 2;
-    padding: 14px 20px;
+        flex: 0 1 auto;
+        min-width: 150px;
     background: var(--primary);
     color: white;
     border-radius: var(--radius-sm);
@@ -3546,6 +3546,8 @@ textarea:focus {
     gap: 16px;
     margin-top: 20px;
     align-items: center;
+    justify-content: flex-end;
+    width: 100%;
 }
 
 .btn-order,
@@ -3557,8 +3559,8 @@ textarea:focus {
 }
 
 .btn-order {
-    flex: 2;
-    padding: 16px 22px;
+        flex: 0 1 auto;
+        min-width: 160px;
     background: linear-gradient(135deg, #4338ca 0%, #2563eb 100%);
     color: white;
     font-size: 15px;

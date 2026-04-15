@@ -214,12 +214,16 @@
                             </div>
                         </div>
 
-                        <div class="modal-section" id="favQRSection">
+                        <div class="modal-section" id="favQRSection" style="display: none;">
                             <h4><i class="fas fa-qrcode"></i> Seller QR Code</h4>
                             <div id="favQRImage" style="min-height:160px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;padding:12px;"></div>
                         </div>
 
-                        <div class="modal-actions-footer">
+                        <div class="modal-actions">
+                            <button class="btn-order" id="favModalOrderBtn">
+                                <i class="fas fa-check-circle"></i>
+                                Contact Seller
+                            </button>
                             <button class="btn-action btn-action-withdraw" id="favRemoveBtn">
                                 <i class="fas fa-heart-broken"></i>
                                 <span>Remove Favorite</span>
@@ -235,6 +239,51 @@
     <script defer src="../js/listings-sync.js"></script>
     <script defer src="../js/product-card.js"></script>
     <script defer src="../js/my-favorites.js"></script>
+
+    <!-- Payment Modal -->
+    <div class="payment-modal" id="favPaymentModal">
+        <div class="payment-modal-overlay" id="favPaymentModalOverlay"></div>
+        <div class="payment-modal-content">
+            <button class="payment-modal-close" id="favPaymentModalClose">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="payment-header">
+                <div class="payment-title">
+                    <i class="fas fa-qrcode"></i>
+                    <span>Seller Profile QR</span>
+                </div>
+            </div>
+
+            <div class="payment-body">
+                <!-- Order Summary -->
+                <div class="payment-order-summary">
+                    <h3 id="favPaymentItemName">Product Name</h3>
+                </div>
+
+                <!-- QR Code Display -->
+                <div class="payment-qr-section">
+                    <div class="qr-code-container">
+                        <div class="qr-code-title">Seller Profile QR Code</div>
+                        <div class="qr-code-image" id="favPaymentQRCode">
+                            <i class="fas fa-qrcode" style="font-size: 120px; color: #ddd;"></i>
+                        </div>
+                        <div class="wechat-pay-logo">
+                            <i class="fab fa-weixin"></i>
+                            <span>微信支付</span>
+                        </div>
+                    </div>
+                    <div class="payment-official-text">Use this QR to communicate with the seller directly.</div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="payment-actions">
+                    <button class="btn-cancel-order" id="favBtnCancelOrder">Cancel</button>
+                    <button class="btn-payment-made" id="favBtnPaymentMade">Contact Seller</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Mobile Bottom Navigation -->
     <nav class="bottom-nav" id="bottomNav">
