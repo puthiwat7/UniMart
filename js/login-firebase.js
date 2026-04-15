@@ -269,13 +269,19 @@ function showForgotPasswordHint() {
 function openForgotPasswordPopup() {
     const overlay = document.getElementById('forgotPasswordOverlay');
     if (overlay) overlay.style.display = 'flex';
+    
+    // Clear and focus the email input
+    const emailInput = document.getElementById('resetEmailInput');
+    if (emailInput) {
+        emailInput.value = '';
+        setTimeout(() => emailInput.focus(), 100);
+    }
 }
 
 function sendPasswordReset() {
-    const email = document.getElementById('emailInput').value.trim();
+    const email = document.getElementById('resetEmailInput').value.trim();
     if (!email) {
-        showError('Please enter your email address in the field above.');
-        closeForgotPasswordPopup();
+        alert('Please enter your email address.');
         return;
     }
 

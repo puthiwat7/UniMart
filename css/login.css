@@ -494,10 +494,10 @@ h2 {
     color: #9ca3af;
     margin-bottom: 20px !important;
 }
-.btn-forgot-done {
+.btn-forgot-send {
     width: 100%;
     padding: 12px;
-    background: linear-gradient(135deg, #4a5fc1, #2d3a8f);
+    background: linear-gradient(135deg, #10b981, #059669);
     border: none;
     border-radius: 8px;
     color: #fff;
@@ -506,7 +506,24 @@ h2 {
     cursor: pointer;
     font-family: inherit;
     transition: opacity 0.2s;
+    margin-bottom: 12px;
+}
+.btn-forgot-send:hover {
+    opacity: 0.9;
+}
+.btn-forgot-done {
+    width: 100%;
+    padding: 12px;
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    color: #374151;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s;
 }
 .btn-forgot-done:hover {
-    opacity: 0.9;
+    background: #e5e7eb;
 }

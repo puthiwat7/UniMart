@@ -101,7 +101,10 @@
                 <i class="fas fa-lock"></i>
             </div>
             <h3>Reset Your Password</h3>
-            <p>Enter your email address in the field above and click "Send Reset Email" to receive password reset instructions.</p>
+            <p>Enter your email address below to receive password reset instructions.</p>
+            <div class="form-group" style="margin-bottom: 16px;">
+                <input type="email" id="resetEmailInput" placeholder="Email address" required>
+            </div>
             <button class="btn-forgot-send" onclick="sendPasswordReset()">Send Reset Email</button>
             <p class="forgot-note">If you encounter any issues or have additional questions, contact UniMart support at <a href="mailto:unimartofficial01@gmail.com">unimartofficial01@gmail.com</a>.</p>
             <button class="btn-forgot-done" onclick="closeForgotPasswordPopup()">Close</button>
