@@ -271,12 +271,48 @@ function openForgotPasswordPopup() {
     if (overlay) overlay.style.display = 'flex';
 }
 
-function closeForgotPasswordPopup(event) {
-    // Close when clicking the overlay background (not the popup card itself)
-    if (event && event.target !== document.getElementById('forgotPasswordOverlay')) return;
-    const overlay = document.getElementById('forgotPasswordOverlay');
-    if (overlay) overlay.style.display = 'none';
+function sendPasswordReset() {
+    const email = document.getElementById('emailInput').value.trim();
+    if (!email) {
+        showError('Please enter your email address in the field above.');
+        closeForgotPasswordPopup();
+        return;
+    }
+
+    showLoading();
+    firebase.auth().sendPasswordResetEmail(email)
+        .then(() => {
+            hideLoading();
+            // Log the request in Firestore for admin tracking
+            logPasswordResetRequest(email);
+            closeForgotPasswordPopup();
+            showSuccess('Password reset email sent! Check your inbox and spam folder.');
+        })
+        .catch((error) => {
+            hideLoading();
+            console.error('Password reset error:', error);
+            let errorText = 'Failed to send password reset email. Please try again.';
+            if (error.code === 'auth/user-not-found') {
+                errorText = 'No account found with this email address.';
+            } else if (error.code === 'auth/invalid-email') {
+                errorText = 'Invalid email address.';
+            } else if (error.code === 'auth/too-many-requests') {
+                errorText = 'Too many requests. Please try again later.';
+            }
+            showError(errorText);
+            closeForgotPasswordPopup();
+        });
 }
 
-window.openForgotPasswordPopup = openForgotPasswordPopup;
-window.closeForgotPasswordPopup = closeForgotPasswordPopup;
+function logPasswordResetRequest(email) {
+    // Store in Firestore for admin panel
+    firebase.firestore().collection('passwordResetRequests').add({
+        email: email,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        contacted: false
+    }).catch(error => {
+        console.error('Error logging password reset request:', error);
+    });
+}
+
+window.sendPasswordReset = sendPasswordReset;
