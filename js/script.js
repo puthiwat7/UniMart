@@ -714,12 +714,12 @@ function openProductModal(product) {
     renderCurrentModalImage();
     
     // ===== DESCRIPTION =====
-    const descriptionSection = document.getElementById('descriptionSection');
+    const descriptionItem = document.getElementById('descriptionItem');
     if (product.description) {
         document.getElementById('modalDescription').textContent = product.description;
-        descriptionSection.style.display = 'block';
+        descriptionItem.style.display = 'flex';
     } else {
-        descriptionSection.style.display = 'none';
+        descriptionItem.style.display = 'none';
     }
 
     // ===== CATEGORY =====

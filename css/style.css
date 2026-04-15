@@ -3528,6 +3528,21 @@ textarea:focus {
     word-break: break-word;
 }
 
+/* Description Item - Full Width Card */
+.info-item-description {
+    min-height: auto !important;
+}
+
+.info-item-description p {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.6;
+    word-break: break-word;
+    white-space: normal;
+}
+
 /* Condition Display with Progress Bar */
 .condition-display {
     display: flex;
