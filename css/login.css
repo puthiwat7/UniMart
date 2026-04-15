@@ -527,3 +527,32 @@ h2 {
 .btn-forgot-done:hover {
     background: #e5e7eb;
 }
+
+/* Responsive styles for forgot password popup */
+@media (max-width: 480px) {
+    .forgot-popup {
+        padding: 28px 24px 20px;
+        max-width: 320px;
+        margin: 20px;
+    }
+    
+    .forgot-popup h3 {
+        font-size: 18px;
+    }
+    
+    .forgot-popup p {
+        font-size: 13px;
+    }
+    
+    .btn-forgot-send,
+    .btn-forgot-done {
+        padding: 14px;
+        font-size: 14px;
+    }
+    
+    .forgot-popup-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+}

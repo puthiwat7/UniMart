@@ -278,7 +278,7 @@ function openForgotPasswordPopup() {
     }
 }
 
-function sendPasswordReset() {
+function requestPasswordReset() {
     const email = document.getElementById('resetEmailInput').value.trim();
     if (!email) {
         alert('Please enter your email address.');
@@ -286,26 +286,18 @@ function sendPasswordReset() {
     }
 
     showLoading();
-    firebase.auth().sendPasswordResetEmail(email)
+    
+    // Log the request in Firestore for admin handling
+    logPasswordResetRequest(email)
         .then(() => {
             hideLoading();
-            // Log the request in Firestore for admin tracking
-            logPasswordResetRequest(email);
             closeForgotPasswordPopup();
-            showSuccess('Password reset email sent! Check your inbox and spam folder.');
+            showSuccess('Password reset request submitted! Our staff will email you within 24 hours.');
         })
         .catch((error) => {
             hideLoading();
-            console.error('Password reset error:', error);
-            let errorText = 'Failed to send password reset email. Please try again.';
-            if (error.code === 'auth/user-not-found') {
-                errorText = 'No account found with this email address.';
-            } else if (error.code === 'auth/invalid-email') {
-                errorText = 'Invalid email address.';
-            } else if (error.code === 'auth/too-many-requests') {
-                errorText = 'Too many requests. Please try again later.';
-            }
-            showError(errorText);
+            console.error('Error logging password reset request:', error);
+            showError('Failed to submit request. Please try again or contact support.');
             closeForgotPasswordPopup();
         });
 }
@@ -321,4 +313,4 @@ function logPasswordResetRequest(email) {
     });
 }
 
-window.sendPasswordReset = sendPasswordReset;
+window.requestPasswordReset = requestPasswordReset;
