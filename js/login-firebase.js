@@ -278,6 +278,13 @@ function openForgotPasswordPopup() {
     }
 }
 
+function closeForgotPasswordPopup(event) {
+    // Close when clicking the overlay background (not the popup card itself)
+    if (event && event.target !== document.getElementById('forgotPasswordOverlay')) return;
+    const overlay = document.getElementById('forgotPasswordOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
 function requestPasswordReset() {
     const email = document.getElementById('resetEmailInput').value.trim();
     if (!email) {
@@ -304,13 +311,13 @@ function requestPasswordReset() {
 
 function logPasswordResetRequest(email) {
     // Store in Firestore for admin panel
-    firebase.firestore().collection('passwordResetRequests').add({
+    return firebase.firestore().collection('passwordResetRequests').add({
         email: email,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         contacted: false
-    }).catch(error => {
-        console.error('Error logging password reset request:', error);
     });
 }
 
 window.requestPasswordReset = requestPasswordReset;
+window.openForgotPasswordPopup = openForgotPasswordPopup;
+window.closeForgotPasswordPopup = closeForgotPasswordPopup;
