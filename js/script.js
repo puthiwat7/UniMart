@@ -735,6 +735,17 @@ function openProductModal(product) {
         sellerItem.style.display = 'none';
     }
 
+    // ===== QUANTITY =====
+    const quantityItem = document.getElementById('quantityItem');
+    const quantityValue = Number.isFinite(Number(product.quantity)) ? Number(product.quantity) : null;
+    if (quantityValue !== null) {
+        const quantityBadge = document.getElementById('modalQuantity');
+        quantityBadge.textContent = `${quantityValue} available`;
+        quantityItem.style.display = 'flex';
+    } else {
+        quantityItem.style.display = 'none';
+    }
+
     // ===== CONDITION (Percentage & Color Code) =====
     const conditionItem = document.getElementById('conditionItem');
     const conditionValue = getConditionPercentage(product);

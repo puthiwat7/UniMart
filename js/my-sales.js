@@ -142,7 +142,7 @@ function normalizeListing(item, index = 0) {
         imageUrl: item.imageUrl || (Array.isArray(item.images) && item.images[0]) || '',
         images: Array.isArray(item.images) ? item.images.filter(Boolean) : [],
         badge: String(item.badge || 'Used'),
-        condition: Number.isFinite(Number(item.condition)) ? Number(item.condition) : (Number.isFinite(Number(item.conditionPercentage)) ? Number(item.conditionPercentage) : null),
+        condition: getConditionPercentage(item),
         description: String(item.description || ''),
         quantity: Number(item.quantity) || 1,
         seller: String(item.seller || 'Campus Seller'),
@@ -153,6 +153,36 @@ function normalizeListing(item, index = 0) {
         listedDate: item.listedDate || item.listedAt || new Date().toISOString().split('T')[0],
         soldDate: item.soldDate || null
     };
+}
+
+function getConditionPercentage(item) {
+    if (!item) return null;
+
+    const numericCondition = Number(item.condition);
+    if (Number.isFinite(numericCondition)) {
+        return Math.max(0, Math.min(100, numericCondition));
+    }
+
+    const label = String(item.condition || item.badge || item.conditionPercentage || '').trim().toLowerCase();
+    const conditionMap = {
+        'very poor': 0,
+        'poor': 20,
+        'fair': 40,
+        'used': 60,
+        'good': 60,
+        'like new': 80,
+        'brand new': 100
+    };
+    if (conditionMap[label] !== undefined) {
+        return conditionMap[label];
+    }
+
+    const numericPercentage = Number(item.conditionPercentage);
+    if (Number.isFinite(numericPercentage)) {
+        return Math.max(0, Math.min(100, numericPercentage));
+    }
+
+    return null;
 }
 
 function listingBelongsToCurrentUser(listing, currentUser) {
@@ -646,6 +676,10 @@ function openSalesModal(itemId) {
     document.getElementById('salesModalBadge').textContent = item.badge;
     document.getElementById('salesModalDescription').textContent = item.description || 'No description available.';
     document.getElementById('salesModalCategory').textContent = item.category;
+    document.getElementById('salesModalSeller').textContent = item.seller || 'Campus Seller';
+    const conditionValue = getConditionPercentage(item);
+    document.getElementById('salesModalCondition').textContent = conditionValue !== null ? `${conditionValue}%` : (item.condition ? String(item.condition) : 'N/A');
+    document.getElementById('salesModalConditionBar').style.width = conditionValue !== null ? `${conditionValue}%` : '0%';
     document.getElementById('salesModalQuantity').textContent = String(item.quantity || 1);
     document.getElementById('salesModalStatus').textContent = String(item.status || 'active').toUpperCase();
     document.getElementById('salesModalReserved').textContent = item.reserved ? 'Yes' : 'No';
