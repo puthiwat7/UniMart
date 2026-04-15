@@ -39,11 +39,12 @@ function renderActiveView() {
     const panel = getPanel();
     if (!panel) return;
 
-    panel.innerHTML = '<div id="adminDashSection"></div><div id="adminListingsSection" style="margin-top:32px"></div><div id="adminUsersSection" style="margin-top:32px"></div><div id="adminReportsSection" style="margin-top:32px"></div>';
+    panel.innerHTML = '<div id="adminDashSection"></div><div id="adminListingsSection" style="margin-top:32px"></div><div id="adminUsersSection" style="margin-top:32px"></div><div id="adminReportsSection" style="margin-top:32px"></div><div id="adminPasswordResetSection" style="margin-top:32px"></div>';
     renderDashboard(document.getElementById('adminDashSection'), state);
     renderListingsManager(document.getElementById('adminListingsSection'), state);
     renderUsersManager(document.getElementById('adminUsersSection'), state);
     renderReportsManager(document.getElementById('adminReportsSection'), state);
+    renderPasswordResetSection(document.getElementById('adminPasswordResetSection'));
 }
 
 function renderShell() {
@@ -146,6 +147,79 @@ function cleanupSubscriptions() {
     });
     state.unsubscribers = [];
 }
+
+function renderPasswordResetSection(container) {
+    if (!container) return;
+
+    container.innerHTML = `
+        <section class="password-reset-section">
+            <div class="password-reset-container">
+                <h3>Password Recovery Requests</h3>
+                <div class="password-reset-list" id="passwordResetList">
+                    <p class="no-requests">Loading password reset requests...</p>
+                </div>
+            </div>
+        </section>
+    `;
+
+    // Implement the password reset list rendering directly
+    renderPasswordResetList();
+}
+
+function renderPasswordResetList() {
+    const list = document.getElementById('passwordResetList');
+    if (!list) return;
+
+    // Fetch from Firestore
+    if (typeof firebase !== 'undefined' && firebase.firestore) {
+        firebase.firestore().collection('passwordResetRequests')
+            .orderBy('timestamp', 'desc')
+            .get()
+            .then(snapshot => {
+                if (snapshot.empty) {
+                    list.innerHTML = '<p class="no-requests">No password reset requests yet.</p>';
+                    return;
+                }
+
+                list.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const item = document.createElement('div');
+                    item.className = 'password-reset-item';
+                    item.innerHTML = `
+                        <div>
+                            <div class="password-reset-email">${data.email}</div>
+                            <div class="password-reset-timestamp">${data.timestamp ? data.timestamp.toDate().toLocaleString() : 'Unknown time'}</div>
+                        </div>
+                        <label class="password-reset-checkbox">
+                            <input type="checkbox" ${data.contacted ? 'checked' : ''} onchange="updatePasswordResetContacted('${doc.id}', this.checked)">
+                            Contacted
+                        </label>
+                    `;
+                    list.appendChild(item);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching password reset requests:', error);
+                list.innerHTML = '<p class="no-requests">Error loading requests.</p>';
+            });
+    } else {
+        // Firebase not ready yet, try again later
+        setTimeout(renderPasswordResetList, 1000);
+    }
+}
+
+// Make sure updatePasswordResetContacted is available globally
+window.updatePasswordResetContacted = function(docId, contacted) {
+    if (typeof firebase !== 'undefined' && firebase.firestore) {
+        firebase.firestore().collection('passwordResetRequests').doc(docId).update({
+            contacted: contacted
+        }).catch(error => {
+            console.error('Error updating contacted status:', error);
+            alert('Error updating status. Please try again.');
+        });
+    }
+};
 
 function bootAdminModule() {
     renderShell();
