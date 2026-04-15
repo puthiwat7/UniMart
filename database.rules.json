@@ -13,6 +13,12 @@
       ".read": "auth != null",
       ".write": "auth != null"
     },
+    "unimartAdminV1": {
+      "reports": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
     "unimartProfiles": {
       ".read": "auth != null",
       "$uid": {

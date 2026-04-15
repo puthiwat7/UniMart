@@ -271,6 +271,10 @@ function createFavCard(listing) {
             </div>
             <div class="product-actions">
                 <button onclick="openFavModal(${productIdLiteral})">View Details</button>
+                <button class="btn-action btn-action-withdraw" onclick="event.stopPropagation(); handleFavRemove(${productIdLiteral})" title="Remove from favorites">
+                    <i class="fas fa-heart-broken"></i>
+                    Remove
+                </button>
             </div>
         </div>`;
     return card;
