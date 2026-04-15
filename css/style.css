@@ -4131,6 +4131,83 @@ textarea:focus {
     line-height: 1.2;
 }
 
+.feedback-page .feedback-subtitle {
+    margin: 0 0 24px;
+    color: #475569;
+    font-size: 0.98rem;
+}
+
+.feedback-page .feedback-form label {
+    display: block;
+    margin-top: 20px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.feedback-page .feedback-form select,
+.feedback-page .feedback-form input,
+.feedback-page .feedback-form textarea {
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 0.98rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feedback-page .feedback-form select:focus,
+.feedback-page .feedback-form input:focus,
+.feedback-page .feedback-form textarea:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.12);
+    outline: none;
+}
+
+.feedback-page .feedback-form textarea {
+    min-height: 180px;
+    resize: vertical;
+}
+
+.feedback-page .feedback-helper-text {
+    margin-top: 18px;
+    color: #64748b;
+    font-size: 0.95rem;
+    line-height: 1.75;
+}
+
+.feedback-page .feedback-form .btn-order {
+    margin-top: 26px;
+    padding: 14px 22px;
+}
+
+.feedback-page .feedback-status {
+    margin-top: 16px;
+    font-size: 0.95rem;
+    color: #475569;
+}
+
+.feedback-page .feedback-header {
+    cursor: default;
+}
+
+.feedback-page .feedback-header:hover {
+    background: transparent;
+}
+
+.feedback-page .feedback-content {
+    max-height: none;
+    overflow: visible;
+    padding: 24px;
+    border-top-color: var(--guide-border);
+}
+
+.feedback-page .feedback-card {
+    cursor: auto;
+}
+
 .user-guide-page .toggle-btn {
     width: 44px;
     height: 44px;
