@@ -269,6 +269,13 @@ function showForgotPasswordHint() {
 function openForgotPasswordPopup() {
     const overlay = document.getElementById('forgotPasswordOverlay');
     if (overlay) overlay.style.display = 'flex';
+    
+    // Clear and focus the email input
+    const emailInput = document.getElementById('resetEmailInput');
+    if (emailInput) {
+        emailInput.value = '';
+        setTimeout(() => emailInput.focus(), 100);
+    }
 }
 
 function closeForgotPasswordPopup(event) {
@@ -278,5 +285,39 @@ function closeForgotPasswordPopup(event) {
     if (overlay) overlay.style.display = 'none';
 }
 
+function requestPasswordReset() {
+    const email = document.getElementById('resetEmailInput').value.trim();
+    if (!email) {
+        alert('Please enter your email address.');
+        return;
+    }
+
+    showLoading();
+    
+    // Log the request in Firestore for admin handling
+    logPasswordResetRequest(email)
+        .then(() => {
+            hideLoading();
+            closeForgotPasswordPopup();
+            showSuccess('Password reset request submitted! Our staff will email you within 24 hours.');
+        })
+        .catch((error) => {
+            hideLoading();
+            console.error('Error logging password reset request:', error);
+            showError('Failed to submit request. Please try again or contact support.');
+            closeForgotPasswordPopup();
+        });
+}
+
+function logPasswordResetRequest(email) {
+    // Store in Firestore for admin panel
+    return firebase.firestore().collection('passwordResetRequests').add({
+        email: email,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        contacted: false
+    });
+}
+
+window.requestPasswordReset = requestPasswordReset;
 window.openForgotPasswordPopup = openForgotPasswordPopup;
 window.closeForgotPasswordPopup = closeForgotPasswordPopup;

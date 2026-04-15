@@ -162,6 +162,23 @@ function initializeProfile() {
 
     // Load user activity stats
     loadUserStats(user.uid);
+
+    // Show reset password button for email/password users only
+    showResetPasswordButtonIfApplicable(user);
+}
+
+function showResetPasswordButtonIfApplicable(user) {
+    const section = document.getElementById('passwordResetSection');
+    if (!section) return;
+
+    // Check if user signed up with email/password (not Google)
+    const isEmailPasswordUser = user.providerData.some(provider => provider.providerId === 'password');
+    
+    if (isEmailPasswordUser) {
+        section.style.display = 'block';
+    } else {
+        section.style.display = 'none';
+    }
 }
 
 function populateCollegeOptions() {
@@ -324,6 +341,9 @@ function setupEventListeners() {
             openPoliciesModal();
         }
     });
+
+    // Reset Password Button
+    document.getElementById('resetPasswordBtn').addEventListener('click', handleResetPassword);
 }
 
 function toggleEditMode() {
@@ -457,6 +477,50 @@ function closePoliciesModal() {
     
     modal.classList.remove('active');
     overlay.classList.remove('active');
+}
+
+function handleResetPassword() {
+    const currentPassword = prompt('Enter your current password:');
+    if (!currentPassword) return;
+
+    const newPassword = prompt('Enter your new password:');
+    if (!newPassword) return;
+
+    if (newPassword.length < 6) {
+        alert('Password must be at least 6 characters long.');
+        return;
+    }
+
+    const confirmPassword = prompt('Confirm your new password:');
+    if (confirmPassword !== newPassword) {
+        alert('Passwords do not match.');
+        return;
+    }
+
+    // Reauthenticate user
+    const user = firebase.auth().currentUser;
+    const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
+
+    user.reauthenticateWithCredential(credential)
+        .then(() => {
+            // Update password
+            return user.updatePassword(newPassword);
+        })
+        .then(() => {
+            alert('Password updated successfully!');
+        })
+        .catch((error) => {
+            console.error('Password reset error:', error);
+            let errorMessage = 'Failed to update password.';
+            if (error.code === 'auth/wrong-password') {
+                errorMessage = 'Current password is incorrect.';
+            } else if (error.code === 'auth/weak-password') {
+                errorMessage = 'New password is too weak.';
+            } else if (error.code === 'auth/requires-recent-login') {
+                errorMessage = 'Please log in again and try updating your password.';
+            }
+            alert(errorMessage);
+        });
 }
 
 function handleAgreeToPolicy() {

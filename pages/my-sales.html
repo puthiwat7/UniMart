@@ -201,31 +201,41 @@
                                 <p id="salesModalDescription">No description available</p>
                             </div>
 
-                            <div class="modal-section">
-                                <h4>Details</h4>
-                                <div class="details-grid">
-                                    <div class="detail-item">
-                                        <span class="detail-label">Category</span>
-                                        <span class="detail-value" id="salesModalCategory">-</span>
+                            <div class="product-info-grid">
+                                <div class="info-item">
+                                    <label><i class="fas fa-tag"></i> Category</label>
+                                    <span id="salesModalCategory">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <label><i class="fas fa-user-circle"></i> Seller</label>
+                                    <span id="salesModalSeller">Campus Seller</span>
+                                </div>
+                                <div class="info-item">
+                                    <label><i class="fas fa-heartbeat"></i> Condition</label>
+                                    <div class="condition-display">
+                                        <span class="condition-percentage" id="salesModalCondition">N/A</span>
+                                        <div class="condition-bar">
+                                            <div class="condition-fill" id="salesModalConditionBar" style="width: 0%;"></div>
+                                        </div>
                                     </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Quantity</span>
-                                        <span class="detail-value" id="salesModalQuantity">1</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Status</span>
-                                        <span class="detail-value" id="salesModalStatus">ACTIVE</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Reserved</span>
-                                        <span class="detail-value" id="salesModalReserved">No</span>
-                                    </div>
+                                </div>
+                                <div class="info-item">
+                                    <label><i class="fas fa-boxes"></i> Quantity</label>
+                                    <span class="quantity-badge" id="salesModalQuantity">1</span>
+                                </div>
+                                <div class="info-item">
+                                    <label><i class="fas fa-info-circle"></i> Status</label>
+                                    <span id="salesModalStatus">ACTIVE</span>
+                                </div>
+                                <div class="info-item">
+                                    <label><i class="fas fa-bookmark"></i> Reserved</label>
+                                    <span id="salesModalReserved">No</span>
                                 </div>
                             </div>
 
                             <div class="modal-section">
                                 <h4>Seller QR Code</h4>
-                                <div id="salesQRImage" style="min-height: 160px; display: flex; align-items: center; justify-content: center; border: 1px solid #e5e7eb; border-radius: 10px; background: #f9fafb; padding: 12px;"></div>
+                                <div id="salesQRImage" style="min-height: 160px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; border: 1px solid #e5e7eb; border-radius: 10px; background: #f9fafb; padding: 14px;"></div>
                             </div>
 
                             <div class="modal-actions-footer">

@@ -271,6 +271,10 @@ function createFavCard(listing) {
             </div>
             <div class="product-actions">
                 <button onclick="openFavModal(${productIdLiteral})">View Details</button>
+                <button class="btn-action btn-action-withdraw" onclick="event.stopPropagation(); handleFavRemove(${productIdLiteral})" title="Remove from favorites">
+                    <i class="fas fa-heart-broken"></i>
+                    Remove
+                </button>
             </div>
         </div>`;
     return card;
@@ -318,6 +322,8 @@ function openFavModal(productId) {
     const product = favoritedListings.find(l => String(l.id) === id);
     if (!product) return;
 
+    console.log('[DEBUG] openFavModal product:', product);
+
     currentFavProduct = product;
     currentFavImages = Array.isArray(product.images) && product.images.length > 0
         ? product.images
@@ -325,22 +331,47 @@ function openFavModal(productId) {
     currentFavImageIndex = 0;
 
     const status = String(product.status || 'active').toLowerCase();
-    const isActive = status === 'active';
+    const isActive = status !== 'sold' && status !== 'withdrawn';
+    const conditionValue = getConditionPercentage ? getConditionPercentage(product) : null;
+    const quantityValue = Number.isFinite(Number(product.quantity)) ? Number(product.quantity) : null;
 
-    document.getElementById('favModalTitle').textContent = product.title;
-    document.getElementById('favModalPrice').textContent = product.price;
+    document.getElementById('favModalTitle').textContent = product.title || 'Product';
+    document.getElementById('favModalPrice').textContent = product.price || '¥0.00';
     document.getElementById('favModalBadge').textContent = product.badge || 'Used';
-    document.getElementById('favModalDescription').textContent =
-        product.description || `A ${(product.badge || '').toLowerCase()} item.`;
-    document.getElementById('favModalCategory').textContent = product.category || '—';
-    document.getElementById('favModalSeller').textContent = product.seller || '—';
-    document.getElementById('favModalStatus').textContent = status.toUpperCase();
-    document.getElementById('favModalCollege').textContent = product.college || '—';
+    document.getElementById('favModalDescription').textContent = product.description ? product.description : 'N/A';
+    document.getElementById('favModalCategory').textContent = product.category ? product.category : 'N/A';
+    document.getElementById('favModalCollege').textContent = product.college ? product.college : 'N/A';
+    document.getElementById('favModalSeller').textContent = product.seller ? product.seller : 'N/A';
+    document.getElementById('favModalStatus').textContent = status ? status.toUpperCase() : 'N/A';
 
-    // Carousel
+    const conditionPercent = document.getElementById('favModalCondition');
+    const conditionBar = document.getElementById('favModalConditionBar');
+    if (conditionValue !== null && conditionValue !== undefined) {
+        conditionPercent.textContent = `${conditionValue}%`;
+        conditionBar.style.width = `${conditionValue}%`;
+        if (conditionValue >= 70) {
+            conditionBar.style.backgroundColor = '#10b981';
+        } else if (conditionValue >= 40) {
+            conditionBar.style.backgroundColor = '#f59e0b';
+        } else {
+            conditionBar.style.backgroundColor = '#ef4444';
+        }
+    } else {
+        conditionPercent.textContent = 'N/A';
+        conditionBar.style.width = '0%';
+        conditionBar.style.backgroundColor = '#d1d5db';
+    }
+
+    const quantityBadge = document.getElementById('favModalQuantity');
+    quantityBadge.className = 'quality-badge quality-used';
+    if (quantityValue !== null) {
+        quantityBadge.textContent = quantityValue;
+    } else {
+        quantityBadge.textContent = 'N/A';
+    }
+
     renderFavModalImage();
 
-    // Availability notice
     const availSection = document.getElementById('favAvailabilitySection');
     const availText = document.getElementById('favAvailabilityText');
     const availNotice = document.getElementById('favAvailabilityNotice');
@@ -359,8 +390,44 @@ function openFavModal(productId) {
         availSection.style.display = 'none';
     }
 
-    // QR Code
-    renderFavQR(product);
+    // Enable contact seller button for active items
+    const favModalOrderBtn = document.getElementById('favModalOrderBtn');
+    console.log('Setting button state, isActive:', isActive, 'button:', favModalOrderBtn);
+    if (favModalOrderBtn) {
+        if (isActive) {
+            favModalOrderBtn.disabled = false;
+            favModalOrderBtn.style.opacity = '1';
+            favModalOrderBtn.style.cursor = 'pointer';
+            favModalOrderBtn.title = '';
+            console.log('Button enabled');
+            
+            // Re-attach event listener to ensure it's working
+            favModalOrderBtn.onclick = async () => {
+                console.log('Contact Seller button clicked via onclick!');
+                if (currentFavProduct) {
+                    // Prepare order data
+                    const orderData = {
+                        itemName: currentFavProduct.title,
+                        price: currentFavProduct.price,
+                        seller: currentFavProduct.seller,
+                        sellerPaymentQR: currentFavProduct.sellerPaymentQR,
+                        productId: currentFavProduct.id
+                    };
+
+                    // Close product modal and open payment modal
+                    closeFavModal();
+                    openFavPaymentModal(orderData);
+                }
+            };
+        } else {
+            favModalOrderBtn.disabled = true;
+            favModalOrderBtn.style.opacity = '0.5';
+            favModalOrderBtn.style.cursor = 'not-allowed';
+            favModalOrderBtn.title = 'This item is no longer available';
+            console.log('Button disabled');
+            favModalOrderBtn.onclick = null;
+        }
+    }
 
     document.getElementById('favModal').classList.add('active');
 }
@@ -412,6 +479,73 @@ function closeFavModal() {
     currentFavProduct = null;
 }
 
+// ======================== Payment Modal Functions ========================
+function openFavPaymentModal(orderData) {
+    // Set order details
+    document.getElementById('favPaymentItemName').textContent = orderData.itemName || 'Product';
+
+    // Load QR code
+    const qrContainer = document.getElementById('favPaymentQRCode');
+    qrContainer.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:32px;color:#d1d5db;"></i>';
+
+    let qrSrc = orderData.sellerPaymentQR || '';
+
+    // Fetch seller profile from cloud using their UID if needed
+    if (!qrSrc && currentFavProduct && currentFavProduct.sellerUid &&
+        window.unimartProfileSync &&
+        typeof window.unimartProfileSync.getProfileFromCloud === 'function') {
+        (async () => {
+            try {
+                const sellerProfile = await window.unimartProfileSync.getProfileFromCloud(currentFavProduct.sellerUid);
+                if (sellerProfile && sellerProfile.paymentQR) {
+                    qrSrc = sellerProfile.paymentQR;
+                }
+            } catch (_) {}
+            renderFavPaymentQR(qrSrc);
+        })();
+    } else {
+        renderFavPaymentQR(qrSrc);
+    }
+
+    // Setup modal event listeners
+    setupFavPaymentModal();
+
+    // Show modal
+    document.getElementById('favPaymentModal').classList.add('active');
+}
+
+function renderFavPaymentQR(qrSrc) {
+    const qrContainer = document.getElementById('favPaymentQRCode');
+    if (qrSrc) {
+        qrContainer.innerHTML = `<img src="${qrSrc}" alt="Seller Payment QR" style="max-width:100%;max-height:220px;object-fit:contain;border-radius:8px;">`;
+    } else {
+        qrContainer.innerHTML = `
+            <i class="fas fa-qrcode" style="font-size:64px;color:#d1d5db;"></i>
+            <p style="color:#9ca3af;font-size:12px;margin-top:8px;text-align:center;">Seller has not uploaded a QR code</p>`;
+    }
+}
+
+function setupFavPaymentModal() {
+    const modal = document.getElementById('favPaymentModal');
+    const overlay = document.getElementById('favPaymentModalOverlay');
+    const closeBtn = document.getElementById('favPaymentModalClose');
+    const cancelBtn = document.getElementById('favBtnCancelOrder');
+    const contactBtn = document.getElementById('favBtnPaymentMade');
+
+    const closeModal = () => {
+        modal.classList.remove('active');
+    };
+
+    overlay.addEventListener('click', closeModal);
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    contactBtn.addEventListener('click', () => {
+        alert('Contact initiated! You can now communicate with the seller using the QR code.');
+        closeModal();
+    });
+}
+
 function setupFavModal() {
     document.getElementById('favModalCloseBtn').addEventListener('click', closeFavModal);
     document.getElementById('favModalOverlay').addEventListener('click', closeFavModal);
@@ -429,6 +563,9 @@ function setupFavModal() {
             renderFavModalImage();
         }
     });
+
+    // Contact Seller button - event listener attached when modal opens
+    // Event listener is attached in openFavModal when button is enabled
 
     document.getElementById('favRemoveBtn').addEventListener('click', () => {
         if (currentFavProduct) {
