@@ -15,6 +15,7 @@ let isMarketplaceLoading = false;
 let realtimeUnsubscribe = null;
 let policyProfile = null;
 let policyProfileLoaded = false;
+let hideReserved = true;
 
 function isPolicyAgreed(profile) {
     if (!profile || typeof profile !== 'object') return false;
@@ -298,6 +299,7 @@ async function initializeApp() {
     setupCategoryFilters();
     setupCategoryDropdown();
     setupSearch();
+    setupToggleFilter();
     setupRefresh();
     setupScrollToTop();
     setupProductModal();
@@ -565,7 +567,8 @@ function filterProducts() {
         const matchSearch = product.title.toLowerCase().includes(searchInput) || 
                           product.seller.toLowerCase().includes(searchInput);
         const matchCollege = selectedCollege === 'All Colleges' || product.college === selectedCollege;
-        return matchCategory && matchSearch && matchCollege;
+        const matchReserved = !hideReserved || !product.reserved;
+        return matchCategory && matchSearch && matchCollege && matchReserved;
     });
 
     renderProducts(filteredProducts, 1);
@@ -618,6 +621,17 @@ function setupSearch() {
     searchInput.addEventListener('input', () => {
         filterProducts();
     });
+}
+
+// Setup toggle filter for hiding reserved items
+function setupToggleFilter() {
+    const toggleCheckbox = document.getElementById('hideReservedToggle');
+    if (toggleCheckbox) {
+        toggleCheckbox.addEventListener('change', () => {
+            hideReserved = toggleCheckbox.checked;
+            filterProducts();
+        });
+    }
 }
 
 // Setup refresh button

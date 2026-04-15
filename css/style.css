@@ -559,13 +559,14 @@ textarea:focus {
     margin-left: 16px;
     display: flex;
     gap: 16px;
-    align-items: flex-end;
-    flex-wrap: wrap;
+    align-items: center;
+    flex-wrap: nowrap;
 }
 
 .search-box {
-    flex: 1;
-    min-width: 250px;
+    flex: 0 0 320px;
+    min-width: 260px;
+    max-width: 360px;
     position: relative;
     display: flex;
     align-items: center;
@@ -597,8 +598,12 @@ textarea:focus {
 
 .filters {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     align-items: center;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    flex: 1;
+    min-width: 0;
 }
 
 .filter-select {
@@ -617,6 +622,67 @@ textarea:focus {
     border-color: var(--primary-blue);
     outline: none;
     box-shadow: 0 0 0 3px rgba(74, 95, 193, 0.1);
+}
+
+.toggle-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.toggle-label {
+    font-size: 14px;
+    color: var(--text-color);
+    cursor: pointer;
+    font-weight: 500;
+    white-space: nowrap;
+    margin: 0;
+}
+
+.toggle-checkbox {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 30px;
+    background-color: #ccc;
+    border-radius: 15px;
+    transition: background-color 0.3s ease;
+    border: none;
+}
+
+.toggle-switch::before {
+    content: '';
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    background-color: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: left 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-checkbox:checked + .toggle-switch {
+    background-color: var(--primary);
+}
+
+.toggle-checkbox:checked + .toggle-switch::before {
+    left: 22px;
+}
+
+.toggle-checkbox:focus + .toggle-switch {
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    border-radius: 15px;
 }
 
 .btn-refresh {
