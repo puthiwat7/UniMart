@@ -3012,7 +3012,7 @@ textarea:focus {
 .modal-image-section {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
     background: rgba(237, 242, 255, 0.85);
     padding: 20px;
     border-radius: 28px;
@@ -3688,6 +3688,43 @@ textarea:focus {
     fill: #b91c1c;
 }
 
+/* Modal Details Pills Row */
+.modal-details-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.modal-detail-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.modal-detail-pill:hover {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    border-color: #cbd5e1;
+}
+
+.modal-detail-pill i {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.modal-detail-pill:empty {
+    display: none;
+}
+
 /* Responsive Modal */
 @media (max-width: 768px) {
     .modal-body,
@@ -3709,6 +3746,15 @@ textarea:focus {
 
     .modal-price {
         font-size: 24px;
+    }
+
+    .modal-details-row {
+        gap: 6px;
+    }
+
+    .modal-detail-pill {
+        padding: 5px 10px;
+        font-size: 12px;
     }
 
     .carousel-image {
