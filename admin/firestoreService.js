@@ -95,6 +95,19 @@ function subscribeReports(onData, onError) {
     return () => ref.off('value', handler);
 }
 
+function subscribePasswordResetRequests(onData, onError) {
+    const db = getRealtimeDb();
+    const ref = db.ref('passwordResetRequests');
+    const handler = (snapshot) => onData(mapObjectSnapshot(snapshot));
+    const errorHandler = (error) => {
+        console.error('password reset requests subscription failed', error);
+        if (typeof onError === 'function') onError(error);
+    };
+
+    ref.on('value', handler, errorHandler);
+    return () => ref.off('value', handler);
+}
+
 async function fetchReports() {
     const db = getRealtimeDb();
     const snapshot = await db.ref(COLLECTIONS.reports).once('value');
@@ -134,6 +147,20 @@ async function deleteReport(id) {
     if (!id) throw new Error('Report id is required');
     const db = getRealtimeDb();
     await db.ref(`${COLLECTIONS.reports}/${String(id)}`).remove();
+}
+
+async function updatePasswordResetContacted(id, contacted) {
+    if (!id) throw new Error('Password reset request id is required');
+    const db = getRealtimeDb();
+    await db.ref(`passwordResetRequests/${String(id)}`).update({
+        contacted: Boolean(contacted)
+    });
+}
+
+async function deletePasswordResetRequest(id) {
+    if (!id) throw new Error('Password reset request id is required');
+    const db = getRealtimeDb();
+    await db.ref(`passwordResetRequests/${String(id)}`).remove();
 }
 
 async function banUser(userId) {
@@ -191,11 +218,14 @@ export {
     subscribeBans,
     subscribeListings,
     subscribeReports,
+    subscribePasswordResetRequests,
     fetchReports,
     deleteListing,
     updateListingStatus,
     createReport,
     deleteReport,
+    updatePasswordResetContacted,
+    deletePasswordResetRequest,
     banUser,
     banUserFromSelling,
     unbanUserFromSelling,

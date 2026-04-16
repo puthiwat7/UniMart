@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (user) {
                 startFavoritesListener(user.uid);
             } else {
+                // Auth guard will handle redirect, but show empty state just in case
                 stopFavoritesListener();
                 renderEmptyState('Please sign in to view your favorites.', 'sign-in');
             }

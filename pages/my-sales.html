@@ -18,26 +18,7 @@
     <!-- Firebase Config & Auth - Defer loading -->
     <script defer src="../js/firebase-config.js"></script>
     <script defer src="../js/firebase-auth.js"></script>
-
-    <!-- Auth Guard - Wait for Firebase to load -->
-    <script>
-        // Protect this page: redirect to login if not authenticated
-        function initializeAuthGuard() {
-            if (typeof firebase !== 'undefined' && firebase.auth) {
-                firebase.auth().onAuthStateChanged((user) => {
-                    if (!user) {
-                        window.location.href = 'login';
-                    }
-                });
-            } else {
-                // Firebase not loaded yet, retry
-                setTimeout(initializeAuthGuard, 100);
-            }
-        }
-        
-        // Start auth guard initialization
-        initializeAuthGuard();
-    </script>
+    <script defer src="../js/auth-guard.js"></script>
 </head>
 <body>
     <div class="container">

@@ -770,6 +770,12 @@ function verifyAdminAccess(user) {
     return window.unimartAdminAccess.isCurrentUserAdmin(user);
 }
 
+function redirectNonAdmin() {
+    // Show an alert and redirect to home
+    alert('You do not have admin access. Redirecting to the marketplace.');
+    window.location.href = '/';
+}
+
 async function initializeAdminPage() {
     if (accessGranted) {
         await refreshAdminView();

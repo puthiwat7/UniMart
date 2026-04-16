@@ -269,13 +269,6 @@ function showForgotPasswordHint() {
 function openForgotPasswordPopup() {
     const overlay = document.getElementById('forgotPasswordOverlay');
     if (overlay) overlay.style.display = 'flex';
-    
-    // Clear and focus the email input
-    const emailInput = document.getElementById('resetEmailInput');
-    if (emailInput) {
-        emailInput.value = '';
-        setTimeout(() => emailInput.focus(), 100);
-    }
 }
 
 function closeForgotPasswordPopup(event) {
@@ -283,41 +276,74 @@ function closeForgotPasswordPopup(event) {
     if (event && event.target !== document.getElementById('forgotPasswordOverlay')) return;
     const overlay = document.getElementById('forgotPasswordOverlay');
     if (overlay) overlay.style.display = 'none';
+    
+    // Reset popup to initial state
+    resetForgotPasswordPopup();
 }
 
-function requestPasswordReset() {
-    const email = document.getElementById('resetEmailInput').value.trim();
+function resetForgotPasswordPopup() {
+    const title = document.getElementById('forgotPopupTitle');
+    const content = document.getElementById('forgotPopupContent');
+    const success = document.getElementById('forgotPopupSuccess');
+    const emailInput = document.getElementById('resetEmailInput');
+    
+    if (title) title.textContent = 'Reset Your Password';
+    if (content) content.style.display = 'block';
+    if (success) success.style.display = 'none';
+    if (emailInput) emailInput.value = '';
+}
+
+async function sendPasswordReset() {
+    const emailInput = document.getElementById('resetEmailInput');
+    const email = emailInput.value.trim();
+    
     if (!email) {
         alert('Please enter your email address.');
         return;
     }
-
-    showLoading();
     
-    // Log the request in Firestore for admin handling
-    logPasswordResetRequest(email)
-        .then(() => {
-            hideLoading();
-            closeForgotPasswordPopup();
-            showSuccess('Password reset request submitted! Our staff will email you within 24 hours.');
-        })
-        .catch((error) => {
-            hideLoading();
-            console.error('Error logging password reset request:', error);
-            showError('Failed to submit request. Please try again or contact support.');
-            closeForgotPasswordPopup();
-        });
+    if (!email.includes('@')) {
+        alert('Please enter a valid email address.');
+        return;
+    }
+    
+    try {
+        // Send password reset email via Firebase
+        await firebaseAuthManager.sendPasswordResetEmail(email);
+        
+        // Add to password reset requests collection for admin tracking
+        if (typeof firebase !== 'undefined' && firebase.database) {
+            const db = firebase.database();
+            await db.ref('passwordResetRequests').push({
+                email: email.toLowerCase(),
+                timestamp: new Date().toISOString(),
+                contacted: false
+            });
+        }
+        
+        // Show success message
+        const content = document.getElementById('forgotPopupContent');
+        const success = document.getElementById('forgotPopupSuccess');
+        if (content) content.style.display = 'none';
+        if (success) success.style.display = 'block';
+        
+        console.log('Password reset email sent and request logged for:', email);
+    } catch (error) {
+        console.error('Error sending password reset email:', error);
+        
+        let errorMessage = 'Failed to send password reset email. Please try again.';
+        if (error.code === 'auth/user-not-found') {
+            errorMessage = 'No account found with this email address.';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMessage = 'Please enter a valid email address.';
+        } else if (error.code === 'auth/too-many-requests') {
+            errorMessage = 'Too many requests. Please try again later.';
+        }
+        
+        alert(errorMessage);
+    }
 }
 
-function logPasswordResetRequest(email) {
-    // Store in Firestore for admin panel
-    return firebase.firestore().collection('passwordResetRequests').add({
-        email: email,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        contacted: false
-    });
-}
-
-window.requestPasswordReset = requestPasswordReset;
 window.openForgotPasswordPopup = openForgotPasswordPopup;
 window.closeForgotPasswordPopup = closeForgotPasswordPopup;
+window.sendPasswordReset = sendPasswordReset;

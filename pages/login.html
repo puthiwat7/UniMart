@@ -100,14 +100,18 @@
             <div class="forgot-popup-icon">
                 <i class="fas fa-lock"></i>
             </div>
-            <h3>Reset Your Password</h3>
-            <p>Enter your email address below to request a password reset.</p>
-            <div class="form-group" style="margin-bottom: 16px;">
-                <input type="email" id="resetEmailInput" placeholder="Email address" required>
+            <h3 id="forgotPopupTitle">Reset Your Password</h3>
+            <div id="forgotPopupContent">
+                <p>Enter your email address and we'll send you a link to reset your password.</p>
+                <div class="form-group">
+                    <input type="email" id="resetEmailInput" placeholder="Email address" required>
+                </div>
+                <button class="btn-forgot-send" onclick="sendPasswordReset()">Send Reset Email</button>
             </div>
-            <button class="btn-forgot-send" onclick="requestPasswordReset()">Request for Reset Email</button>
-            <p class="forgot-note">Our staff will email you within 24 hours. If you encounter any issues or have additional questions, contact UniMart support at <a href="mailto:unimartofficial01@gmail.com">unimartofficial01@gmail.com</a>.</p>
-            <button class="btn-forgot-done" onclick="closeForgotPasswordPopup()">Close</button>
+            <div id="forgotPopupSuccess" style="display: none;">
+                <p class="forgot-success-message">Password reset email sent! Please check your email and follow the instructions to reset your password.</p>
+                <button class="btn-forgot-done" onclick="closeForgotPasswordPopup()">Done</button>
+            </div>
         </div>
     </div>
 

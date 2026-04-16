@@ -15,24 +15,8 @@
     <!-- Firebase Config & Auth - Defer loading -->
     <script defer src="../js/firebase-config.js"></script>
     <script defer src="../js/firebase-auth.js"></script>
+    <script defer src="../js/auth-guard.js"></script>
     <script defer src="../js/profile-sync.js"></script>
-
-    <!-- Auth state watcher - keep favorites available while auth restores -->
-    <script>
-        // Passive auth watcher that allows page to load
-        // Hard redirect is handled by DOMContentLoaded in my-favorites.js
-        function initializeAuthWatcher() {
-            if (typeof firebase !== 'undefined' && firebase.auth) {
-                firebase.auth().onAuthStateChanged((user) => {
-                    console.log('My Favorites auth state:', user ? 'signed in' : 'signed out');
-                    // Auth state is handled by DOMContentLoaded in my-favorites.js
-                });
-            } else {
-                setTimeout(initializeAuthWatcher, 100);
-            }
-        }
-
-        initializeAuthWatcher();
     </script>
 </head>
 <body>
