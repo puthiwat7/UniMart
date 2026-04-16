@@ -138,6 +138,10 @@ function subscribeCollectionsOnce() {
     const passwordResetUnsub = subscribePasswordResetRequests((requests) => {
         state.passwordResetRequests = requests;
         renderActiveView();
+    }, (error) => {
+        console.warn('Failed to load password reset requests:', error);
+        // Still render view even if password reset requests fail to load
+        renderActiveView();
     });
 
     state.unsubscribers.push(listingsUnsub, usersUnsub, bansUnsub, passwordResetUnsub);
