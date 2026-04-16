@@ -308,39 +308,34 @@ async function sendPasswordReset() {
     }
     
     try {
-        // Send password reset email via Firebase
-        await firebaseAuthManager.sendPasswordResetEmail(email);
-        
-        // Add to password reset requests collection for admin tracking
-        if (typeof firebase !== 'undefined' && firebase.database) {
-            const db = firebase.database();
-            await db.ref('passwordResetRequests').push({
-                email: email.toLowerCase(),
-                timestamp: new Date().toISOString(),
-                contacted: false
-            });
+        if (typeof firebase === 'undefined' || typeof firebase.database !== 'function') {
+            throw new Error('Realtime Database SDK is not available on this page.');
         }
-        
-        // Show success message
+
+        // Always log request for admin handling.
+        const db = firebase.database();
+        await db.ref('passwordResetRequests').push({
+            email: email.toLowerCase(),
+            timestamp: new Date().toISOString(),
+            contacted: false
+        });
+
+        // Best-effort automated reset email. Admin workflow remains source of truth.
+        try {
+            await firebaseAuthManager.sendPasswordResetEmail(email);
+        } catch (resetError) {
+            console.warn('Automatic password reset email was not sent. Admin will process manually.', resetError);
+        }
+
         const content = document.getElementById('forgotPopupContent');
         const success = document.getElementById('forgotPopupSuccess');
         if (content) content.style.display = 'none';
         if (success) success.style.display = 'block';
-        
-        console.log('Password reset email sent and request logged for:', email);
+
+        console.log('Password reset request logged for admin processing:', email);
     } catch (error) {
-        console.error('Error sending password reset email:', error);
-        
-        let errorMessage = 'Failed to send password reset email. Please try again.';
-        if (error.code === 'auth/user-not-found') {
-            errorMessage = 'No account found with this email address.';
-        } else if (error.code === 'auth/invalid-email') {
-            errorMessage = 'Please enter a valid email address.';
-        } else if (error.code === 'auth/too-many-requests') {
-            errorMessage = 'Too many requests. Please try again later.';
-        }
-        
-        alert(errorMessage);
+        console.error('Error submitting password reset request:', error);
+        alert('Failed to submit request. Please try again in a moment.');
     }
 }
 
