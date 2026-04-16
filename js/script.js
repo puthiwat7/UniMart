@@ -1187,7 +1187,7 @@ function showLoginButton() {
 const loginBtn = document.getElementById('loginBtn');
 if (loginBtn) {
     loginBtn.addEventListener('click', () => {
-        alert('Login button clicked! (Placeholder for future Google Sign-In integration)');
+        alert('Redirecting to login page...');
     });
 }
 
