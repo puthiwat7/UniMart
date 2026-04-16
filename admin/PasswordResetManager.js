@@ -24,7 +24,7 @@ function renderPasswordResetManager(container, state) {
                 <h2>Password Reset Requests</h2>
                 <button class="admin-table-btn" data-action="password-reset-refresh">Refresh</button>
             </div>
-            <p class="admin-helper-text">Collection: passwordResetRequests</p>
+            <p class="admin-helper-text">Collection: passwordResetRequests (Realtime Database)</p>
             <div class="admin-table-wrap">
                 <table class="admin-table">
                     <thead>
@@ -36,7 +36,7 @@ function renderPasswordResetManager(container, state) {
                         </tr>
                     </thead>
                     <tbody>
-                        ${rows || '<tr><td colspan="4">No password reset requests found.</td></tr>'}
+                        ${rows && rows.length > 0 ? rows : '<tr><td colspan="4" style="text-align: center; padding: 20px; color: #6b7280;">No password reset requests found. If requests are not appearing, check that database rules are properly deployed with read/write access to "passwordResetRequests" collection.</td></tr>'}
                     </tbody>
                 </table>
             </div>
