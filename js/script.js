@@ -722,32 +722,42 @@ function openProductModal(product) {
         descriptionItem.style.display = 'none';
     }
 
-    // ===== CATEGORY =====
-    const categoryItem = document.getElementById('categoryItem');
+    // ===== DETAILS PILLS ROW =====
+    const detailsRow = document.getElementById('modalDetailsRow');
+    let hasDetails = false;
+
+    // Category pill
+    const categoryPill = document.getElementById('modalCategoryPill');
     if (product.category) {
         document.getElementById('modalCategory').textContent = product.category;
-        categoryItem.style.display = 'flex';
+        categoryPill.style.display = 'inline-flex';
+        hasDetails = true;
     } else {
-        categoryItem.style.display = 'none';
+        categoryPill.style.display = 'none';
     }
 
-    // ===== COLLEGE =====
-    const collegeItem = document.getElementById('collegeItem');
+    // College pill
+    const collegePill = document.getElementById('modalCollegePill');
     if (product.college) {
         document.getElementById('modalCollege').textContent = product.college;
-        collegeItem.style.display = 'flex';
+        collegePill.style.display = 'inline-flex';
+        hasDetails = true;
     } else {
-        collegeItem.style.display = 'none';
+        collegePill.style.display = 'none';
     }
 
-    // ===== SELLER NAME =====
-    const sellerItem = document.getElementById('sellerItem');
+    // Seller pill
+    const sellerPill = document.getElementById('modalSellerPill');
     if (product.seller) {
         document.getElementById('modalSellerName').textContent = product.seller;
-        sellerItem.style.display = 'flex';
+        sellerPill.style.display = 'inline-flex';
+        hasDetails = true;
     } else {
-        sellerItem.style.display = 'none';
+        sellerPill.style.display = 'none';
     }
+
+    // Show/hide the entire details row
+    detailsRow.style.display = hasDetails ? 'flex' : 'none';
 
     // ===== QUANTITY =====
     const quantityItem = document.getElementById('quantityItem');

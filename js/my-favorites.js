@@ -12,6 +12,28 @@ function getFavCurrentUser() {
     return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
 }
 
+function getConditionPercentage(product) {
+    const raw = Number(product?.condition);
+
+    if (Number.isFinite(raw)) {
+        return Math.max(0, Math.min(100, Math.round(raw)));
+    }
+
+    const badge = String(product?.badge || '').toLowerCase();
+    const fallbackMap = {
+        'very poor': 0,
+        poor: 20,
+        fair: 40,
+        good: 60,
+        'like new': 80,
+        'brand new': 100,
+        used: 60
+    };
+
+    const fallbackValue = Number.isFinite(fallbackMap[badge]) ? fallbackMap[badge] : null;
+    return fallbackValue;
+}
+
 function escHtml(str) {
     return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -340,9 +362,44 @@ function openFavModal(productId) {
     document.getElementById('favModalPrice').textContent = product.price || '¥0.00';
     document.getElementById('favModalBadge').textContent = product.badge || 'Used';
     document.getElementById('favModalDescription').textContent = product.description ? product.description : 'N/A';
-    document.getElementById('favModalCategory').textContent = product.category ? product.category : 'N/A';
-    document.getElementById('favModalCollege').textContent = product.college ? product.college : 'N/A';
-    document.getElementById('favModalSeller').textContent = product.seller ? product.seller : 'N/A';
+    
+    // ===== DETAILS PILLS ROW =====
+    const detailsRow = document.getElementById('favModalDetailsRow');
+    let hasDetails = false;
+
+    // Category pill
+    const categoryPill = document.getElementById('favModalCategoryPill');
+    if (product.category) {
+        document.getElementById('favModalCategory').textContent = product.category;
+        categoryPill.style.display = 'inline-flex';
+        hasDetails = true;
+    } else {
+        categoryPill.style.display = 'none';
+    }
+
+    // College pill
+    const collegePill = document.getElementById('favModalCollegePill');
+    if (product.college) {
+        document.getElementById('favModalCollege').textContent = product.college;
+        collegePill.style.display = 'inline-flex';
+        hasDetails = true;
+    } else {
+        collegePill.style.display = 'none';
+    }
+
+    // Seller pill
+    const sellerPill = document.getElementById('favModalSellerPill');
+    if (product.seller) {
+        document.getElementById('favModalSeller').textContent = product.seller;
+        sellerPill.style.display = 'inline-flex';
+        hasDetails = true;
+    } else {
+        sellerPill.style.display = 'none';
+    }
+
+    // Show/hide the entire details row
+    detailsRow.style.display = hasDetails ? 'flex' : 'none';
+    
     document.getElementById('favModalStatus').textContent = status ? status.toUpperCase() : 'N/A';
 
     const conditionPercent = document.getElementById('favModalCondition');
