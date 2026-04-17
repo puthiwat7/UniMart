@@ -565,21 +565,22 @@ textarea:focus {
 
 /* ======================== Search & Filter ======================== */
 .search-filter-section {
-    padding: 24px 48px 32px 48px;
+    padding: 24px 48px 16px 48px;
     margin-left: 16px;
     display: flex;
+    flex-wrap: wrap;
     gap: 16px;
-    align-items: center;
-    flex-wrap: nowrap;
+    align-items: flex-start;
 }
 
+/* Row 1: Search Box - Full Width */
 .search-box {
-    flex: 0 0 320px;
-    min-width: 260px;
-    max-width: 360px;
+    flex: 1 0 100%;
+    min-width: 0;
     position: relative;
     display: flex;
     align-items: center;
+    margin-bottom: 8px;
 }
 
 .search-box i {
@@ -606,18 +607,20 @@ textarea:focus {
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
 }
 
+/* Row 2: Filters - Single Line */
 .filters {
     display: flex;
+    flex-wrap: nowrap;
     gap: 12px;
     align-items: center;
-    flex-wrap: nowrap;
-    justify-content: flex-end;
-    flex: 1;
+    flex: 1 0 100%;
     min-width: 0;
+    margin-bottom: 8px;
+    overflow-x: auto;
 }
 
 .filter-select {
-    padding: 12px 16px;
+    padding: 8px 12px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     font-size: 14px;
@@ -625,6 +628,9 @@ textarea:focus {
     cursor: pointer;
     transition: all 0.2s ease;
     color: var(--text-color);
+    width: 100%;
+    flex: 1 1 0;
+    min-width: 0;
 }
 
 .filter-select:hover,
@@ -640,6 +646,9 @@ textarea:focus {
     gap: 12px;
     cursor: pointer;
     user-select: none;
+    flex-shrink: 0;
+    flex: 0 0 auto;
+    margin-left: auto;
 }
 
 .toggle-label {
@@ -708,6 +717,9 @@ textarea:focus {
     align-items: center;
     gap: 8px;
     transition: all 0.2s ease;
+    flex-shrink: 0;
+    min-height: 44px;
+    flex: 0 0 auto;
 }
 
 .btn-refresh:hover {
@@ -736,9 +748,10 @@ textarea:focus {
 }
 
 /* ======================== Categories ======================== */
+/* Row 3: Categories - Full Width Row */
 .categories-section {
-    padding: 12px 20px 40px 20px;
-    margin-left: 0;
+    padding: 16px 48px 40px 48px;
+    margin-left: 16px;
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
@@ -1588,59 +1601,67 @@ textarea:focus {
 
     /* Search bar - primary focus with clean spacing */
     .search-filter-section {
-        padding: 16px; /* Reduced padding */
-        margin-top: 0; /* Remove top margin */
-        margin-left: 0; /* Remove left margin */
-        gap: 8px; /* Clean gap */
-        flex-direction: column; /* Stack vertically on mobile */
+        padding: 16px;
+        margin-top: 0;
+        margin-left: 0;
+        gap: 12px;
+        flex-wrap: wrap;
         display: flex;
+        align-items: flex-start;
     }
 
+    /* Row 1: Full-width search box */
     .search-box {
-        flex: 1;
+        flex: 1 0 100%;
         width: 100%;
         min-width: 0;
-        margin-bottom: 0;
+        margin-bottom: 4px;
     }
 
     .search-box input {
-        padding: 12px 16px 12px 40px; /* Good touch target */
-        font-size: 16px; /* Prevent zoom on iOS */
-        width: 100%; /* Full width */
+        padding: 12px 16px 12px 40px;
+        font-size: 16px;
+        width: 100%;
     }
 
-    /* Clean filter row - filters together, refresh below for mobile */
+    /* Row 2: Filters on single line */
     .filters {
         display: flex;
         gap: 8px;
         width: 100%;
-        align-items: stretch;
-        flex-wrap: wrap;
-        margin-bottom: 0;
+        align-items: center;
+        flex-wrap: nowrap;
+        margin-bottom: 4px;
+        flex: 1 0 100%;
+        overflow-x: auto;
     }
 
     .filter-select {
-        flex: 1;
-        min-width: 100px;
-        padding: 10px 8px; /* Better touch target */
-        font-size: 13px; /* Readable */
-        min-height: 40px; /* Touch friendly */
-        max-width: calc(50% - 4px);
+        padding: 8px 10px;
+        font-size: 13px;
+        min-height: 40px;
+        width: 100%;
+        flex: 1 1 0;
+        min-width: 0;
     }
 
-    /* Refresh button sits full width under filters on mobile */
+    .toggle-container {
+        margin-left: auto;
+    }
+
+    /* Refresh button on same line */
     .btn-refresh {
-        display: flex !important;
-        width: 100%;
+        display: inline-flex !important;
         height: 40px;
-        padding: 0;
-        margin-top: 8px;
+        padding: 0 12px;
+        margin-top: 0;
         border-radius: 8px;
         justify-content: center;
         align-items: center;
         font-size: 13px;
         flex-shrink: 0;
-        order: 10;
+        order: auto;
+        flex: 0 0 auto;
     }
 
     .btn-refresh span {
@@ -1651,7 +1672,7 @@ textarea:focus {
         margin-right: 6px;
     }
 
-    /* Hide category pills on mobile; use dropdown */
+    /* Hide category pills on tablet; use dropdown */
     .categories-section {
         display: none;
     }
@@ -1756,15 +1777,19 @@ textarea:focus {
     }
 
     .search-filter-section {
-        flex-direction: column;
+        flex-wrap: wrap;
         margin-left: 0;
         padding: 16px;
         gap: 12px;
+        display: flex;
+        align-items: flex-start;
     }
 
+    /* Row 1: Full-width search */
     .search-box {
+        flex: 1 0 100%;
         min-width: auto;
-        margin-bottom: 8px; /* Reduced spacing */
+        margin-bottom: 4px;
     }
 
     .search-box input {
@@ -1773,35 +1798,41 @@ textarea:focus {
         width: 100%;
     }
 
-    /* Filters in ONE row - [Sort ▼] [College ▼] */
+    /* Row 2: Filters on single line */
     .filters {
         display: flex;
         gap: 6px;
-        justify-content: flex-start;
-        align-items: stretch;
-        margin-bottom: 0;
-        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 4px;
+        flex-wrap: nowrap;
+        flex: 1 0 100%;
+        overflow-x: auto;
     }
 
     .filter-select {
-        flex: 1;
-        max-width: calc(50% - 3px);
-        padding: 8px 8px;
+        padding: 6px 8px;
         font-size: 12px;
         min-height: 36px;
+        width: 100%;
+        flex: 1 1 0;
+        min-width: 0;
     }
 
-    /* Refresh button below filters - full width for small phones */
+    .toggle-container {
+        margin-left: auto;
+    }
+
+    /* Refresh button on same line */
     .btn-refresh {
-        width: 100%;
+        flex-shrink: 0;
         height: 36px;
-        padding: 0;
+        padding: 0 8px;
         font-size: 12px;
         min-height: auto;
-        margin-top: 8px;
+        margin-top: 0;
         margin-left: 0;
-        flex-shrink: 0;
-        order: 10;
+        order: auto;
+        flex: 0 0 auto;
     }
 
     .btn-refresh span {
@@ -1814,7 +1845,7 @@ textarea:focus {
 
     .categories-section {
         margin-left: 0;
-        padding: 8px 16px 12px; /* Reduced padding */
+        padding: 8px 16px 12px;
         gap: 6px;
         display: none;
         overflow-x: auto;
