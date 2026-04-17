@@ -1567,18 +1567,21 @@ textarea:focus {
     }
 
     /* Header adjustments - more compact */
-    .header-banner {
+    .header-banner,
+    .profile-header {
         padding: 20px 16px; /* Even more compact */
         margin: 12px 16px 16px; /* Reduced margins */
         border-radius: 12px; /* Smaller radius */
     }
 
-    .header-banner h1 {
-        font-size: 22px; /* Smaller title */
+    .header-banner h1,
+    .profile-header h1 {
+        font-size: 3rem; 
     }
 
-    .header-banner p {
-        font-size: 13px; /* Smaller subtitle */
+    .header-banner p, 
+    .profile-header p {
+        font-size: 1rem; 
     }
 
     /* Search bar - primary focus with clean spacing */
