@@ -4909,11 +4909,11 @@ textarea:focus {
 /* Responsive - User Guide Page */
 @media (max-width: 900px) {
     .user-guide-page .guide-page-header {
-        padding: 46px 24px 36px;
+        padding: 20px 16px;
     }
 
     .user-guide-page .guide-page-header h1 {
-        font-size: clamp(2.25rem, 5vw, 3.6rem);
+        font-size: 3rem;
     }
 
     .user-guide-page .guide-page-header p {
@@ -4947,11 +4947,11 @@ textarea:focus {
     }
 
     .user-guide-page .guide-page-header h1 {
-        font-size: 2.4rem;
+        font-size: 3rem;
     }
 
     .user-guide-page .guide-page-header p {
-        font-size: 0.98rem;
+        font-size: 1rem;
     }
 
     .user-guide-page .guide-section > .guide-header {
@@ -4990,11 +4990,11 @@ textarea:focus {
     }
 
     .user-guide-page .guide-page-header h1 {
-        font-size: 2rem;
+        font-size: 3rem;
     }
 
     .user-guide-page .guide-page-header p {
-        font-size: 0.94rem;
+        font-size: 1rem;
     }
 
     .user-guide-page .guide-container {
