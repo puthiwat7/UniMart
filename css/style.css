@@ -687,8 +687,8 @@ textarea:focus {
 
 .btn-refresh {
     padding: 12px 24px;
-    background-color: var(--primary);
-    color: white;
+    background-color: #000;
+    color: #fff;
     border: none;
     border-radius: var(--radius-sm);
     font-size: 14px;
@@ -701,8 +701,8 @@ textarea:focus {
 }
 
 .btn-refresh:hover {
-    background-color: var(--primary-dark);
-    box-shadow: 0 12px 28px rgba(74, 95, 193, 0.18);
+    background-color: #111;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
 }
 
 .btn-clear-favorites {
@@ -2481,9 +2481,9 @@ textarea:focus {
 .btn-refresh-subtle {
     padding: 10px 16px;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.16);
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    color: rgba(255, 255, 255, 0.92);
+    background: #000;
+    border: 1px solid #000;
+    color: #fff;
     font-weight: 600;
     transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
@@ -2493,9 +2493,9 @@ textarea:focus {
 }
 
 .btn-refresh-subtle:hover {
-    background: rgba(255, 255, 255, 0.22);
+    background: #111;
     transform: translateY(-1px);
-    box-shadow: 0 10px 20px rgba(9, 37, 106, 0.16);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.24);
 }
 
 @media (max-width: 820px) {
