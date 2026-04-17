@@ -2319,11 +2319,11 @@ textarea:focus {
 /* Responsive - Sell Item Page */
 @media (max-width: 768px) {
     .sell-header {
-        padding: 40px 24px;
+        padding: 20px 16px;
     }
 
     .sell-header h1 {
-        font-size: 32px;
+        font-size: 3rem;
     }
 
     .sell-form-container {
@@ -2350,11 +2350,11 @@ textarea:focus {
     }
 
     .sell-header h1 {
-        font-size: 24px;
+        font-size: 3rem;
     }
 
     .sell-header p {
-        font-size: 14px;
+        font-size: 1rem;
     }
 
     .sell-form-container {
@@ -2418,16 +2418,16 @@ textarea:focus {
 /* ======================== My Sales and Favorites Pages ======================== */
 .sales-header,
 .favorites-header {
-    background: linear-gradient(135deg, #4a5fc1 0%, #2d3a8f 100%);
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 45%, #8b5cf6 100%);
     color: white;
-    padding: 48px 48px 32px 48px;
+    padding: 44px 40px;
 }
 
 .sales-header .orders-header-content h1,
 .favorites-header .orders-header-content h1 {
-    font-size: 40px;
-    font-weight: 700;
-    margin-bottom: 8px;
+    font-size: clamp(2.2rem, 3vw, 3.25rem);
+    font-weight: 800;
+    margin-bottom: 12px;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -2440,7 +2440,7 @@ textarea:focus {
 
 .sales-header .orders-header-content p,
 .favorites-header .orders-header-content p {
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 300;
     opacity: 0.9;
 }
