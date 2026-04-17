@@ -1037,8 +1037,10 @@ textarea:focus {
     color: white;
 }
 
-.product-actions button:hover {
-    background-color: var(--dark-blue);
+.product-actions button:hover,
+.product-actions button:active {
+    background-color: var(--primary-blue);
+    color: white;
 }
 
 /* ======================== My Sales Cards ======================== */
