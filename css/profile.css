@@ -181,10 +181,12 @@
     transition: all 0.3s ease;
 }
 
-.btn-edit-profile:hover {
-    background-color: var(--dark-blue);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(74, 95, 193, 0.3);
+.btn-edit-profile:hover,
+.btn-edit-profile:active {
+    background-color: var(--primary-blue);
+    color: white;
+    transform: none;
+    box-shadow: none;
 }
 
 .btn-cancel {
