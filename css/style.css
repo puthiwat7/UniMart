@@ -3877,13 +3877,13 @@ textarea:focus {
     .orders-header,
     .sales-header,
     .favorites-header {
-        padding: 32px 24px 24px 24px;
+        padding: 20px 16px;
     }
 
     .orders-header-content h1,
     .sales-header .orders-header-content h1,
     .favorites-header .orders-header-content h1 {
-        font-size: 28px;
+        font-size: 3rem;
     }
 
     .favorites-header {
@@ -4095,12 +4095,19 @@ textarea:focus {
 .user-guide-page .guide-page-header {
     position: relative;
     margin: 0 auto 34px;
-    padding: 56px 34px 42px;
+    padding: 44px 40px;
     border-radius: 32px;
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 45%, #c084fc 100%);
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 45%, #8b5cf6 100%);
     color: #ffffff;
     box-shadow: 0 32px 90px rgba(79,70,229,0.2);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    text-align: center;
+    min-height: 179px;
 }
 
 .user-guide-page .guide-page-header::before {
