@@ -165,6 +165,26 @@
     line-height: 1.5;
 }
 
+.qr-privacy-warning {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 14px;
+    padding: 8px 10px;
+    border-left: 3px solid #f59e0b;
+    background: #fff7ed;
+    color: #b45309;
+    font-size: 12px;
+    line-height: 1.4;
+    font-style: italic;
+    border-radius: 6px;
+}
+
+.qr-privacy-warning i {
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
 /* Buttons */
 .btn-edit-profile {
     background-color: var(--primary-blue);
