@@ -20,10 +20,107 @@ let currentSalesImageIndex = 0;
 let editingImages = [];
 let originalEditData = null;
 let mySalesRealtimeUnsubscribe = null;
+let sellerWarningsUnsubscribe = null;
 let isMySalesLoading = false;
 let mySalesLoadError = null;
 let mySalesLoadWarning = null;
 let cachedAllListings = null;
+
+function mapSellerWarnings(value) {
+    if (!value || typeof value !== 'object') return [];
+
+    return Object.entries(value).map(([id, warning]) => ({
+        id,
+        ...(warning || {})
+    })).filter((warning) => {
+        return String(warning.status || 'unread').toLowerCase() !== 'acknowledged';
+    }).sort((a, b) => {
+        const dateA = Date.parse(a.createdAt || '') || 0;
+        const dateB = Date.parse(b.createdAt || '') || 0;
+        return dateB - dateA;
+    });
+}
+
+function formatWarningDate(value) {
+    const date = new Date(value || '');
+    if (Number.isNaN(date.getTime())) return 'Unknown date';
+    return date.toLocaleString();
+}
+
+function renderSellerWarnings(warnings) {
+    const panel = document.getElementById('sellerWarningPanel');
+    const list = document.getElementById('sellerWarningList');
+    const badge = document.getElementById('sellerWarningBadge');
+    if (!panel || !list || !badge) return;
+
+    const warningItems = Array.isArray(warnings) ? warnings : [];
+    if (!warningItems.length) {
+        panel.style.display = 'none';
+        list.innerHTML = '';
+        badge.textContent = '0 notices';
+        return;
+    }
+
+    badge.textContent = `${warningItems.length} ${warningItems.length === 1 ? 'notice' : 'notices'}`;
+    panel.style.display = 'block';
+    list.innerHTML = warningItems.map((warning) => `
+        <article class="seller-warning-card seller-warning-card-${String(warning.status || 'unread').toLowerCase()}">
+            <div class="seller-warning-card-header">
+                <div>
+                    <h3>${String(warning.reason || 'Policy Reminder')}</h3>
+                    <p>${warning.listingTitle ? `Listing: ${String(warning.listingTitle)}` : 'Listing requires attention'}</p>
+                </div>
+                <span class="seller-warning-date">${formatWarningDate(warning.createdAt)}</span>
+            </div>
+            <p class="seller-warning-message">${String(warning.noticeMessage || 'Please review the latest admin notice for your listing.')}</p>
+            ${warning.adminComment ? `<div class="seller-warning-comment"><strong>Admin comment:</strong> ${String(warning.adminComment)}</div>` : ''}
+            <div class="seller-warning-actions">
+                <button type="button" class="seller-warning-ack-btn" data-warning-id="${String(warning.id)}">Got it</button>
+            </div>
+        </article>
+    `).join('');
+}
+
+async function acknowledgeSellerWarning(warningId) {
+    const currentUser = getCurrentUserIdentity();
+    if (!currentUser.uid || !warningId) return;
+    if (typeof firebase === 'undefined' || typeof firebase.database !== 'function') return;
+
+    await firebase.database().ref(`unimartSellerWarnings/${currentUser.uid}/${String(warningId)}`).update({
+        status: 'acknowledged',
+        acknowledgedAt: new Date().toISOString()
+    });
+}
+
+function subscribeToSellerWarnings() {
+    if (sellerWarningsUnsubscribe) {
+        sellerWarningsUnsubscribe();
+        sellerWarningsUnsubscribe = null;
+    }
+
+    if (typeof firebase === 'undefined' || typeof firebase.database !== 'function') {
+        renderSellerWarnings([]);
+        return;
+    }
+
+    const currentUser = getCurrentUserIdentity();
+    if (!currentUser.uid) {
+        renderSellerWarnings([]);
+        return;
+    }
+
+    const ref = firebase.database().ref(`unimartSellerWarnings/${currentUser.uid}`);
+    const handler = (snapshot) => {
+        renderSellerWarnings(mapSellerWarnings(snapshot.val()));
+    };
+    const errorHandler = (error) => {
+        console.warn('Failed to load seller warnings:', error);
+        renderSellerWarnings([]);
+    };
+
+    ref.on('value', handler, errorHandler);
+    sellerWarningsUnsubscribe = () => ref.off('value', handler);
+}
 
 // Image compression utility
 async function compressImage(file) {
@@ -316,12 +413,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     await refreshMySalesView();
+    subscribeToSellerWarnings();
     setupSalesFilters();
 
     const refreshSalesBtn = document.getElementById('refreshSalesBtn');
     if (refreshSalesBtn) {
         refreshSalesBtn.addEventListener('click', async () => {
             await refreshMySalesView();
+        });
+    }
+
+    const sellerWarningList = document.getElementById('sellerWarningList');
+    if (sellerWarningList) {
+        sellerWarningList.addEventListener('click', async (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) return;
+
+            const acknowledgeButton = target.closest('button[data-warning-id]');
+            if (!acknowledgeButton) return;
+
+            const warningId = acknowledgeButton.dataset.warningId;
+            if (!warningId) return;
+
+            try {
+                acknowledgeButton.disabled = true;
+                await acknowledgeSellerWarning(warningId);
+            } catch (error) {
+                console.error('Failed to acknowledge seller warning:', error);
+                alert('Could not clear the warning right now. Please try again.');
+                acknowledgeButton.disabled = false;
+            }
         });
     }
 
@@ -347,6 +468,11 @@ window.addEventListener('beforeunload', () => {
     if (mySalesRealtimeUnsubscribe) {
         mySalesRealtimeUnsubscribe();
         mySalesRealtimeUnsubscribe = null;
+    }
+
+    if (sellerWarningsUnsubscribe) {
+        sellerWarningsUnsubscribe();
+        sellerWarningsUnsubscribe = null;
     }
 });
 

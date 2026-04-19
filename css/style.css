@@ -6474,6 +6474,15 @@ textarea:focus {
     min-width: 320px;
 }
 
+.admin-warning-cell {
+    min-width: 150px;
+}
+
+.admin-warning-cell .admin-warning-btn {
+    margin-right: 0;
+    white-space: nowrap;
+}
+
 .admin-table-btn {
     margin: 0 6px 6px 0;
     border: 1px solid var(--border-color);
@@ -6498,6 +6507,16 @@ textarea:focus {
     border-color: #fecaca;
     color: #b91c1c;
     background: #fff5f5;
+}
+
+.admin-warning-btn {
+    border-color: #fed7aa;
+    color: #9a3412;
+    background: #fff7ed;
+}
+
+.admin-warning-btn:hover:not(:disabled) {
+    background: #ffedd5;
 }
 
 .admin-status-pill {
@@ -6603,4 +6622,255 @@ textarea:focus {
     .admin-stats-grid {
         grid-template-columns: 1fr;
     }
+}
+
+.admin-warning-modal[hidden] {
+    display: none;
+}
+
+.admin-warning-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: rgba(15, 23, 42, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.admin-warning-dialog {
+    width: min(720px, 100%);
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: 0 32px 90px rgba(15, 23, 42, 0.22);
+    padding: 18px;
+}
+
+.admin-warning-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.admin-warning-header h3 {
+    margin: 0;
+    font-size: 20px;
+    color: #7c2d12;
+}
+
+.admin-warning-close {
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--border-color);
+    background: #fff;
+    border-radius: 8px;
+    color: var(--dark-gray);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.admin-warning-intro {
+    margin-bottom: 12px;
+}
+
+.admin-warning-summary {
+    border: 1px solid #fed7aa;
+    background: #fff7ed;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #7c2d12;
+}
+
+.admin-warning-summary p {
+    margin: 4px 0;
+}
+
+.admin-warning-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 10px 0 6px;
+}
+
+.admin-warning-select,
+.admin-warning-textarea {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.admin-warning-textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.admin-warning-preview-wrap {
+    margin-top: 14px;
+}
+
+.admin-warning-preview-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #7c2d12;
+    margin-bottom: 6px;
+}
+
+.admin-warning-preview {
+    border: 1px solid #fdba74;
+    background: #fffaf5;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #7c2d12;
+    white-space: pre-wrap;
+    margin: 0;
+}
+
+.admin-warning-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.admin-warning-send-btn {
+    border-color: #fdba74;
+    background: #ea580c;
+    color: #fff;
+}
+
+.admin-warning-send-btn:hover:not(:disabled) {
+    background: #c2410c;
+}
+
+.seller-warning-panel {
+    margin: 18px 0 24px;
+    padding: 18px;
+    border: 1px solid #fed7aa;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #fff7ed 0%, #fffbeb 100%);
+}
+
+.seller-warning-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.seller-warning-panel-header h2 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    color: #7c2d12;
+}
+
+.seller-warning-panel-header p {
+    margin: 0;
+    color: #9a3412;
+}
+
+.seller-warning-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 96px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #ea580c;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.seller-warning-list {
+    display: grid;
+    gap: 12px;
+}
+
+.seller-warning-card {
+    background: #fff;
+    border: 1px solid #fdba74;
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.seller-warning-card-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.seller-warning-card-header h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    color: #7c2d12;
+}
+
+.seller-warning-card-header p,
+.seller-warning-message,
+.seller-warning-comment {
+    margin: 0;
+    color: #78350f;
+    line-height: 1.5;
+}
+
+.seller-warning-date {
+    font-size: 12px;
+    color: #9a3412;
+    white-space: nowrap;
+}
+
+.seller-warning-message {
+    margin-top: 10px;
+}
+
+.seller-warning-comment {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #ffedd5;
+}
+
+.seller-warning-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+.seller-warning-ack-btn {
+    border: 1px solid #fdba74;
+    background: #fff;
+    color: #9a3412;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.seller-warning-ack-btn:hover:not(:disabled) {
+    background: #fff7ed;
+    border-color: #fb923c;
+}
+
+.seller-warning-ack-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }

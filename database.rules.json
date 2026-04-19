@@ -19,6 +19,13 @@
         ".write": "auth != null"
       }
     },
+    "unimartSellerWarnings": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null",
+        ".indexOn": ["createdAt", "status", "listingId", "reason"]
+      }
+    },
     "unimartProfiles": {
       ".read": "auth != null",
       "$uid": {
