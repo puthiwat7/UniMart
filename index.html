@@ -144,7 +144,7 @@
 
                     <label class="toggle-container">
                         <span class="toggle-label">Hide reserved</span>
-                        <input type="checkbox" id="hideReservedToggle" class="toggle-checkbox" checked>
+                        <input type="checkbox" id="hideReservedToggle" class="toggle-checkbox" checked onchange="setHideReserved(this.checked)" oninput="setHideReserved(this.checked)">
                         <span class="toggle-switch"></span>
                     </label>
 
