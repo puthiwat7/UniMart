@@ -590,8 +590,9 @@ function updateCategoryCounts() {
             product.title.toLowerCase().includes(searchInput) || 
             product.seller.toLowerCase().includes(searchInput);
         const matchesCollege = selectedCollege === 'All Colleges' || product.college === selectedCollege;
+        const matchesReserved = !hideReserved || !product.reserved;
         
-        if (matchesSearch && matchesCollege) {
+        if (matchesSearch && matchesCollege && matchesReserved) {
             const category = product.category;
             categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1);
             totalCount++;
