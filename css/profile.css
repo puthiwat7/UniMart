@@ -795,6 +795,35 @@
     border-color: var(--dark-gray);
 }
 
+/* Ensure Terms modal action buttons are always visible in default state */
+.modal#policiesModal .modal-footer .btn-secondary,
+.modal-footer #closeModalBtn {
+    color: #333 !important;
+    background-color: #f0f0f0 !important;
+    border: 1px solid #d9d9d9 !important;
+}
+
+.modal#policiesModal .modal-footer .btn-primary,
+.modal-footer #agreeModalBtn {
+    color: #fff !important;
+    background-color: #2D69FA !important;
+    border: 1px solid #2D69FA !important;
+}
+
+.modal#policiesModal .modal-footer .btn-secondary:hover,
+.modal-footer #closeModalBtn:hover {
+    color: #333 !important;
+    background-color: #e7e7e7 !important;
+    border-color: #cfcfcf !important;
+}
+
+.modal#policiesModal .modal-footer .btn-primary:hover,
+.modal-footer #agreeModalBtn:hover {
+    color: #fff !important;
+    background-color: #2457d6 !important;
+    border-color: #2457d6 !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .profile-header {
