@@ -181,6 +181,11 @@ function ensureFeedbackNavItem() {
         if (feedbackListItem) {
             const link = feedbackListItem.querySelector('a.nav-item');
             if (link) {
+                link.setAttribute('href', resolveFeedbackPath());
+                const label = link.querySelector('span');
+                if (label) {
+                    label.textContent = 'Help';
+                }
                 if (isFeedbackPage) {
                     link.classList.add('active');
                 } else {
@@ -198,7 +203,7 @@ function ensureFeedbackNavItem() {
         li.innerHTML = `
             <a href="${feedbackPath}" class="nav-item ${feedbackActive}">
                 <i class="fas fa-comment"></i>
-                <span>Feedback</span>
+                <span>Help</span>
             </a>
         `;
 
