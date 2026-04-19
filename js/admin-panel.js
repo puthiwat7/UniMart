@@ -205,7 +205,6 @@ async function refreshAdminView() {
     }
 
     updateAdminStats();
-    renderPasswordResetList();
 }
 
 function updateAdminStats() {
@@ -709,62 +708,6 @@ function setupAdminEmailManagement() {
     renderAdminEmailList();
 }
 
-function renderPasswordResetList() {
-    const list = document.getElementById('passwordResetList');
-    if (!list) return;
-
-    // For now, show loading or empty
-    list.innerHTML = '<p class="no-requests">Loading password reset requests...</p>';
-
-    // Fetch from Firestore
-    if (typeof firebase !== 'undefined' && firebase.firestore) {
-        firebase.firestore().collection('passwordResetRequests')
-            .orderBy('timestamp', 'desc')
-            .get()
-            .then(snapshot => {
-                if (snapshot.empty) {
-                    list.innerHTML = '<p class="no-requests">No password reset requests yet.</p>';
-                    return;
-                }
-
-                list.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const item = document.createElement('div');
-                    item.className = 'password-reset-item';
-                    item.innerHTML = `
-                        <div>
-                            <div class="password-reset-email">${data.email}</div>
-                            <div class="password-reset-timestamp">${data.timestamp ? data.timestamp.toDate().toLocaleString() : 'Unknown time'}</div>
-                        </div>
-                        <label class="password-reset-checkbox">
-                            <input type="checkbox" ${data.contacted ? 'checked' : ''} onchange="updatePasswordResetContacted('${doc.id}', this.checked)">
-                            Contacted
-                        </label>
-                    `;
-                    list.appendChild(item);
-                });
-            })
-            .catch(error => {
-                console.error('Error fetching password reset requests:', error);
-                list.innerHTML = '<p class="no-requests">Error loading requests.</p>';
-            });
-    }
-}
-
-function updatePasswordResetContacted(docId, contacted) {
-    if (typeof firebase !== 'undefined' && firebase.firestore) {
-        firebase.firestore().collection('passwordResetRequests').doc(docId).update({
-            contacted: contacted
-        }).catch(error => {
-            console.error('Error updating contacted status:', error);
-            alert('Error updating status. Please try again.');
-        });
-    }
-}
-
-window.updatePasswordResetContacted = updatePasswordResetContacted;
-
 function verifyAdminAccess(user) {
     if (!user || !user.email || !window.unimartAdminAccess) return false;
     return window.unimartAdminAccess.isCurrentUserAdmin(user);
@@ -813,7 +756,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupFilters();
     setupAdminModal();
     setupAdminEmailManagement();
-    renderPasswordResetList();
     await initializeAdminPage();
 });
 

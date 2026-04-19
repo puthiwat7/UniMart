@@ -445,46 +445,25 @@ function closePoliciesModal() {
 }
 
 function handleResetPassword() {
-    const currentPassword = prompt('Enter your current password:');
-    if (!currentPassword) return;
-
-    const newPassword = prompt('Enter your new password:');
-    if (!newPassword) return;
-
-    if (newPassword.length < 6) {
-        alert('Password must be at least 6 characters long.');
-        return;
-    }
-
-    const confirmPassword = prompt('Confirm your new password:');
-    if (confirmPassword !== newPassword) {
-        alert('Passwords do not match.');
-        return;
-    }
-
-    // Reauthenticate user
     const user = firebase.auth().currentUser;
-    const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
+    if (!user || !user.email) {
+        showNotification('Unable to send a reset email right now. Please sign in again.', 'error');
+        return;
+    }
 
-    user.reauthenticateWithCredential(credential)
+    firebaseAuthManager.sendPasswordResetEmail(user.email)
         .then(() => {
-            // Update password
-            return user.updatePassword(newPassword);
-        })
-        .then(() => {
-            alert('Password updated successfully!');
+            showNotification(`Password reset email sent to ${user.email}. Open the link in that email to set a new password.`, 'success');
         })
         .catch((error) => {
-            console.error('Password reset error:', error);
-            let errorMessage = 'Failed to update password.';
-            if (error.code === 'auth/wrong-password') {
-                errorMessage = 'Current password is incorrect.';
-            } else if (error.code === 'auth/weak-password') {
-                errorMessage = 'New password is too weak.';
-            } else if (error.code === 'auth/requires-recent-login') {
-                errorMessage = 'Please log in again and try updating your password.';
+            console.error('Password reset email error:', error);
+            let errorMessage = 'Failed to send password reset email.';
+            if (error.code === 'auth/too-many-requests') {
+                errorMessage = 'Too many reset attempts. Please wait a bit and try again.';
+            } else if (error.code === 'auth/network-request-failed') {
+                errorMessage = 'Network error. Please check your connection and try again.';
             }
-            alert(errorMessage);
+            showNotification(errorMessage, 'error');
         });
 }
 

@@ -162,6 +162,12 @@ h2 {
     color: #6b7280;
 }
 
+.forgot-password-row {
+    display: flex;
+    justify-content: flex-end;
+    margin: -4px 0 16px;
+}
+
 .btn-primary {
     width: 100%;
     padding: 14px 20px;
@@ -391,6 +397,7 @@ h2 {
     padding: 4px 0;
     font-family: inherit;
     transition: color 0.2s;
+    text-align: right;
 }
 .btn-forgot-password:hover {
     color: #4a5fc1;

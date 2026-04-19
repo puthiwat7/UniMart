@@ -2,11 +2,8 @@ import {
     subscribeListings,
     subscribeUsers,
     subscribeBans,
-    subscribePasswordResetRequests,
     deleteListing,
     updateListingStatus,
-    updatePasswordResetContacted,
-    deletePasswordResetRequest,
     banUserFromSelling,
     unbanUserFromSelling,
     banUserFromLogin,
@@ -15,13 +12,11 @@ import {
 import { renderDashboard } from './Dashboard.js';
 import { renderListingsManager } from './ListingsManager.js';
 import { renderUsersManager } from './UsersManager.js';
-import { renderPasswordResetManager } from './PasswordResetManager.js';
 
 const state = {
     listings: [],
     users: [],
     bans: {},
-    passwordResetRequests: [],
     unsubscribers: []
 };
 
@@ -39,11 +34,10 @@ function renderActiveView() {
     const panel = getPanel();
     if (!panel) return;
 
-    panel.innerHTML = '<div id="adminDashSection"></div><div id="adminListingsSection" style="margin-top:32px"></div><div id="adminUsersSection" style="margin-top:32px"></div><div id="adminPasswordResetSection" style="margin-top:32px"></div>';
+    panel.innerHTML = '<div id="adminDashSection"></div><div id="adminListingsSection" style="margin-top:32px"></div><div id="adminUsersSection" style="margin-top:32px"></div>';
     renderDashboard(document.getElementById('adminDashSection'), state);
     renderListingsManager(document.getElementById('adminListingsSection'), state);
     renderUsersManager(document.getElementById('adminUsersSection'), state);
-    renderPasswordResetManager(document.getElementById('adminPasswordResetSection'), state);
 }
 
 function renderShell() {
@@ -97,9 +91,6 @@ function attachStaticEvents() {
                 if (id) await unbanUserFromLogin(id);
             }
 
-            if (action === 'password-reset-delete') {
-                if (id) await deletePasswordResetRequest(id);
-            }
         } catch (error) {
             console.error(`Admin action failed: ${action}`, error);
             alert('Admin action failed. Please try again.');
@@ -107,16 +98,6 @@ function attachStaticEvents() {
             actionButton.disabled = false;
         }
     });
-
-    // Make updatePasswordResetContacted available globally
-    window.updatePasswordResetContacted = async (id, contacted) => {
-        try {
-            await updatePasswordResetContacted(id, contacted);
-        } catch (error) {
-            console.error('Error updating password reset contacted status:', error);
-            alert('Error updating status. Please try again.');
-        }
-    };
 }
 
 function subscribeCollectionsOnce() {
@@ -135,16 +116,7 @@ function subscribeCollectionsOnce() {
         renderActiveView();
     });
 
-    const passwordResetUnsub = subscribePasswordResetRequests((requests) => {
-        state.passwordResetRequests = requests;
-        renderActiveView();
-    }, (error) => {
-        console.warn('Failed to load password reset requests:', error);
-        // Still render view even if password reset requests fail to load
-        renderActiveView();
-    });
-
-    state.unsubscribers.push(listingsUnsub, usersUnsub, bansUnsub, passwordResetUnsub);
+    state.unsubscribers.push(listingsUnsub, usersUnsub, bansUnsub);
 }
 
 function cleanupSubscriptions() {

@@ -39,6 +39,11 @@
                 <div class="form-group">
                     <input type="password" id="passwordInput" placeholder="Password" required>
                 </div>
+                <div class="forgot-password-row" id="forgotPasswordEntry">
+                    <button type="button" class="btn-forgot-password" onclick="openForgotPasswordPopup()">
+                        Forgot password?
+                    </button>
+                </div>
                 <button type="submit" class="btn-primary">
                     <i class="fas fa-envelope"></i>
                     <span>Sign In with Email</span>
@@ -110,7 +115,7 @@
                 <button class="btn-forgot-send" onclick="sendPasswordReset()">Send Reset Email</button>
             </div>
             <div id="forgotPopupSuccess" style="display: none;">
-                <p class="forgot-success-message">Your password reset request has been submitted! You will receive an email within 24 hours with instructions to reset your password. Please check your spam folder if you don't see it.</p>
+                <p class="forgot-success-message" id="forgotPopupSuccessText">If an account exists for this email, you will receive a password reset link shortly. Please check your inbox and spam folder.</p>
                 <button class="btn-forgot-done" onclick="closeForgotPasswordPopup()">Done</button>
             </div>
         </div>
