@@ -7,6 +7,43 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/profile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        #policiesModal .policy-modal,
+        #policiesModal .modal-content {
+            display: flex !important;
+            flex-direction: column !important;
+            max-width: 800px !important;
+            width: 90% !important;
+            padding: 0 !important;
+        }
+
+        #policiesModal .modal-body {
+            display: block !important;
+            width: 100% !important;
+            grid-template-columns: 1fr !important;
+            gap: 0 !important;
+        }
+
+        #policiesModal .modal-footer {
+            display: flex !important;
+            justify-content: flex-end !important;
+            align-items: center !important;
+            gap: 15px !important;
+            padding: 20px !important;
+            background: white !important;
+            border-top: 1px solid #eee !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        #policiesModal #closeModalBtn,
+        #policiesModal #agreeModalBtn {
+            padding: 10px 24px !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            width: auto !important;
+        }
+    </style>
 
     <!-- Firebase SDKs (Compat version for script tag compatibility) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
