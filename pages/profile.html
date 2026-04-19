@@ -7,6 +7,66 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/profile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        #policiesModal {
+            background: #ffffff !important;
+            border-radius: 24px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: hidden !important;
+        }
+
+        #policiesModal .policy-modal,
+        #policiesModal .modal-content {
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100% !important;
+            max-width: 850px !important;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            border-radius: inherit !important;
+        }
+
+        #policiesModal .modal-body {
+            display: block !important;
+            width: 100% !important;
+            grid-template-columns: 1fr !important;
+            gap: 0 !important;
+        }
+
+        #policiesModal .modal-footer {
+            display: flex !important;
+            justify-content: flex-end !important;
+            align-items: center !important;
+            gap: 15px !important;
+            padding: 20px !important;
+            background: white !important;
+            border-top: 1px solid #eee !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        #policiesModal #closeModalBtn,
+        #policiesModal #agreeModalBtn {
+            padding: 10px 24px !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            width: auto !important;
+        }
+
+        #policiesModal #agreeModalBtn {
+            color: #ffffff !important;
+            background-color: #28a745 !important;
+            border: 1px solid #28a745 !important;
+        }
+
+        #policiesModal #agreeModalBtn:hover {
+            color: #ffffff !important;
+            background-color: #218838 !important;
+            border-color: #218838 !important;
+        }
+    </style>
 
     <!-- Firebase SDKs (Compat version for script tag compatibility) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -518,8 +578,8 @@
                 <p class="policy-footer">By clicking “I Agree,” you confirm that you have read, understood, and accepted the UniMart Terms of Use &amp; Marketplace Policy.</p>
             </div>
             <div class="modal-footer">
-                <button class="btn-secondary" id="closeModalBtn">Close</button>
-                <button class="btn-primary" id="agreeModalBtn">I Agree</button>
+                <button class="btn-secondary" id="closeModalBtn" style="color: #333; background-color: #f0f0f0; border: 1px solid #d9d9d9;">Close</button>
+                <button class="btn-primary" id="agreeModalBtn" style="color: #ffffff; background-color: #28a745; border: 1px solid #28a745;">I Agree</button>
             </div>
         </div>
     </div>

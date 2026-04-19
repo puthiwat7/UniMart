@@ -4418,6 +4418,74 @@ textarea:focus {
     max-width: 100%;
 }
 
+/* ======================== Policy Modal Visibility Fix ======================== */
+#policiesModal {
+    z-index: 9999 !important;
+    background: #ffffff !important;
+    border-radius: 24px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+}
+
+#policiesModal .modal-content,
+#policiesModal .policy-modal {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 850px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    border-radius: inherit !important;
+    position: relative;
+    z-index: 9999 !important;
+    filter: none !important;
+    mix-blend-mode: normal !important;
+    isolation: isolate;
+}
+
+#policiesModal .modal-body {
+    display: block !important;
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    width: 100% !important;
+}
+
+#policiesModal .modal-footer {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 15px !important;
+    padding: 20px !important;
+    background: white !important;
+    border-top: 1px solid #eee !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    min-height: 50px !important;
+    overflow: visible !important;
+    position: relative;
+    z-index: 9999 !important;
+}
+
+#policiesModal #closeModalBtn,
+#policiesModal #agreeModalBtn {
+    width: auto !important;
+    padding: 10px 24px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    position: relative;
+    z-index: 9999 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    filter: none !important;
+    mix-blend-mode: normal !important;
+}
+
+#modalOverlay {
+    z-index: 9998 !important;
+}
+
 @media (max-width: 900px) {
     .feedback-page .guide-container {
         padding: 0 16px 34px;
