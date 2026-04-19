@@ -4427,6 +4427,9 @@ textarea:focus {
 #policiesModal .policy-modal {
     display: flex !important;
     flex-direction: column !important;
+    max-width: 800px !important;
+    width: 90% !important;
+    padding: 0 !important;
     position: relative;
     z-index: 9999 !important;
     filter: none !important;
@@ -4444,8 +4447,13 @@ textarea:focus {
 #policiesModal .modal-footer {
     display: flex !important;
     justify-content: flex-end !important;
-    gap: 12px !important;
+    align-items: center !important;
+    gap: 15px !important;
     padding: 20px !important;
+    background: white !important;
+    border-top: 1px solid #eee !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
     min-height: 50px !important;
     overflow: visible !important;
     position: relative;
