@@ -805,9 +805,9 @@
 
 .modal#policiesModal .modal-footer .btn-primary,
 .modal-footer #agreeModalBtn {
-    color: #fff !important;
-    background-color: #2D69FA !important;
-    border: 1px solid #2D69FA !important;
+    color: #ffffff !important;
+    background-color: #28a745 !important;
+    border: 1px solid #28a745 !important;
 }
 
 .modal#policiesModal .modal-footer .btn-secondary:hover,
@@ -819,9 +819,9 @@
 
 .modal#policiesModal .modal-footer .btn-primary:hover,
 .modal-footer #agreeModalBtn:hover {
-    color: #fff !important;
-    background-color: #2457d6 !important;
-    border-color: #2457d6 !important;
+    color: #ffffff !important;
+    background-color: #218838 !important;
+    border-color: #218838 !important;
 }
 
 /* Responsive */
