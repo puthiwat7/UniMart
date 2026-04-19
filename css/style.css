@@ -4421,6 +4421,11 @@ textarea:focus {
 /* ======================== Policy Modal Visibility Fix ======================== */
 #policiesModal {
     z-index: 9999 !important;
+    background: #ffffff !important;
+    border-radius: 24px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
 }
 
 #policiesModal .modal-content,
@@ -4431,6 +4436,8 @@ textarea:focus {
     max-width: 850px !important;
     margin: 0 auto !important;
     padding: 0 !important;
+    background: #ffffff !important;
+    border-radius: inherit !important;
     position: relative;
     z-index: 9999 !important;
     filter: none !important;
