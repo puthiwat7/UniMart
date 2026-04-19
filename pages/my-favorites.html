@@ -168,20 +168,18 @@
                             <div class="modal-price" id="favModalPrice">¥0.00</div>
                         </div>
 
-                        <div class="modal-section" id="favAvailabilitySection" style="display:none;">
-                            <div id="favAvailabilityNotice" style="padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;display:flex;align-items:center;gap:8px;color:#dc2626;">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <span id="favAvailabilityText">This item is no longer available</span>
-                            </div>
-                        </div>
-
-                        <div class="modal-section" id="favDescriptionSection">
-                            <h4><i class="fas fa-align-left"></i> Description</h4>
-                            <p id="favModalDescription">No description available</p>
-                        </div>
-
                         <div class="product-info-grid">
-                            <div class="info-item" id="favConditionItem">
+                            <div class="info-item info-item-description" id="favDescriptionItem" style="display: none; grid-column: 1 / -1; min-height: auto;">
+                                <label><i class="fas fa-align-left"></i> Description</label>
+                                <p id="favModalDescription" style="margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.6; word-break: break-word; white-space: normal;">No description available</p>
+                            </div>
+
+                            <div class="info-item" id="favQuantityItem" style="display: none;">
+                                <label><i class="fas fa-boxes"></i> Quantity</label>
+                                <span class="quantity-badge" id="favModalQuantity">N/A</span>
+                            </div>
+
+                            <div class="info-item" id="favConditionItem" style="display: none;">
                                 <label><i class="fas fa-heartbeat"></i> Condition</label>
                                 <div class="condition-display">
                                     <span class="condition-percentage" id="favModalCondition">N/A</span>
@@ -190,19 +188,19 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="info-item" id="favQuantityItem">
-                                <label><i class="fas fa-boxes"></i> Quantity</label>
-                                <span class="quality-badge" id="favModalQuantity">N/A</span>
-                            </div>
-                            <div class="info-item" id="favStatusItem">
+
+                            <div class="info-item" id="favAvailabilityItem" style="display: none;">
                                 <label><i class="fas fa-box"></i> Status</label>
                                 <span id="favModalStatus">N/A</span>
                             </div>
                         </div>
 
-                        <div class="modal-section" id="favQRSection" style="display: none;">
-                            <h4><i class="fas fa-qrcode"></i> Seller QR Code</h4>
-                            <div id="favQRImage" style="min-height:160px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;padding:12px;"></div>
+                        <div class="qr-warning" id="favAvailabilityNotice" style="display: none; background: #fef2f2; border-color: #fecaca; color: #dc2626;">
+                            <i class="fas fa-exclamation-circle" style="color: #dc2626;"></i>
+                            <div>
+                                <strong>Unavailable item</strong>
+                                <p id="favAvailabilityText">This item is no longer available.</p>
+                            </div>
                         </div>
 
                         <div class="modal-actions">

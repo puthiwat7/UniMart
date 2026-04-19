@@ -340,6 +340,36 @@ function handleFavRemove(productId) {
 }
 
 // ======================== Modal ========================
+function ensureFavDescriptionItem() {
+    const infoGrid = document.querySelector('#favModal .product-info-grid');
+    if (!infoGrid) return null;
+
+    let descriptionItem = document.getElementById('favDescriptionItem');
+    if (!descriptionItem) {
+        descriptionItem = document.createElement('div');
+        descriptionItem.id = 'favDescriptionItem';
+        descriptionItem.className = 'info-item info-item-description';
+        descriptionItem.style.display = 'none';
+        descriptionItem.style.gridColumn = '1 / -1';
+        descriptionItem.style.minHeight = 'auto';
+        descriptionItem.innerHTML = `
+            <label><i class="fas fa-align-left"></i> Description</label>
+            <p id="favModalDescription" style="margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.6; word-break: break-word; white-space: normal;">No description available</p>
+        `;
+    }
+
+    if (descriptionItem.parentElement !== infoGrid) {
+        infoGrid.insertBefore(descriptionItem, infoGrid.firstChild);
+    }
+
+    const legacySection = document.getElementById('favDescriptionSection');
+    if (legacySection) {
+        legacySection.style.display = 'none';
+    }
+
+    return descriptionItem;
+}
+
 function openFavModal(productId) {
     const id = String(productId);
     const product = favoritedListings.find(l => String(l.id) === id);
@@ -361,7 +391,20 @@ function openFavModal(productId) {
     document.getElementById('favModalTitle').textContent = product.title || 'Product';
     document.getElementById('favModalPrice').textContent = product.price || '¥0.00';
     document.getElementById('favModalBadge').textContent = product.badge || 'Used';
-    document.getElementById('favModalDescription').textContent = product.description ? product.description : 'N/A';
+
+    const descriptionItem = ensureFavDescriptionItem();
+    const descriptionText = document.getElementById('favModalDescription');
+    if (product.description && descriptionItem && descriptionText) {
+        descriptionText.textContent = product.description;
+        descriptionItem.style.display = 'flex';
+    } else {
+        if (descriptionText) {
+            descriptionText.textContent = 'No description available';
+        }
+        if (descriptionItem) {
+            descriptionItem.style.display = 'none';
+        }
+    }
     
     // ===== DETAILS PILLS ROW =====
     const detailsRow = document.getElementById('favModalDetailsRow');
@@ -400,8 +443,15 @@ function openFavModal(productId) {
     // Show/hide the entire details row
     detailsRow.style.display = hasDetails ? 'flex' : 'none';
     
-    document.getElementById('favModalStatus').textContent = status ? status.toUpperCase() : 'N/A';
+    const availabilityItem = document.getElementById('favAvailabilityItem');
+    const statusSpan = document.getElementById('favModalStatus');
+    const statusText = product.reserved ? 'Reserved' : (isActive ? 'Available' : 'Unavailable');
+    const statusClass = product.reserved ? 'status-reserved' : (isActive ? 'status-available' : 'status-reserved');
+    statusSpan.textContent = statusText;
+    statusSpan.className = statusClass;
+    availabilityItem.style.display = 'flex';
 
+    const conditionItem = document.getElementById('favConditionItem');
     const conditionPercent = document.getElementById('favModalCondition');
     const conditionBar = document.getElementById('favModalConditionBar');
     if (conditionValue !== null && conditionValue !== undefined) {
@@ -414,29 +464,30 @@ function openFavModal(productId) {
         } else {
             conditionBar.style.backgroundColor = '#ef4444';
         }
+        conditionItem.style.display = 'flex';
     } else {
         conditionPercent.textContent = 'N/A';
         conditionBar.style.width = '0%';
         conditionBar.style.backgroundColor = '#d1d5db';
+        conditionItem.style.display = 'none';
     }
 
+    const quantityItem = document.getElementById('favQuantityItem');
     const quantityBadge = document.getElementById('favModalQuantity');
-    quantityBadge.className = 'quality-badge quality-used';
     if (quantityValue !== null) {
-        quantityBadge.textContent = quantityValue;
+        quantityBadge.textContent = `${quantityValue} available`;
+        quantityItem.style.display = 'flex';
     } else {
         quantityBadge.textContent = 'N/A';
+        quantityItem.style.display = 'none';
     }
 
     renderFavModalImage();
 
-    const availSection = document.getElementById('favAvailabilitySection');
     const availText = document.getElementById('favAvailabilityText');
     const availNotice = document.getElementById('favAvailabilityNotice');
     if (!isActive) {
-        availSection.style.display = 'block';
-        availNotice.style.cssText =
-            'padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;display:flex;align-items:center;gap:8px;color:#dc2626;';
+        availNotice.style.display = 'flex';
         if (status === 'sold') {
             availText.textContent = 'This item has been sold.';
         } else if (status === 'withdrawn') {
@@ -445,7 +496,7 @@ function openFavModal(productId) {
             availText.textContent = 'This item is no longer available.';
         }
     } else {
-        availSection.style.display = 'none';
+        availNotice.style.display = 'none';
     }
 
     // Enable contact seller button for active items
@@ -501,34 +552,6 @@ function renderFavModalImage() {
         container.innerHTML = '';
         container.textContent = currentFavProduct.image || '📦';
         container.style.fontSize = '72px';
-    }
-}
-
-async function renderFavQR(product) {
-    const qrBox = document.getElementById('favQRImage');
-    if (!qrBox) return;
-    qrBox.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:32px;color:#d1d5db;"></i>';
-
-    let qrSrc = product.sellerPaymentQR || '';
-
-    // Fetch seller profile from cloud using their UID
-    if (!qrSrc && product.sellerUid &&
-        window.unimartProfileSync &&
-        typeof window.unimartProfileSync.getProfileFromCloud === 'function') {
-        try {
-            const sellerProfile = await window.unimartProfileSync.getProfileFromCloud(product.sellerUid);
-            if (sellerProfile && sellerProfile.paymentQR) {
-                qrSrc = sellerProfile.paymentQR;
-            }
-        } catch (_) {}
-    }
-
-    if (qrSrc) {
-        qrBox.innerHTML = `<img src="${qrSrc}" alt="Seller Payment QR" style="max-width:100%;max-height:220px;object-fit:contain;border-radius:8px;">`;
-    } else {
-        qrBox.innerHTML = `
-            <i class="fas fa-qrcode" style="font-size:64px;color:#d1d5db;"></i>
-            <p style="color:#9ca3af;font-size:12px;margin-top:8px;text-align:center;">Seller has not uploaded a QR code</p>`;
     }
 }
 
