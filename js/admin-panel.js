@@ -325,6 +325,7 @@ function createAdminSaleCard(item) {
     const statusClass = item.status === 'sold' ? 'status-sold' : (item.status === 'withdrawn' ? 'status-withdrawn' : 'status-active');
 
     let cardImage = '📦';
+    const favoriteCount = Math.max(0, Math.floor(Number(item.favoriteCount) || 0));
     if (item.imageUrl || (item.images && item.images.length > 0)) {
         const imgSrc = item.imageUrl || item.images[0];
         cardImage = `<img src="${imgSrc}" alt="${item.title}" class="sale-card-image">`;
@@ -333,7 +334,12 @@ function createAdminSaleCard(item) {
     }
 
     card.innerHTML = `
-        <div class="product-image" onclick='openAdminModal(${JSON.stringify(item.id)})'>${cardImage}</div>
+        <div class="product-image" onclick='openAdminModal(${JSON.stringify(item.id)})' style="position:relative;">
+            ${cardImage}
+            <div class="product-card-top-right">
+                <span class="product-like-count"><i class="fas fa-heart"></i>${favoriteCount}</span>
+            </div>
+        </div>
         <div class="product-info">
             <span class="product-badge sale-status-badge ${statusClass}">${statusText}</span>
             <h3 class="product-title" onclick='openAdminModal(${JSON.stringify(item.id)})'>${item.title}</h3>

@@ -1032,6 +1032,63 @@ textarea:focus {
     display: inline-block;
 }
 
+.product-card-top-right {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    z-index: 12;
+}
+
+.product-like-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(254, 205, 211, 0.95);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+    backdrop-filter: blur(8px);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.product-like-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.16);
+}
+
+.product-like-button.is-active {
+    background: rgba(255, 241, 242, 0.98);
+}
+
+.product-like-button i,
+.product-like-count i {
+    font-size: 11px;
+}
+
+.product-like-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: rgba(255, 241, 242, 0.95);
+    border: 1px solid rgba(254, 205, 211, 0.95);
+    color: #be123c;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+    backdrop-filter: blur(8px);
+}
+
 .product-actions {
     display: flex;
     gap: 8px;

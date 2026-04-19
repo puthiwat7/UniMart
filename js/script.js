@@ -16,6 +16,7 @@ let realtimeUnsubscribe = null;
 let policyProfile = null;
 let policyProfileLoaded = false;
 let hideReserved = true;
+const DEFAULT_MARKETPLACE_SORT = 'Most Liked';
 
 function isPolicyAgreed(profile) {
     if (!profile || typeof profile !== 'object') return false;
@@ -105,6 +106,7 @@ function normalizeListing(listing, fallbackIndex = 0) {
 
     const imageList = Array.isArray(listing.images) ? listing.images.filter(Boolean) : [];
     const primaryImageUrl = listing.imageUrl || imageList[0] || '';
+    const favoriteCount = Math.max(0, Math.floor(Number(listing.favoriteCount) || 0));
 
     const normalizedCondition = Number.isFinite(Number(listing.condition)) ? Number(listing.condition) : (Number.isFinite(Number(listing.conditionPercentage)) ? Number(listing.conditionPercentage) : null);
     
@@ -131,6 +133,7 @@ function normalizeListing(listing, fallbackIndex = 0) {
         condition: normalizedCondition,
         quantity: Number.isFinite(Number(listing.quantity)) ? Number(listing.quantity) : 1,
         description: String(listing.description || ''),
+        favoriteCount,
         status: String(listing.status || 'active').toLowerCase(),
         reserved: Boolean(listing.reserved)
     };
@@ -238,6 +241,52 @@ async function refreshMarketplaceProducts() {
 function parsePrice(price) {
     const numericPrice = String(price).replace(/[^\d.]/g, '');
     return parseFloat(numericPrice) || 0;
+}
+
+function getProductListedTimestamp(product) {
+    return Date.parse(product?.listedAt || product?.listedDate || '') || 0;
+}
+
+function getProductFavoriteCount(product) {
+    return Math.max(0, Math.floor(Number(product?.favoriteCount) || 0));
+}
+
+function getSelectedSortOption() {
+    const select = document.querySelector('.filter-select');
+    return select ? String(select.value || DEFAULT_MARKETPLACE_SORT) : DEFAULT_MARKETPLACE_SORT;
+}
+
+function sortProductsList(items, sortBy = DEFAULT_MARKETPLACE_SORT) {
+    const activeSort = String(sortBy || DEFAULT_MARKETPLACE_SORT);
+
+    items.sort((a, b) => {
+        if (activeSort === 'Price Low to High') {
+            const priceDiff = parsePrice(a.price) - parsePrice(b.price);
+            return priceDiff !== 0 ? priceDiff : getProductListedTimestamp(b) - getProductListedTimestamp(a);
+        }
+
+        if (activeSort === 'Price High to Low') {
+            const priceDiff = parsePrice(b.price) - parsePrice(a.price);
+            return priceDiff !== 0 ? priceDiff : getProductListedTimestamp(b) - getProductListedTimestamp(a);
+        }
+
+        if (activeSort === 'Oldest First') {
+            const timeDiff = getProductListedTimestamp(a) - getProductListedTimestamp(b);
+            return timeDiff !== 0 ? timeDiff : getProductFavoriteCount(b) - getProductFavoriteCount(a);
+        }
+
+        if (activeSort === 'Newest First') {
+            const timeDiff = getProductListedTimestamp(b) - getProductListedTimestamp(a);
+            return timeDiff !== 0 ? timeDiff : getProductFavoriteCount(b) - getProductFavoriteCount(a);
+        }
+
+        const favoriteDiff = getProductFavoriteCount(b) - getProductFavoriteCount(a);
+        if (favoriteDiff !== 0) return favoriteDiff;
+
+        return getProductListedTimestamp(b) - getProductListedTimestamp(a);
+    });
+
+    return items;
 }
 
 async function initializeMarketplaceData() {
@@ -570,6 +619,8 @@ function filterProducts() {
         const matchReserved = !hideReserved || !product.reserved;
         return matchCategory && matchSearch && matchCollege && matchReserved;
     });
+
+    sortProductsList(filteredProducts, getSelectedSortOption());
 
     renderProducts(filteredProducts, 1);
     updateCategoryCounts();
@@ -988,24 +1039,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
 document.querySelectorAll('.filter-select').forEach((select, index) => {
     select.addEventListener('change', (e) => {
         if (index === 0) {
-            // Sort by option
-            const sortBy = e.target.value;
-            if (sortBy === 'Newest First') {
-                filteredProducts.reverse();
-            } else if (sortBy === 'Price Low to High') {
-                filteredProducts.sort((a, b) => {
-                    const priceA = parsePrice(a.price);
-                    const priceB = parsePrice(b.price);
-                    return priceA - priceB;
-                });
-            } else if (sortBy === 'Price High to Low') {
-                filteredProducts.sort((a, b) => {
-                    const priceA = parsePrice(a.price);
-                    const priceB = parsePrice(b.price);
-                    return priceB - priceA;
-                });
-            }
-            renderProducts(filteredProducts);
+            filterProducts();
         }
     });
 });
@@ -1115,13 +1149,21 @@ function updateAllHeartButtons() {
     }
 }
 
+async function updateListingFavoriteCount(listingId, delta) {
+    if (!window.unimartListingsSync || typeof window.unimartListingsSync.updateListingFavoriteCountInCloud !== 'function') {
+        return true;
+    }
+
+    return window.unimartListingsSync.updateListingFavoriteCountInCloud(String(listingId), delta);
+}
+
 // Check if item is favorited
 function checkIfFavorited(productId) {
     return userFavoriteIds.has(String(productId));
 }
 
 // Toggle favorite
-function toggleFavorite(productId, product) {
+async function toggleFavorite(productId, product) {
     const user = firebase.auth().currentUser;
     if (!user) {
         console.log('Cannot toggle favorite: no authenticated user');
@@ -1141,20 +1183,31 @@ function toggleFavorite(productId, product) {
 
     const favoritesRef = firebase.database().ref(`favorites/${user.uid}/${normalizedId}`);
     if (isFav) {
-        favoritesRef.remove().catch((error) => {
+        try {
+            await favoritesRef.remove();
+            const countUpdated = await updateListingFavoriteCount(normalizedId, -1);
+            if (!countUpdated) {
+                throw new Error('Failed to update favorite count');
+            }
+        } catch (error) {
             console.error('Error removing from favorites:', error);
-            // Roll back
             userFavoriteIds.add(normalizedId);
             updateAllHeartButtons();
-        });
+            favoritesRef.set({ id: normalizedId, addedAt: firebase.database.ServerValue.TIMESTAMP }).catch(() => {});
+        }
     } else {
-        favoritesRef.set({ id: normalizedId, addedAt: firebase.database.ServerValue.TIMESTAMP })
-            .catch((error) => {
-                console.error('Error adding to favorites:', error);
-                // Roll back
-                userFavoriteIds.delete(normalizedId);
-                updateAllHeartButtons();
-            });
+        try {
+            await favoritesRef.set({ id: normalizedId, addedAt: firebase.database.ServerValue.TIMESTAMP });
+            const countUpdated = await updateListingFavoriteCount(normalizedId, 1);
+            if (!countUpdated) {
+                throw new Error('Failed to update favorite count');
+            }
+        } catch (error) {
+            console.error('Error adding to favorites:', error);
+            userFavoriteIds.delete(normalizedId);
+            updateAllHeartButtons();
+            favoritesRef.remove().catch(() => {});
+        }
     }
 }
 

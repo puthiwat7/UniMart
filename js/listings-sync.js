@@ -22,6 +22,7 @@ function unimartNormalizeListing(item, index = 0) {
 
     const id = String(item.id || Date.now() + index);
     const images = Array.isArray(item.images) ? item.images.filter(Boolean) : [];
+    const favoriteCount = Math.max(0, Math.floor(Number(item.favoriteCount) || 0));
 
     return {
         ...item,
@@ -40,6 +41,7 @@ function unimartNormalizeListing(item, index = 0) {
         condition: Number.isFinite(Number(item.condition)) ? Number(item.condition) : (Number.isFinite(Number(item.conditionPercentage)) ? Number(item.conditionPercentage) : null),
         description: String(item.description || ''),
         quantity: Number(item.quantity) || 1,
+        favoriteCount,
         status,
         listedAt: item.listedAt || item.listedDate || new Date().toISOString(),
         listedDate: item.listedDate || item.listedAt || new Date().toISOString(),
@@ -487,6 +489,35 @@ async function updateListingInCloud(listingId, updateData) {
     }
 }
 
+async function updateListingFavoriteCountInCloud(listingId, delta) {
+    const ref = getListingsDbRef();
+    const numericDelta = Number(delta);
+    if (!ref || !listingId || !Number.isFinite(numericDelta) || numericDelta === 0) return false;
+
+    try {
+        await ensureListingsResetApplied();
+        await withTimeout(ref.child(String(listingId)).transaction((currentValue) => {
+            if (!currentValue || typeof currentValue !== 'object') {
+                return currentValue;
+            }
+
+            const currentCount = Math.max(0, Math.floor(Number(currentValue.favoriteCount) || 0));
+            const nextCount = Math.max(0, currentCount + numericDelta);
+
+            return {
+                ...currentValue,
+                favoriteCount: nextCount,
+                updatedAt: new Date().toISOString()
+            };
+        }));
+        invalidateListingsQueryCaches();
+        return true;
+    } catch (error) {
+        console.warn('Failed to update listing favorite count in cloud:', error);
+        return false;
+    }
+}
+
 async function writeCloudListings(listings) {
     const ref = getListingsDbRef();
     if (!ref) return false;
@@ -663,6 +694,7 @@ window.unimartListingsSync = {
     upsertListingToCloud,
     updateListingStatusInCloud,
     updateListingInCloud,
+    updateListingFavoriteCountInCloud,
     writeCloudListings,
     replaceAllListingsInCloud,
     clearAllListingsInCloud,

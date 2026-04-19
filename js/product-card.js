@@ -20,6 +20,10 @@ function getConditionPercentage(product) {
     return fallbackValue;
 }
 
+function getFavoriteCount(product) {
+    return Math.max(0, Math.floor(Number(product?.favoriteCount) || 0));
+}
+
 function renderProductCard(product, options = {}) {
     const {
         showRemoveButton = false,
@@ -35,6 +39,7 @@ function renderProductCard(product, options = {}) {
     const productIdLiteral = `'${productId}'`;
     const isReserved = Boolean(normalizedProduct.reserved) && String(normalizedProduct.status || 'active').toLowerCase() === 'active';
     const conditionPercent = getConditionPercentage(normalizedProduct);
+    const favoriteCount = getFavoriteCount(normalizedProduct);
     const imageUrl = normalizedProduct.imageUrl || (Array.isArray(normalizedProduct.images) && normalizedProduct.images[0]) || '';
     const card = document.createElement('div');
     card.className = isReserved ? 'product-card reserved-card' : 'product-card';
@@ -49,11 +54,15 @@ function renderProductCard(product, options = {}) {
     }
 
     const heartColor = isFavorited ? '#ef4444' : '#9ca3af';
-    const favoriteButton = showFavoriteIcon
-        ? `<button class="favorite-btn" onclick="event.stopPropagation(); ${onFavoriteToggle}(${productIdLiteral})" style="position: absolute; top: 8px; right: 8px; background-color: transparent; border: none; color: ${heartColor}; font-size: 20px; cursor: pointer; z-index: 10;">
-                <i class="fas fa-heart"></i>
-           </button>`
-        : '';
+    const overlayTopRight = `
+        <div class="product-card-top-right">
+            ${showFavoriteIcon
+                ? `<button class="product-like-button${isFavorited ? ' is-active' : ''}" onclick="event.stopPropagation(); ${onFavoriteToggle}(${productIdLiteral})" style="color: ${heartColor};" title="${isFavorited ? 'Remove from favorites' : 'Add to favorites'}">
+                        <i class="fas fa-heart"></i>
+                        <span>${favoriteCount}</span>
+                   </button>`
+                : `<span class="product-like-count"><i class="fas fa-heart"></i>${favoriteCount}</span>`}
+        </div>`;
 
     const reservedOverlay = isReserved ? '<div class="reserved-overlay">RESERVED</div>' : '';
     const collegeTag = normalizedProduct.college ? `<div class="product-college">${normalizedProduct.college}</div>` : '';
@@ -66,7 +75,7 @@ function renderProductCard(product, options = {}) {
     card.innerHTML = `
         <div class="product-image" onclick="${onViewDetails}(${productIdLiteral})" style="position: relative; cursor: pointer;">
             ${cardImage}
-            ${favoriteButton}
+            ${overlayTopRight}
             ${reservedOverlay}
         </div>
         <div class="product-info">
@@ -93,3 +102,4 @@ function renderProductCard(product, options = {}) {
 
 window.renderProductCard = renderProductCard;
 window.getConditionPercentage = getConditionPercentage;
+window.getFavoriteCount = getFavoriteCount;

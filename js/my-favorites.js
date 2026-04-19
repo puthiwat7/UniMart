@@ -38,6 +38,10 @@ function escHtml(str) {
     return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+function getFavoriteCount(listing) {
+    return Math.max(0, Math.floor(Number(listing?.favoriteCount) || 0));
+}
+
 // ======================== Auth Init ========================
 document.addEventListener('DOMContentLoaded', () => {
     function waitForFirebase() {
@@ -148,6 +152,7 @@ async function fetchFavoritedListings(ids) {
                     images,
                     badge: String(val.badge || 'Used'),
                     description: String(val.description || ''),
+                    favoriteCount: getFavoriteCount(val),
                     status,
                     reserved: Boolean(val.reserved),
                     sellerPaymentQR: val.sellerPaymentQR || ''
@@ -164,6 +169,7 @@ async function fetchFavoritedListings(ids) {
                 college: '',
                 category: '—',
                 description: '',
+                favoriteCount: 0,
                 image: '📦',
                 imageUrl: '',
                 images: [],
@@ -246,6 +252,7 @@ function createFavCard(listing) {
     const isActive = status === 'active';
     const isReserved = Boolean(listing.reserved) && isActive;
     const imageUrl = listing.imageUrl || (Array.isArray(listing.images) && listing.images[0]) || '';
+    const favoriteCount = getFavoriteCount(listing);
 
     let cardImage;
     if (imageUrl) {
@@ -275,10 +282,13 @@ function createFavCard(listing) {
     card.innerHTML = `
         <div class="product-image" onclick="openFavModal(${productIdLiteral})" style="position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;">
             ${cardImage}
-            <button class="favorite-btn" onclick="event.stopPropagation(); handleFavRemove(${productIdLiteral})"
-                style="position:absolute;top:8px;right:8px;background:transparent;border:none;color:#ef4444;font-size:20px;cursor:pointer;z-index:10;" title="Remove from favorites">
-                <i class="fas fa-heart"></i>
-            </button>
+            <div class="product-card-top-right">
+                <button class="product-like-button is-active" onclick="event.stopPropagation(); handleFavRemove(${productIdLiteral})"
+                    style="color:#ef4444;" title="Remove from favorites">
+                    <i class="fas fa-heart"></i>
+                    <span>${favoriteCount}</span>
+                </button>
+            </div>
             ${overlay}
         </div>
         <div class="product-info">
@@ -331,11 +341,24 @@ function renderErrorState(message) {
 }
 
 // ======================== Remove from Favorites ========================
-function handleFavRemove(productId) {
+async function handleFavRemove(productId) {
     const user = getFavCurrentUser();
     if (!user) return;
-    firebase.database().ref(`favorites/${user.uid}/${String(productId)}`).remove()
-        .catch(err => console.error('Error removing favorite:', err));
+    const normalizedId = String(productId);
+    const favoritesRef = firebase.database().ref(`favorites/${user.uid}/${normalizedId}`);
+
+    try {
+        await favoritesRef.remove();
+        if (window.unimartListingsSync && typeof window.unimartListingsSync.updateListingFavoriteCountInCloud === 'function') {
+            const ok = await window.unimartListingsSync.updateListingFavoriteCountInCloud(normalizedId, -1);
+            if (!ok) {
+                throw new Error('Failed to update favorite count');
+            }
+        }
+    } catch (err) {
+        console.error('Error removing favorite:', err);
+        favoritesRef.set({ id: normalizedId, addedAt: firebase.database.ServerValue.TIMESTAMP }).catch(() => {});
+    }
     // Firebase listener auto re-renders grid
 }
 

@@ -129,13 +129,15 @@ async function compressImage(file) {
         return file;
     }
 
+    const normalizedType = typeof file.type === 'string' ? file.type.toLowerCase() : '';
+    const preferredType = normalizedType === 'image/png' ? 'image/png' : 'image/jpeg';
     const options = {
-        maxSizeMB: 0.5, // Max 0.5MB
-        maxWidthOrHeight: 1024, // Max 1024px
+        maxSizeMB: 1.2,
+        maxWidthOrHeight: 1600,
         useWebWorker: true, // Use web worker for performance
         preserveExif: false, // Don't preserve EXIF data
-        fileType: 'image/jpeg', // Convert to JPEG for better compression
-        initialQuality: 0.8 // Start with 80% quality
+        fileType: preferredType,
+        initialQuality: preferredType === 'image/png' ? 1 : 0.92
     };
 
     try {
@@ -242,6 +244,7 @@ function normalizeListing(item, index = 0) {
         condition: getConditionPercentage(item),
         description: String(item.description || ''),
         quantity: Number(item.quantity) || 1,
+        favoriteCount: Math.max(0, Math.floor(Number(item.favoriteCount) || 0)),
         seller: String(item.seller || 'Campus Seller'),
         sellerUid: item.sellerUid || null,
         sellerEmail: item.sellerEmail ? String(item.sellerEmail).toLowerCase() : '',
@@ -699,9 +702,15 @@ function createSaleCard(item) {
     const reservedAction = (item.status === 'active')
         ? `<button class="btn-reserve-toggle" onclick='event.stopPropagation(); toggleSaleReserved(${JSON.stringify(item.id)})'>${item.reserved ? 'Unreserve' : 'Mark as Reserved'}</button>`
         : '';
+    const favoriteCount = Math.max(0, Math.floor(Number(item.favoriteCount) || 0));
 
     card.innerHTML = `
-        <div class="product-image" onclick='openSalesModal(${JSON.stringify(item.id)})'>${cardImage}</div>
+        <div class="product-image" onclick='openSalesModal(${JSON.stringify(item.id)})' style="position:relative;">
+            ${cardImage}
+            <div class="product-card-top-right">
+                <span class="product-like-count"><i class="fas fa-heart"></i>${favoriteCount}</span>
+            </div>
+        </div>
         ${reservedOverlay}
         <div class="product-info">
             <span class="product-badge sale-status-badge ${statusClass}">${statusText}</span>
