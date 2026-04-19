@@ -924,13 +924,20 @@ function resetModalForm() {
 
 // Setup modal event listeners
 function setupProductModal() {
+    const productModal = document.getElementById('productModal');
+    const modalContent = productModal ? productModal.querySelector('.modal-content') : null;
+
     // Modal close button
     const modalCloseBtn = document.getElementById('modalCloseBtn');
     if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeProductModal);
 
-    // Modal overlay click to close
-    const modalOverlay = document.getElementById('modalOverlay');
-    if (modalOverlay) modalOverlay.addEventListener('click', closeProductModal);
+    if (productModal && modalContent) {
+        productModal.addEventListener('click', (event) => {
+            if (!modalContent.contains(event.target)) {
+                closeProductModal();
+            }
+        });
+    }
 
     // Carousel navigation
     const prevBtn = document.getElementById('prevBtn');
@@ -1315,8 +1322,9 @@ function handlePaymentMade() {
 
 // Setup payment modal event listeners
 function setupPaymentModal() {
+    const paymentModal = document.getElementById('paymentModal');
+    const paymentModalContent = paymentModal ? paymentModal.querySelector('.payment-modal-content') : null;
     const paymentModalClose = document.getElementById('paymentModalClose');
-    const paymentModalOverlay = document.getElementById('paymentModalOverlay');
     const btnCancelOrder = document.getElementById('btnCancelOrder');
     const btnPaymentMade = document.getElementById('btnPaymentMade');
     
@@ -1324,8 +1332,12 @@ function setupPaymentModal() {
         paymentModalClose.addEventListener('click', closePaymentModal);
     }
     
-    if (paymentModalOverlay) {
-        paymentModalOverlay.addEventListener('click', closePaymentModal);
+    if (paymentModal && paymentModalContent) {
+        paymentModal.addEventListener('click', (event) => {
+            if (!paymentModalContent.contains(event.target)) {
+                closePaymentModal();
+            }
+        });
     }
     
     if (btnCancelOrder) {

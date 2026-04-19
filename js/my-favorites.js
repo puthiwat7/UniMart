@@ -317,14 +317,22 @@ function renderEmptyState(message, type) {
     const grid = document.getElementById('favoritesGrid');
     if (!grid) return;
     const icon = type === 'sign-in' ? 'fa-sign-in-alt' : 'fa-heart';
+    const title = type === 'sign-in'
+        ? 'Sign in to view favorites'
+        : type === 'browse'
+        ? 'Your favorites list is empty'
+        : 'No favorites yet';
     const linkHtml = type === 'browse'
-        ? `<a href="../" class="my-sales-start-selling-btn"><i class="fas fa-store"></i> Browse Marketplace</a>`
+        ? `<a href="../" class="my-sales-start-selling-btn"><i class="fas fa-store"></i><span>Browse Marketplace</span></a>`
         : type === 'sign-in'
-        ? `<a href="login" class="my-sales-start-selling-btn"><i class="fas fa-sign-in-alt"></i> Sign In</a>`
+        ? `<a href="login" class="my-sales-start-selling-btn"><i class="fas fa-sign-in-alt"></i><span>Sign In</span></a>`
         : '';
     grid.innerHTML = `
-        <div class="my-sales-empty-state">
-            <i class="fas ${icon}"></i>
+        <div class="favorites-empty-state${type === 'error' ? ' favorites-error-state' : ''}">
+            <div class="favorites-empty-icon">
+                <i class="fas ${icon}"></i>
+            </div>
+            <h3>${title}</h3>
             <p>${message}</p>
             ${linkHtml}
         </div>`;
@@ -334,8 +342,11 @@ function renderErrorState(message) {
     const grid = document.getElementById('favoritesGrid');
     if (!grid) return;
     grid.innerHTML = `
-        <div class="my-sales-empty-state">
-            <i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i>
+        <div class="favorites-empty-state favorites-error-state">
+            <div class="favorites-empty-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>Something went wrong</h3>
             <p>${message}</p>
         </div>`;
 }
