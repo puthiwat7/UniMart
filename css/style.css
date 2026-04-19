@@ -4427,8 +4427,9 @@ textarea:focus {
 #policiesModal .policy-modal {
     display: flex !important;
     flex-direction: column !important;
-    max-width: 800px !important;
-    width: 90% !important;
+    width: 100% !important;
+    max-width: 850px !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     position: relative;
     z-index: 9999 !important;
