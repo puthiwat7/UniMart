@@ -232,7 +232,7 @@ textarea:focus {
 }
 
 .nav-item.active {
-    background: linear-gradient(90deg, #7c3aed 0%, #6366f1 100%);
+    background: linear-gradient(90deg, #fb923c 0%, #f97316 100%);
     color: #fff !important;
 }
 
@@ -2760,8 +2760,8 @@ textarea:focus {
 
 /* Active Navigation */
 .nav-item.active {
-    background-color: var(--light-gray);
-    color: var(--primary-blue);
+    background: linear-gradient(90deg, #fb923c 0%, #f97316 100%);
+    color: #fff !important;
 }
 
 /* Responsive - Sell Item Page */
@@ -3086,9 +3086,9 @@ textarea:focus {
 }
 
 .filter-btn.active {
-    background: var(--primary-blue);
-    color: white;
-    border-color: var(--primary-blue);
+    background: linear-gradient(90deg, #fb923c 0%, #f97316 100%);
+    color: #fff;
+    border-color: #fb923c;
 }
 
 /* Old Sales Filter (for backwards compatibility) */
