@@ -277,6 +277,14 @@ function createFavCard(listing) {
         ? `<span class="product-badge" style="background:#ffedd5;color:#c2410c;border-color:#fecaca;">Reserved</span>`
         : '';
 
+    const conditionPercent = getConditionPercentage(listing);
+    const conditionColor = (typeof window.getConditionColor === 'function') ? window.getConditionColor(conditionPercent) : '#6b7280';
+    const conditionBadge = conditionPercent !== null
+        ? `<span class="product-badge condition-badge" style="color:${conditionColor};border-color:${conditionColor};background:transparent;">${escHtml(listing.badge || 'Used')} ${conditionPercent}%</span>`
+        : `<span class="product-badge">${escHtml(listing.badge || 'Used')}</span>`;
+    const collegeTag = listing.college ? `<div class="product-college">${escHtml(listing.college)}</div>` : '';
+    const quantityTag = Number.isFinite(Number(listing.quantity)) ? `<span class="product-quantity">${Number(listing.quantity)} available</span>` : '';
+
     const card = document.createElement('div');
     card.className = 'product-card' + (!isActive ? ' fav-unavailable-card' : isReserved ? ' reserved-card' : '');
     card.innerHTML = `
@@ -293,14 +301,20 @@ function createFavCard(listing) {
         </div>
         <div class="product-info">
             <div class="product-meta-row">
-                <span class="product-badge">${escHtml(listing.badge || 'Used')}</span>
+                ${conditionBadge}
                 ${reservedBadge}
                 ${unavailBadge}
             </div>
-            <h3 class="product-title" onclick="openFavModal(${productIdLiteral})" style="cursor:pointer;">${escHtml(listing.title)}</h3>
-            <div class="product-price">${escHtml(listing.price)}</div>
+            <div class="product-title-price-row">
+                <h3 class="product-title" onclick="openFavModal(${productIdLiteral})" style="cursor:pointer;">${escHtml(listing.title)}</h3>
+                <div class="product-price">${escHtml(listing.price)}</div>
+            </div>
             <div class="product-details-row">
                 <span class="product-seller">by ${escHtml(listing.seller || 'Campus Seller')}</span>
+            </div>
+            <div class="product-college-row">
+                ${collegeTag}
+                ${quantityTag}
             </div>
             <div class="product-actions">
                 <button onclick="openFavModal(${productIdLiteral})">View Details</button>
