@@ -671,6 +671,7 @@ textarea:focus {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    text-align: left;
 }
 
 .favorites-header .orders-header-content h1 {
@@ -699,6 +700,7 @@ textarea:focus {
     max-width: 560px;
     font-size: 1.02rem;
     opacity: 0.9;
+    margin: 0;
 }
 
 .favorites-header .btn-refresh {
