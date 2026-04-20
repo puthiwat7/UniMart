@@ -7513,9 +7513,9 @@ textarea:focus {
 .seller-warning-panel {
     margin: 18px 0 24px;
     padding: 18px;
-    border: 1px solid #fed7aa;
+    border: 1px solid #fecaca;
     border-radius: 16px;
-    background: linear-gradient(135deg, #fff7ed 0%, #fffbeb 100%);
+    background: linear-gradient(135deg, #fef2f2 0%, #fef2f2 100%);
 }
 
 .seller-warning-panel-header {
@@ -7529,12 +7529,12 @@ textarea:focus {
 .seller-warning-panel-header h2 {
     margin: 0 0 4px;
     font-size: 22px;
-    color: #7c2d12;
+    color: #991b1b;
 }
 
 .seller-warning-panel-header p {
     margin: 0;
-    color: #9a3412;
+    color: #dc2626;
 }
 
 .seller-warning-badge {
@@ -7544,7 +7544,7 @@ textarea:focus {
     min-width: 96px;
     padding: 6px 12px;
     border-radius: 999px;
-    background: #ea580c;
+    background: #dc2626;
     color: #fff;
     font-size: 12px;
     font-weight: 700;
@@ -7557,7 +7557,7 @@ textarea:focus {
 
 .seller-warning-card {
     background: #fff;
-    border: 1px solid #fdba74;
+    border: 1px solid #fecaca;
     border-radius: 14px;
     padding: 14px;
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
@@ -7573,20 +7573,20 @@ textarea:focus {
 .seller-warning-card-header h3 {
     margin: 0 0 4px;
     font-size: 16px;
-    color: #7c2d12;
+    color: #991b1b;
 }
 
 .seller-warning-card-header p,
 .seller-warning-message,
 .seller-warning-comment {
     margin: 0;
-    color: #78350f;
+    color: #7f1d1d;
     line-height: 1.5;
 }
 
 .seller-warning-date {
     font-size: 12px;
-    color: #9a3412;
+    color: #dc2626;
     white-space: nowrap;
 }
 
@@ -7597,7 +7597,7 @@ textarea:focus {
 .seller-warning-comment {
     margin-top: 10px;
     padding-top: 10px;
-    border-top: 1px solid #ffedd5;
+    border-top: 1px solid #fee2e2;
 }
 
 .seller-warning-actions {
