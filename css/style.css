@@ -1484,6 +1484,27 @@ textarea:focus {
     color: white;
 }
 
+.product-title-price-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.product-title-price-row .product-title {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-title-price-row .product-price {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
 /* ======================== My Sales Cards ======================== */
 .my-sales-grid {
     padding: 24px 48px 48px;
