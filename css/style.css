@@ -702,15 +702,15 @@ textarea:focus {
 }
 
 .favorites-header .btn-refresh {
-    background: rgba(255, 255, 255, 0.16);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    backdrop-filter: blur(14px);
+        background: #ffffff;
+        color: #000000;
+        border: 1px solid #e5e7eb;
+        backdrop-filter: none;
     box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
 }
 
 .favorites-header .btn-refresh:hover {
-    background: rgba(255, 255, 255, 0.24);
+        background: #f3f4f6;
     box-shadow: 0 16px 34px rgba(15, 23, 42, 0.16);
 }
 
