@@ -20,6 +20,12 @@ function getConditionPercentage(product) {
     return fallbackValue;
 }
 
+function getConditionColor(percent) {
+    if (percent >= 70) return '#10b981'; // Green
+    if (percent >= 40) return '#f59e0b'; // Amber
+    return '#ef4444';                    // Red
+}
+
 function getFavoriteCount(product) {
     return Math.max(0, Math.floor(Number(product?.favoriteCount) || 0));
 }
@@ -81,7 +87,7 @@ function renderProductCard(product, options = {}) {
         <div class="product-info">
             <div class="product-meta-row">
                 <span class="product-badge">${String(normalizedProduct.badge || 'Used')}</span>
-                ${conditionPercent !== null ? `<span class="product-badge condition-badge">${conditionPercent}%</span>` : ''}
+                ${conditionPercent !== null ? `<span class="product-badge condition-badge" style="color:${getConditionColor(conditionPercent)};border-color:${getConditionColor(conditionPercent)};background:transparent;">${conditionPercent}%</span>` : ''}
             </div>
             <h3 class="product-title">${String(normalizedProduct.title || 'Untitled Item')}</h3>
             <div class="product-price">${String(normalizedProduct.price || '¥0.00')}</div>
@@ -102,4 +108,5 @@ function renderProductCard(product, options = {}) {
 
 window.renderProductCard = renderProductCard;
 window.getConditionPercentage = getConditionPercentage;
+window.getConditionColor = getConditionColor;
 window.getFavoriteCount = getFavoriteCount;
