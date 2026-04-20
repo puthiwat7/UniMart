@@ -912,9 +912,9 @@ textarea:focus {
 
 .btn-refresh {
     padding: 12px 24px;
-    background-color: #fff;
-    color: #000;
-    border: 1px solid #ddd;
+    background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+    color: #fff;
+    border: none;
     border-radius: var(--radius-sm);
     font-size: 14px;
     font-weight: 600;
@@ -926,6 +926,7 @@ textarea:focus {
     flex-shrink: 0;
     min-height: 44px;
     flex: 0 0 auto;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.10);
 }
 
 .btn-refresh:hover {
