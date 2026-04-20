@@ -71,7 +71,7 @@ function renderProductCard(product, options = {}) {
         </div>`;
 
     const reservedOverlay = isReserved ? '<div class="reserved-overlay">RESERVED</div>' : '';
-    const collegeTag = normalizedProduct.college ? `<div class="product-college">${normalizedProduct.college}</div>` : '';
+    const sellerTag = `<span class="product-college product-seller-badge">by ${String(normalizedProduct.seller || 'Campus Seller')}</span>`;
     const quantityTag = Number.isFinite(Number(normalizedProduct.quantity)) ? `<span class="product-quantity">${Number(normalizedProduct.quantity)} available</span>` : '';
 
     const removeButton = showRemoveButton
@@ -96,10 +96,7 @@ function renderProductCard(product, options = {}) {
                 <div class="product-price">${String(normalizedProduct.price || '¥0.00')}</div>
             </div>
             <div class="product-details-row">
-                <span class="product-seller">by ${String(normalizedProduct.seller || 'Campus Seller')}</span>
-            </div>
-            <div class="product-college-row">
-                ${collegeTag}
+                ${sellerTag}
                 ${quantityTag}
             </div>
             <div class="product-actions">
