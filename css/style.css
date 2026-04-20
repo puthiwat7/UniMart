@@ -4141,6 +4141,19 @@ textarea:focus {
     box-shadow: 0 8px 20px rgba(239, 68, 68, 0.15);
 }
 
+#favoritesGrid .btn-action-withdraw {
+    background: var(--danger-red);
+    color: #ffffff;
+    border-color: var(--danger-red);
+}
+
+#favoritesGrid .btn-action-withdraw:hover {
+    background: var(--danger-red-dark);
+    color: #ffffff;
+    border-color: var(--danger-red-dark);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.28);
+}
+
 .btn-action-sold {
     background: var(--success);
     color: white;
