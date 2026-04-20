@@ -1353,6 +1353,7 @@ textarea:focus {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: nowrap;
     gap: 12px;
     margin-bottom: 8px;
 }
@@ -1364,7 +1365,8 @@ textarea:focus {
 }
 
 .product-quantity {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     font-size: 11px;
     color: #1f2937;
     font-weight: 600;
@@ -1378,13 +1380,21 @@ textarea:focus {
     transition: all 0.2s ease;
 }
 
+.product-college-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
 .product-college {
     font-size: 12px;
     color: #3b82f6;
     background-color: #eff6ff;
     padding: 4px 8px;
     border-radius: 4px;
-    margin-bottom: 12px;
+    margin-bottom: 0;
     font-weight: 600;
     display: inline-block;
 }
