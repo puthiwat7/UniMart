@@ -4333,7 +4333,7 @@ textarea:focus {
     flex: 1;
     padding: 14px 18px;
     background: white;
-    color: #334155;
+    color: #dc2626;
     border: 1px solid #cbd5e1;
     font-size: 14px;
     font-weight: 700;
@@ -4344,9 +4344,9 @@ textarea:focus {
 }
 
 .btn-save:hover {
-    border-color: #4338ca;
-    color: #4338ca;
-    background: rgba(237, 242, 255, 0.9);
+    border-color: #fca5a5;
+    color: #dc2626;
+    background: white;
 }
 
 .btn-save.favorited {
@@ -4362,6 +4362,22 @@ textarea:focus {
 .btn-save.favorited i {
     color: #b91c1c;
     fill: #b91c1c;
+}
+
+/* Ensure popup listing Save button (non-favorited) stays black text on white background */
+#modalSaveBtn:not(.favorited),
+#modalSaveBtn:not(.favorited):hover,
+#modalSaveBtn:not(.favorited):active {
+    background: #ffffff !important;
+    color: #111827 !important;
+    border: 1px solid #111827 !important;
+}
+
+#modalSaveBtn:not(.favorited) i,
+#modalSaveBtn:not(.favorited):hover i,
+#modalSaveBtn:not(.favorited):active i {
+    color: #111827 !important;
+    fill: #111827 !important;
 }
 
 /* Modal Details Pills Row */
