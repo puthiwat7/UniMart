@@ -896,14 +896,14 @@ textarea:focus {
 }
 
 .filters .btn-refresh {
-    background: #111827;
+    background: #1e3a8a;
     color: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3);
 }
 
 .filters .btn-refresh:hover {
-    background: #374151;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+    background: #1e40af;
+    box-shadow: 0 6px 18px rgba(30, 58, 138, 0.4);
 }
 
 .header-banner,
