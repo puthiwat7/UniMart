@@ -838,7 +838,7 @@ function openProductModal(product) {
         // Color code: Green (>70%), Yellow (40-70%), Red (<40%)
         if (conditionValue >= 70) {
             conditionBar.style.backgroundColor = '#10b981'; // Green
-        } else if (conditionValue >= 40) {
+        } else if (conditionValue >= 31) {
             conditionBar.style.backgroundColor = '#f59e0b'; // Yellow/Amber
         } else {
             conditionBar.style.backgroundColor = '#ef4444'; // Red
