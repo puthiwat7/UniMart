@@ -1355,7 +1355,7 @@ textarea:focus {
     justify-content: space-between;
     flex-wrap: nowrap;
     gap: 12px;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .product-seller {
