@@ -651,10 +651,10 @@ textarea:focus {
 }
 
 .header-banner h1 {
-    background: linear-gradient(180deg, #ffffff 0%, #e0e7ff 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    color: #ffffff;
     text-shadow: 0 12px 34px rgba(15, 23, 42, 0.24);
     letter-spacing: 0.04em;
     font-size: clamp(4.5rem, 6vw, 6.5rem);
@@ -668,8 +668,8 @@ textarea:focus {
     margin: 0 auto;
     font-size: 1rem;
     line-height: 1.7;
-    opacity: 0.96;
-    color: rgba(255, 255, 255, 0.92);
+    opacity: 1;
+    color: #ffffff;
 }
 
 .header-banner::before,
@@ -896,14 +896,14 @@ textarea:focus {
 }
 
 .filters .btn-refresh {
-    background: #1e3a8a;
+    background: #4a5fc1;
     color: #ffffff;
-    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3);
+    box-shadow: 0 2px 8px rgba(74, 95, 193, 0.3);
 }
 
 .filters .btn-refresh:hover {
-    background: #1e40af;
-    box-shadow: 0 6px 18px rgba(30, 58, 138, 0.4);
+    background: #3b4fa8;
+    box-shadow: 0 6px 18px rgba(74, 95, 193, 0.4);
 }
 
 .header-banner,
@@ -1465,7 +1465,7 @@ textarea:focus {
 }
 
 .product-actions button:first-child {
-    background: linear-gradient(135deg, #60a5fa 0%, var(--primary-blue) 50%, #1d4ed8 100%);
+    background: linear-gradient(135deg, #60a5fa 0%, var(--primary-blue) 50%, #1e3a8a 100%);
     box-shadow: 0 14px 30px rgba(37, 99, 235, 0.34);
     color: #ffffff;
     text-shadow: 0 1px 2px rgba(30, 64, 175, 0.35);
@@ -1473,7 +1473,7 @@ textarea:focus {
 
 .product-actions button:first-child:hover,
 .product-actions button:first-child:active {
-    background: linear-gradient(135deg, #60a5fa 0%, var(--primary-blue) 50%, #1d4ed8 100%);
+    background: linear-gradient(135deg, #60a5fa 0%, var(--primary-blue) 50%, #1e3a8a 100%);
     box-shadow: 0 14px 30px rgba(37, 99, 235, 0.34);
     color: #ffffff;
 }
