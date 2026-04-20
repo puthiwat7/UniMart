@@ -1444,16 +1444,16 @@ textarea:focus {
 }
 
 .product-actions button:first-child {
-    background: linear-gradient(135deg, #fb923c 0%, #f97316 45%, #ea580c 100%);
-    box-shadow: 0 12px 26px rgba(249, 115, 22, 0.28);
+    background: linear-gradient(135deg, #60a5fa 0%, var(--primary-blue) 50%, #1d4ed8 100%);
+    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.34);
     color: #ffffff;
-    text-shadow: 0 1px 2px rgba(124, 45, 18, 0.45);
+    text-shadow: 0 1px 2px rgba(30, 64, 175, 0.35);
 }
 
 .product-actions button:first-child:hover,
 .product-actions button:first-child:active {
-    background: linear-gradient(135deg, #fdba74 0%, #fb923c 50%, #f97316 100%);
-    box-shadow: 0 14px 30px rgba(249, 115, 22, 0.34);
+    background: linear-gradient(135deg, #60a5fa 0%, var(--primary-blue) 50%, #1d4ed8 100%);
+    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.34);
     color: #ffffff;
 }
 
