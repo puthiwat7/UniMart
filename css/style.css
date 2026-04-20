@@ -439,9 +439,9 @@ textarea:focus {
     padding: 18px 20px;
     margin-bottom: 20px;
     border-radius: 20px;
-    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 45%, #8b5cf6 100%);
+    background: #111827;
     color: #ffffff;
-    box-shadow: 0 18px 50px rgba(79,70,229,0.18);
+    box-shadow: 0 18px 50px rgba(0,0,0,0.28);
     position: sticky;
     top: 12px;
     z-index: 40;
