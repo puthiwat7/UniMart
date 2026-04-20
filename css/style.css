@@ -404,6 +404,15 @@ textarea:focus {
     overflow: visible;
 }
 
+.sell-item-page > .main-content {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 240px;
+    padding: 0;
+    background: #ffffff;
+    overflow: visible;
+}
+
 .page-hero,
 .header-banner,
 .sell-header,
@@ -448,7 +457,6 @@ textarea:focus {
     text-align: center;
 }
 
-.sell-header,
 .profile-header,
 .sales-header,
 .favorites-header {
@@ -457,6 +465,22 @@ textarea:focus {
     align-items: center;
     justify-content: space-between;
     gap: 20px;
+}
+
+.sell-header {
+    position: relative;
+    margin: 0 auto 34px;
+    padding: 44px 40px;
+    border-radius: 32px;
+    box-shadow: 0 32px 90px rgba(79,70,229,0.2);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    text-align: center;
+    min-height: 179px;
 }
 
 .profile-header {
@@ -2366,14 +2390,68 @@ textarea:focus {
 }
 
 .sell-header h1 {
-    font-size: clamp(2.2rem, 3vw, 3.25rem);
+    position: relative;
+    margin: 0 0 12px;
+    font-size: 3rem;
     font-weight: 800;
-    margin-bottom: 12px;
+    line-height: 1em;
 }
 
 .sell-header p {
+    position: relative;
+    max-width: 720px;
+    margin: 0 auto;
     font-size: 1rem;
-    opacity: 0.9;
+    line-height: 1.7;
+    opacity: 0.92;
+}
+
+.sell-item-page .sell-header {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 45%, #8b5cf6 100%);
+    color: #ffffff;
+    box-shadow: 0 32px 90px rgba(79,70,229,0.2);
+}
+
+.sell-item-page .sell-header::before {
+    content: '';
+    position: absolute;
+    top: -30px;
+    left: -30px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    filter: blur(36px);
+}
+
+.sell-item-page .sell-header::after {
+    content: '';
+    position: absolute;
+    right: -40px;
+    bottom: -40px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.14);
+    filter: blur(28px);
+}
+
+.sell-item-page .sell-header h1,
+.sell-item-page .sell-header p {
+    position: relative;
+}
+
+.sell-item-page .sell-header h1 {
+    font-size: 3rem;
+    margin: 0 0 12px;
+    line-height: 1em;
+}
+
+.sell-item-page .sell-header p {
+    max-width: 720px;
+    margin: 0 auto;
+    line-height: 1.7;
+    opacity: 0.92;
 }
 
 .sell-form-container {
