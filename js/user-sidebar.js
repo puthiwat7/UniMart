@@ -221,6 +221,12 @@ window.unimartAdminAccess = {
     isCurrentUserAdmin
 };
 
+function updateLoginNotice(isAuthenticated) {
+    if (window.unimartLoginNotice) {
+        window.unimartLoginNotice.setAuthenticated(Boolean(isAuthenticated));
+    }
+}
+
 function applyUserToSidebar(userLike) {
     const loginBtn = document.getElementById('loginBtn');
 
@@ -273,6 +279,8 @@ function applyUserToSidebar(userLike) {
         ensureAdminNavItem(null);
         ensureFeedbackNavItem();
     }
+
+    updateLoginNotice(Boolean(userLike && userLike.email));
 }
 
 let _loginBanWatchRef = null;
@@ -344,6 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             stopLoginBanWatch();
         }
+        updateLoginNotice(Boolean(user && user.email));
         await enforcePolicy(user);
     });
 
