@@ -247,19 +247,9 @@ function renderFavoritesGrid() {
 
 function createFavCard(listing) {
     const productId = String(listing.id);
-    const productIdLiteral = `'${productId}'`;
     const status = String(listing.status || 'active').toLowerCase();
     const isActive = status === 'active';
     const isReserved = Boolean(listing.reserved) && isActive;
-    const imageUrl = listing.imageUrl || (Array.isArray(listing.images) && listing.images[0]) || '';
-    const favoriteCount = getFavoriteCount(listing);
-
-    let cardImage;
-    if (imageUrl) {
-        cardImage = `<img src="${imageUrl}" alt="${escHtml(listing.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">`;
-    } else {
-        cardImage = `<span style="font-size:64px;line-height:1;">${listing.image || '📦'}</span>`;
-    }
 
     const overlayBg = status === 'sold' ? '#dc2626cc' : status === 'withdrawn' ? '#6b7280cc' : '#374151cc';
     const statusOverlay = !isActive
@@ -277,53 +267,29 @@ function createFavCard(listing) {
         ? `<span class="product-badge" style="background:#ffedd5;color:#c2410c;border-color:#fecaca;">Reserved</span>`
         : '';
 
-    const conditionPercent = getConditionPercentage(listing);
-    const conditionColor = (typeof window.getConditionColor === 'function') ? window.getConditionColor(conditionPercent) : '#6b7280';
-    const conditionBadge = conditionPercent !== null
-        ? `<span class="product-badge condition-badge" style="color:${conditionColor};border-color:${conditionColor};background:transparent;">${escHtml(listing.badge || 'Used')} ${conditionPercent}%</span>`
-        : `<span class="product-badge">${escHtml(listing.badge || 'Used')}</span>`;
-    const collegeTag = listing.college ? `<div class="product-college">${escHtml(listing.college)}</div>` : '';
-    const quantityTag = Number.isFinite(Number(listing.quantity)) ? `<span class="product-quantity">${Number(listing.quantity)} available</span>` : '';
+    const card = renderProductCard(listing, {
+        showRemoveButton: true,
+        showFavoriteIcon: true,
+        onViewDetails: 'openFavModal',
+        onFavoriteToggle: 'handleFavRemove',
+        onRemove: 'handleFavRemove',
+        isFavorited: true,
+        removeButtonClass: 'btn-action btn-action-withdraw',
+        removeButtonIconClass: 'fas fa-heart-broken',
+        removeButtonText: 'Remove',
+        removeButtonTitle: 'Remove from favorites',
+        overlayHtml: overlay,
+        extraMetaHtml: `${reservedBadge}${unavailBadge}`
+    });
 
-    const card = document.createElement('div');
-    card.className = 'product-card' + (!isActive ? ' fav-unavailable-card' : isReserved ? ' reserved-card' : '');
-    card.innerHTML = `
-        <div class="product-image" onclick="openFavModal(${productIdLiteral})" style="position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;">
-            ${cardImage}
-            <div class="product-card-top-right">
-                <button class="product-like-button is-active" onclick="event.stopPropagation(); handleFavRemove(${productIdLiteral})"
-                    style="color:#ef4444;" title="Remove from favorites">
-                    <i class="fas fa-heart"></i>
-                    <span>${favoriteCount}</span>
-                </button>
-            </div>
-            ${overlay}
-        </div>
-        <div class="product-info">
-            <div class="product-meta-row">
-                ${conditionBadge}
-                ${reservedBadge}
-                ${unavailBadge}
-            </div>
-            <div class="product-title-price-row">
-                <h3 class="product-title" onclick="openFavModal(${productIdLiteral})" style="cursor:pointer;">${escHtml(listing.title)}</h3>
-                <div class="product-price">${escHtml(listing.price)}</div>
-            </div>
-            <div class="product-details-row">
-                <span class="product-seller">by ${escHtml(listing.seller || 'Campus Seller')}</span>
-            </div>
-            <div class="product-college-row">
-                ${collegeTag}
-                ${quantityTag}
-            </div>
-            <div class="product-actions">
-                <button onclick="openFavModal(${productIdLiteral})">View Details</button>
-                <button class="btn-action btn-action-withdraw" onclick="event.stopPropagation(); handleFavRemove(${productIdLiteral})" title="Remove from favorites">
-                    <i class="fas fa-heart-broken"></i>
-                    Remove
-                </button>
-            </div>
-        </div>`;
+    if (!isActive) {
+        card.classList.add('fav-unavailable-card');
+    }
+
+    if (isReserved) {
+        card.classList.add('reserved-card');
+    }
+
     return card;
 }
 
