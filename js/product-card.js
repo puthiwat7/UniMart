@@ -86,8 +86,10 @@ function renderProductCard(product, options = {}) {
         </div>
         <div class="product-info">
             <div class="product-meta-row">
-                <span class="product-badge">${String(normalizedProduct.badge || 'Used')}</span>
-                ${conditionPercent !== null ? `<span class="product-badge condition-badge" style="color:${getConditionColor(conditionPercent)};border-color:${getConditionColor(conditionPercent)};background:transparent;">${conditionPercent}%</span>` : ''}
+                ${conditionPercent !== null
+                    ? `<span class="product-badge condition-badge" style="color:${getConditionColor(conditionPercent)};border-color:${getConditionColor(conditionPercent)};background:transparent;">${String(normalizedProduct.badge || 'Used')} ${conditionPercent}%</span>`
+                    : `<span class="product-badge">${String(normalizedProduct.badge || 'Used')}</span>`
+                }
             </div>
             <div class="product-title-price-row">
                 <h3 class="product-title">${String(normalizedProduct.title || 'Untitled Item')}</h3>
@@ -95,9 +97,11 @@ function renderProductCard(product, options = {}) {
             </div>
             <div class="product-details-row">
                 <span class="product-seller">by ${String(normalizedProduct.seller || 'Campus Seller')}</span>
+            </div>
+            <div class="product-college-row">
+                ${collegeTag}
                 ${quantityTag}
             </div>
-            ${collegeTag}
             <div class="product-actions">
                 <button onclick="event.stopPropagation(); ${onViewDetails}(${productIdLiteral})">View Details</button>
                 ${removeButton}
