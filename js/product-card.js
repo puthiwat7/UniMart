@@ -37,7 +37,13 @@ function renderProductCard(product, options = {}) {
         onViewDetails = 'handleViewDetails',
         onFavoriteToggle = 'toggleFavorite',
         onRemove = 'removeFromFavorites',
-        isFavorited = false
+        isFavorited = false,
+        removeButtonClass = 'product-action-btn remove-btn',
+        removeButtonIconClass = '',
+        removeButtonText = 'Remove',
+        removeButtonTitle = 'Remove',
+        extraMetaHtml = '',
+        overlayHtml = null
     } = options;
 
     const normalizedProduct = product || {};
@@ -71,18 +77,19 @@ function renderProductCard(product, options = {}) {
         </div>`;
 
     const reservedOverlay = isReserved ? '<div class="reserved-overlay">RESERVED</div>' : '';
+    const resolvedOverlay = overlayHtml === null ? reservedOverlay : String(overlayHtml || '');
     const sellerTag = `<span class="product-college product-seller-badge">by ${String(normalizedProduct.seller || 'Campus Seller')}</span>`;
     const quantityTag = Number.isFinite(Number(normalizedProduct.quantity)) ? `<span class="product-quantity">${Number(normalizedProduct.quantity)} available</span>` : '';
 
     const removeButton = showRemoveButton
-        ? `<button class="product-action-btn remove-btn" onclick="event.stopPropagation(); ${onRemove}(${productIdLiteral})">Remove</button>`
+        ? `<button class="${String(removeButtonClass)}" onclick="event.stopPropagation(); ${onRemove}(${productIdLiteral})" title="${String(removeButtonTitle)}">${removeButtonIconClass ? `<i class="${String(removeButtonIconClass)}"></i>` : ''}${String(removeButtonText)}</button>`
         : '';
 
     card.innerHTML = `
         <div class="product-image" onclick="${onViewDetails}(${productIdLiteral})" style="position: relative; cursor: pointer;">
             ${cardImage}
             ${overlayTopRight}
-            ${reservedOverlay}
+            ${resolvedOverlay}
         </div>
         <div class="product-info">
             <div class="product-meta-row">
@@ -90,6 +97,7 @@ function renderProductCard(product, options = {}) {
                     ? `<span class="product-badge condition-badge" style="color:${getConditionColor(conditionPercent)};border-color:${getConditionColor(conditionPercent)};background:transparent;">${String(normalizedProduct.badge || 'Used')} ${conditionPercent}%</span>`
                     : `<span class="product-badge">${String(normalizedProduct.badge || 'Used')}</span>`
                 }
+                ${String(extraMetaHtml || '')}
             </div>
             <div class="product-title-price-row">
                 <h3 class="product-title">${String(normalizedProduct.title || 'Untitled Item')}</h3>
