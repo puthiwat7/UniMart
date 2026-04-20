@@ -166,11 +166,18 @@ textarea:focus {
     padding: 24px 16px;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    overflow: hidden;
     position: fixed;
     height: 100vh;
     left: 0;
     top: 0;
+}
+
+.navigation {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 
 .logo {
