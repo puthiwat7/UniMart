@@ -66,6 +66,14 @@
             background-color: #218838 !important;
             border-color: #218838 !important;
         }
+
+        #profileSaveBtn,
+        #profileSaveBtn:hover,
+        #profileSaveBtn:active {
+            background-color: #10b981 !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
     </style>
 
     <!-- Firebase SDKs (Compat version for script tag compatibility) -->
@@ -259,7 +267,7 @@
 
                             <div class="form-actions">
                                 <button type="button" class="btn-cancel" id="cancelEditBtn">Cancel</button>
-                                <button type="submit" class="btn-save">Save Changes</button>
+                                <button type="submit" class="btn-save" id="profileSaveBtn" style="background-color: #10b981; color: #ffffff; border: none;">Save Changes</button>
                             </div>
                         </form>
                     </div>
