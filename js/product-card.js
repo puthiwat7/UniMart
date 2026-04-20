@@ -89,8 +89,10 @@ function renderProductCard(product, options = {}) {
                 <span class="product-badge">${String(normalizedProduct.badge || 'Used')}</span>
                 ${conditionPercent !== null ? `<span class="product-badge condition-badge" style="color:${getConditionColor(conditionPercent)};border-color:${getConditionColor(conditionPercent)};background:transparent;">${conditionPercent}%</span>` : ''}
             </div>
-            <h3 class="product-title">${String(normalizedProduct.title || 'Untitled Item')}</h3>
-            <div class="product-price">${String(normalizedProduct.price || '¥0.00')}</div>
+            <div class="product-title-price-row">
+                <h3 class="product-title">${String(normalizedProduct.title || 'Untitled Item')}</h3>
+                <div class="product-price">${String(normalizedProduct.price || '¥0.00')}</div>
+            </div>
             <div class="product-details-row">
                 <span class="product-seller">by ${String(normalizedProduct.seller || 'Campus Seller')}</span>
                 ${quantityTag}
