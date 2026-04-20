@@ -176,14 +176,15 @@ textarea:focus {
 .logo {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 32px;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 8px;
     cursor: pointer;
 }
 
 .logo-placeholder {
-    width: 48px;
-    height: 48px;
+    width: 184px;
+    height: 184px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -191,30 +192,26 @@ textarea:focus {
 }
 
 .logo-placeholder .logo-image {
-    width: 48px;
-    height: 48px;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
+    object-position: center;
+    image-rendering: auto;
+    transform: translateZ(0);
     display: block;
 }
 
 .logo h1 {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-color);
+    display: none;
 }
 
 .navigation h3 {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--dark-gray);
-    margin-bottom: 16px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    display: none;
 }
 
 .navigation ul {
     list-style: none;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 }
 
 .nav-item {

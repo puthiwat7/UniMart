@@ -212,58 +212,34 @@ body {
 .logo-section {
     display: flex;
     align-items: center;
-    gap: 16px;
-    text-align: left;
+    justify-content: center;
+    gap: 0;
+    text-align: center;
     margin-bottom: 26px;
 }
 
 .logo-circle {
-    width: 78px;
-    height: 78px;
+    width: 296px;
+    height: 296px;
     background: linear-gradient(135deg, #eef2ff, #dbeafe);
-    border-radius: 24px;
+    border-radius: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     margin: 0;
+    padding: 28px;
     box-shadow: 0 16px 34px rgba(79, 70, 229, 0.16);
 }
 
 .login-logo-image {
-    width: 54px;
-    height: 54px;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
+    object-position: center;
+    image-rendering: auto;
+    transform: translateZ(0);
     display: block;
-}
-
-.brand-copy {
-    flex: 1;
-}
-
-.brand-kicker {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--primary);
-    margin-bottom: 4px;
-}
-
-/* Welcome Text */
-h2 {
-    font-size: 34px;
-    font-weight: 700;
-    color: #1f2937;
-    margin-bottom: 4px;
-}
-
-.subtitle {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin-bottom: 0;
-    font-weight: 400;
 }
 
 /* Divider */
@@ -608,26 +584,20 @@ h2 {
     }
 
     .logo-section {
-        gap: 14px;
+        justify-content: center;
+        gap: 0;
         margin-bottom: 24px;
     }
 
     .logo-circle {
-        width: 64px;
-        height: 64px;
+        width: 224px;
+        height: 224px;
+        padding: 24px;
     }
 
     .login-logo-image {
-        width: 44px;
-        height: 44px;
-    }
-
-    h2 {
-        font-size: 28px;
-    }
-
-    .subtitle {
-        font-size: 14px;
+        width: 100%;
+        height: 100%;
     }
 
     .trust-row {
