@@ -324,7 +324,7 @@ function removeSampleItemsFromStorage() {
     });
 }
 
-async function loadAllListingsForStorage() {
+async function loadAllListingsForStorage(forceRefresh = false) {
     mySalesLoadError = null;
     mySalesLoadWarning = null;
     const currentUser = getCurrentUserIdentity();
@@ -335,10 +335,12 @@ async function loadAllListingsForStorage() {
         return [];
     }
 
+    const cacheTtlMs = forceRefresh ? 0 : 45000;
+
     try {
         const all = (currentUser.uid && typeof window.unimartListingsSync.getListingsForSellerFromCloud === 'function')
-            ? await window.unimartListingsSync.getListingsForSellerFromCloud(currentUser.uid, { limit: 300, cacheTtlMs: 45000 })
-            : await window.unimartListingsSync.getAllListingsFromCloud({ limit: 300, cacheTtlMs: 45000 });
+            ? await window.unimartListingsSync.getListingsForSellerFromCloud(currentUser.uid, { limit: 300, cacheTtlMs })
+            : await window.unimartListingsSync.getAllListingsFromCloud({ limit: 300, cacheTtlMs });
         const normalized = all.map((item, index) => normalizeListing(item, index)).filter(Boolean);
         const readState = window.unimartListingsSyncLastReadState || null;
 
@@ -361,10 +363,10 @@ async function loadAllListingsForStorage() {
     }
 }
 
-async function loadMySalesData() {
+async function loadMySalesData(forceRefresh = false) {
     const currentUser = getCurrentUserIdentity();
     console.log('My Sales - Current User:', currentUser);
-    const allListings = await loadAllListingsForStorage();
+    const allListings = await loadAllListingsForStorage(forceRefresh);
     console.log('My Sales - All Listings:', allListings.length);
     mySalesData = allListings.filter((item) => listingBelongsToCurrentUser(item, currentUser));
     console.log('My Sales - User\'s Listings:', mySalesData.length, mySalesData);
@@ -422,7 +424,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const refreshSalesBtn = document.getElementById('refreshSalesBtn');
     if (refreshSalesBtn) {
         refreshSalesBtn.addEventListener('click', async () => {
-            await refreshMySalesView();
+            refreshSalesBtn.disabled = true;
+            const icon = refreshSalesBtn.querySelector('i');
+            const label = refreshSalesBtn.querySelector('span');
+            if (icon) icon.style.animation = 'spin 0.8s linear infinite';
+            if (label) label.textContent = 'Refreshing...';
+            window.location.reload();
         });
     }
 
@@ -482,7 +489,7 @@ window.addEventListener('beforeunload', () => {
 async function refreshMySalesView() {
     cachedAllListings = null; // Force fresh fetch on refresh
     renderMySalesLoadingState();
-    await loadMySalesData();
+    await loadMySalesData(true); // forceRefresh bypasses cloud service cache
     filterSales();
     updateSalesStats();
     setupMySalesRealtimeSync();
