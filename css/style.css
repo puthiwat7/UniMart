@@ -2010,6 +2010,32 @@ textarea:focus {
     padding: 6px 12px;
 }
 
+.my-sales-grid .product-title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.my-sales-grid .product-title-row .product-seller {
+    flex: 1;
+    min-width: 0;
+}
+
+.my-sales-grid .product-title-row .product-price {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.my-sales-grid .product-actions {
+    margin-top: 8px;
+}
+
+.my-sales-grid .btn-reserve-toggle {
+    background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 50%, #6d28d9 100%) !important;
+    box-shadow: 0 4px 14px rgba(109, 40, 217, 0.35) !important;
+}
+
 @media (max-width: 768px) {
     .my-sales-grid {
         padding: 16px;
