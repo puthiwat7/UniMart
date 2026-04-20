@@ -689,9 +689,12 @@ function setupToggleFilter() {
 // Setup refresh button
 function setupRefresh() {
     const refreshBtn = document.querySelector('.btn-refresh');
-    refreshBtn.addEventListener('click', async () => {
-        // Refresh the products
-        await refreshMarketplaceProducts();
+    refreshBtn.addEventListener('click', () => {
+        const icon = refreshBtn.querySelector('i');
+        if (icon) icon.style.animation = 'spin 0.8s linear infinite';
+        refreshBtn.disabled = true;
+        refreshBtn.childNodes[refreshBtn.childNodes.length - 1].textContent = ' Refreshing...';
+        window.location.reload();
     });
 }
 
