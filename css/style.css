@@ -3766,7 +3766,7 @@ textarea:focus {
 .modal-details-section {
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 16px;
 }
 
 .modal-view-content {
@@ -4313,7 +4313,7 @@ textarea:focus {
 .modal-actions {
     display: flex;
     gap: 16px;
-    margin-top: 20px;
+    margin-top: 6px;
     align-items: center;
     justify-content: flex-end;
     width: 100%;
