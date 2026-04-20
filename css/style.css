@@ -1725,7 +1725,7 @@ textarea:focus {
 }
 
 .sale-status-badge.status-withdrawn {
-    background-color: #6b7280;
+    background-color: #ef4444;
 }
 
 .sale-meta-line {
@@ -3294,9 +3294,19 @@ textarea:focus {
 }
 
 .filter-btn.active {
-    background: linear-gradient(90deg, #fb923c 0%, #f97316 100%);
+    background: linear-gradient(90deg, var(--primary-blue) 0%, #3b4fd8 100%);
     color: #fff;
-    border-color: #fb923c;
+    border-color: var(--primary-blue);
+}
+
+.filter-btn[data-filter="withdrawn"].active {
+    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+    border-color: #ef4444;
+}
+
+.filter-btn[data-filter="sold"].active {
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+    border-color: #10b981;
 }
 
 /* Old Sales Filter (for backwards compatibility) */
