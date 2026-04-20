@@ -721,8 +721,10 @@ function createSaleCard(item) {
         ${reservedOverlay}
         <div class="product-info">
             <h3 class="product-title" onclick='openSalesModal(${JSON.stringify(item.id)})'>${item.title}</h3>
-            <div class="product-price">${item.price}</div>
-            <div class="product-seller">${item.category}</div>
+            <div class="product-title-row">
+                <div class="product-seller">${item.category}</div>
+                <div class="product-price">${item.price}</div>
+            </div>
             ${extraInfo}
             <div class="product-actions">
                 <button onclick='openSalesModal(${JSON.stringify(item.id)})'>View Details</button>
