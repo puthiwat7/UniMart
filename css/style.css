@@ -646,7 +646,7 @@ textarea:focus {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     font-size: 0.78rem;
     font-weight: 700;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
