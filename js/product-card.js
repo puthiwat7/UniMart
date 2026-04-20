@@ -22,7 +22,7 @@ function getConditionPercentage(product) {
 
 function getConditionColor(percent) {
     if (percent >= 70) return '#10b981'; // Green
-    if (percent >= 40) return '#f59e0b'; // Amber
+    if (percent >= 31) return '#f59e0b'; // Amber
     return '#ef4444';                    // Red
 }
 
