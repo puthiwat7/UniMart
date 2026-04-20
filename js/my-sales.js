@@ -720,7 +720,6 @@ function createSaleCard(item) {
         </div>
         ${reservedOverlay}
         <div class="product-info">
-            <span class="product-badge sale-status-badge ${statusClass}">${statusText}</span>
             <h3 class="product-title" onclick='openSalesModal(${JSON.stringify(item.id)})'>${item.title}</h3>
             <div class="product-price">${item.price}</div>
             <div class="product-seller">${item.category}</div>
