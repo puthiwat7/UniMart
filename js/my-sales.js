@@ -285,6 +285,50 @@ function getConditionPercentage(item) {
     return null;
 }
 
+const SALES_EDIT_CONDITION_LEVELS = {
+    0: { label: 'Very Poor', info: 'Item has significant damage and may not function properly.' },
+    20: { label: 'Poor', info: 'Item has major wear and tear. Limited functionality.' },
+    40: { label: 'Fair', info: 'Item has moderate wear. Functions with some limitations.' },
+    60: { label: 'Good', info: 'Item shows minor signs of wear but functions perfectly. Great value.' },
+    80: { label: 'Like New', info: 'Item is in excellent condition with minimal wear. Rarely used.' },
+    100: { label: 'Brand New', info: 'Item is new, unopened, and in original packaging.' }
+};
+
+function getConditionLabelFromValue(value) {
+    const numericValue = Math.max(0, Math.min(100, Number(value) || 0));
+    if (numericValue <= 10) return SALES_EDIT_CONDITION_LEVELS[0].label;
+    if (numericValue <= 30) return SALES_EDIT_CONDITION_LEVELS[20].label;
+    if (numericValue <= 50) return SALES_EDIT_CONDITION_LEVELS[40].label;
+    if (numericValue <= 70) return SALES_EDIT_CONDITION_LEVELS[60].label;
+    if (numericValue <= 90) return SALES_EDIT_CONDITION_LEVELS[80].label;
+    return SALES_EDIT_CONDITION_LEVELS[100].label;
+}
+
+function updateSalesEditConditionUI() {
+    const conditionInput = document.getElementById('editCondition');
+    const percentageEl = document.getElementById('editConditionPercentage');
+    const labelEl = document.getElementById('editConditionLabel');
+    const infoEl = document.getElementById('editConditionInfo');
+    if (!conditionInput || !percentageEl || !labelEl || !infoEl) return;
+
+    const value = Math.max(0, Math.min(100, Number(conditionInput.value) || 0));
+    conditionInput.value = String(value);
+
+    let levelKey;
+    if (value <= 10) levelKey = 0;
+    else if (value <= 30) levelKey = 20;
+    else if (value <= 50) levelKey = 40;
+    else if (value <= 70) levelKey = 60;
+    else if (value <= 90) levelKey = 80;
+    else levelKey = 100;
+
+    const level = SALES_EDIT_CONDITION_LEVELS[levelKey];
+    percentageEl.textContent = String(value);
+    labelEl.textContent = level.label;
+    labelEl.style.background = (typeof window.getConditionColor === 'function') ? window.getConditionColor(value) : (value >= 70 ? '#10b981' : value >= 31 ? '#f59e0b' : '#ef4444');
+    infoEl.textContent = level.info;
+}
+
 function listingBelongsToCurrentUser(listing, currentUser) {
     if (listing.sellerUid && currentUser.uid) return listing.sellerUid === currentUser.uid;
     if (listing.sellerEmail && currentUser.email) return listing.sellerEmail === currentUser.email;
@@ -894,16 +938,10 @@ function openSalesEditPanel() {
     document.getElementById('editDescription').value = item.description || '';
     document.getElementById('editCategory').value = item.category || 'Other';
 
-    const conditionValue = Number(item.condition) || Number(item.conditionPercentage) || 75;
-    const conditionMap = {
-        0: 'Very Poor',
-        20: 'Poor',
-        40: 'Fair',
-        60: 'Good',
-        80: 'Like New',
-        100: 'Brand New'
-    };
-    document.getElementById('editCondition').value = conditionMap[conditionValue] || 'Used';
+    const conditionValue = getConditionPercentage(item);
+    const normalizedConditionValue = Number.isFinite(Number(conditionValue)) ? Math.max(0, Math.min(100, Math.round(Number(conditionValue)))) : 75;
+    document.getElementById('editCondition').value = String(normalizedConditionValue);
+    updateSalesEditConditionUI();
     document.getElementById('editQuantity').value = item.quantity || 1;
 
     editingImages = [...getSalesItemImages(item)];
@@ -914,7 +952,7 @@ function openSalesEditPanel() {
         price: String(item.price).replace(/[^\d.]/g, ''),
         description: item.description || '',
         category: item.category || 'Other',
-        condition: conditionMap[conditionValue] || 'Used',
+        condition: String(normalizedConditionValue),
         quantity: item.quantity || 1,
         images: [...editingImages]
     };
@@ -968,20 +1006,10 @@ async function saveSalesEdit() {
     const priceValue = Number(document.getElementById('editPrice').value);
     const description = document.getElementById('editDescription').value.trim();
     const category = document.getElementById('editCategory').value;
-    const conditionSelect = document.getElementById('editCondition').value;
+    const conditionInputValue = Number(document.getElementById('editCondition').value);
     const quantityValue = Number(document.getElementById('editQuantity').value);
-
-    // Map select value to number
-    const conditionMap = {
-        'Very Poor': 0,
-        'Poor': 20,
-        'Fair': 40,
-        'Used': 60,
-        'Good': 60,
-        'Like New': 80,
-        'Brand New': 100
-    };
-    const condition = conditionMap[conditionSelect] || 60;
+    const condition = Math.max(0, Math.min(100, Math.round(conditionInputValue)));
+    const conditionLabel = getConditionLabelFromValue(condition);
 
     if (!title) {
         alert('Title is required.');
@@ -999,6 +1027,10 @@ async function saveSalesEdit() {
         alert('Quantity must be at least 1.');
         return;
     }
+    if (!Number.isFinite(conditionInputValue)) {
+        alert('Please set a valid condition.');
+        return;
+    }
     if (!editingImages.length) {
         alert('At least 1 image is required.');
         return;
@@ -1010,7 +1042,7 @@ async function saveSalesEdit() {
         price: priceValue.toString(),
         description,
         category,
-        condition: conditionSelect, // Use select value for comparison
+        condition: String(condition),
         quantity: quantityValue,
         images: editingImages
     };
@@ -1043,7 +1075,7 @@ async function saveSalesEdit() {
             price: `¥${priceValue.toFixed(2)}`,
             description,
             category,
-            badge: conditionSelect, // Keep badge as string for display
+            badge: conditionLabel,
             condition: condition, // Save condition as number
             quantity: Math.floor(quantityValue),
             images: [...editingImages],
@@ -1173,6 +1205,7 @@ function setupSalesModal() {
     const cancelEditBtn = document.getElementById('salesCancelEditBtn');
     const saveEditBtn = document.getElementById('salesSaveEditBtn');
     const editImagesInput = document.getElementById('editImages');
+    const editConditionInput = document.getElementById('editCondition');
 
     if (closeBtn) closeBtn.addEventListener('click', closeSalesModal);
     if (overlay) overlay.addEventListener('click', closeSalesModal);
@@ -1205,6 +1238,7 @@ function setupSalesModal() {
     if (reservedToggleBtn) reservedToggleBtn.addEventListener('click', () => toggleSaleReserved(currentSalesItemId));
     if (cancelEditBtn) cancelEditBtn.addEventListener('click', closeSalesEditPanel);
     if (saveEditBtn) saveEditBtn.addEventListener('click', saveSalesEdit);
+    if (editConditionInput) editConditionInput.addEventListener('input', updateSalesEditConditionUI);
 
     if (editImagesInput) {
         editImagesInput.addEventListener('change', async (e) => {
