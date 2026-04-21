@@ -2,9 +2,12 @@ import {
     subscribeListings,
     subscribeUsers,
     subscribeBans,
+    subscribeReports,
     deleteListing,
     updateListingStatus,
     createSellerWarning,
+    deleteReport,
+    fetchReports,
     banUserFromSelling,
     unbanUserFromSelling,
     banUserFromLogin,
@@ -12,11 +15,13 @@ import {
 } from './firestoreService.js';
 import { renderDashboard } from './Dashboard.js';
 import { renderListingsManager } from './ListingsManager.js';
+import { renderReportsManager } from './ReportsManager.js';
 import { renderUsersManager } from './UsersManager.js';
 
 const state = {
     listings: [],
     users: [],
+    reports: [],
     bans: {},
     warningDraft: null,
     unsubscribers: []
@@ -166,9 +171,10 @@ function renderActiveView() {
     const panel = getPanel();
     if (!panel) return;
 
-    panel.innerHTML = '<div id="adminDashSection"></div><div id="adminListingsSection" style="margin-top:32px"></div><div id="adminUsersSection" style="margin-top:32px"></div>';
+    panel.innerHTML = '<div id="adminDashSection"></div><div id="adminListingsSection" style="margin-top:32px"></div><div id="adminFeedbackSection" style="margin-top:32px"></div><div id="adminUsersSection" style="margin-top:32px"></div>';
     renderDashboard(document.getElementById('adminDashSection'), state);
     renderListingsManager(document.getElementById('adminListingsSection'), state);
+    renderReportsManager(document.getElementById('adminFeedbackSection'), state);
     renderUsersManager(document.getElementById('adminUsersSection'), state);
 }
 
@@ -233,9 +239,18 @@ function attachStaticEvents() {
                 if (id) await deleteListing(id);
             }
 
+            if (action === 'report-delete') {
+                if (id) await deleteReport(id);
+            }
+
             if (action === 'listing-status') {
                 const status = actionButton.dataset.status;
                 if (id && status) await updateListingStatus(id, status);
+            }
+
+            if (action === 'reports-refresh') {
+                state.reports = await fetchReports();
+                renderActiveView();
             }
 
             if (action === 'listing-warning') {
@@ -351,7 +366,12 @@ function subscribeCollectionsOnce() {
         renderActiveView();
     });
 
-    state.unsubscribers.push(listingsUnsub, usersUnsub, bansUnsub);
+    const reportsUnsub = subscribeReports((reports) => {
+        state.reports = reports;
+        renderActiveView();
+    });
+
+    state.unsubscribers.push(listingsUnsub, usersUnsub, bansUnsub, reportsUnsub);
 }
 
 function cleanupSubscriptions() {
