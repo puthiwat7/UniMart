@@ -309,7 +309,7 @@ function updateSalesEditConditionUI() {
     const percentageEl = document.getElementById('editConditionPercentage');
     const labelEl = document.getElementById('editConditionLabel');
     const infoEl = document.getElementById('editConditionInfo');
-    if (!conditionInput || !percentageEl || !labelEl || !infoEl) return;
+    if (!conditionInput || !percentageEl || !infoEl) return;
 
     const value = Math.max(0, Math.min(100, Number(conditionInput.value) || 0));
     conditionInput.value = String(value);
@@ -324,8 +324,10 @@ function updateSalesEditConditionUI() {
 
     const level = SALES_EDIT_CONDITION_LEVELS[levelKey];
     percentageEl.textContent = String(value);
-    labelEl.textContent = level.label;
-    labelEl.style.background = (typeof window.getConditionColor === 'function') ? window.getConditionColor(value) : (value >= 70 ? '#10b981' : value >= 31 ? '#f59e0b' : '#ef4444');
+    if (labelEl) {
+        labelEl.textContent = level.label;
+        labelEl.style.background = (typeof window.getConditionColor === 'function') ? window.getConditionColor(value) : (value >= 70 ? '#10b981' : value >= 31 ? '#f59e0b' : '#ef4444');
+    }
     infoEl.textContent = level.info;
 }
 
@@ -886,7 +888,9 @@ function openSalesModal(itemId) {
 
     renderSalesModalImage();
     renderSalesQR(item);
-    document.getElementById('salesModal').classList.add('active');
+    const salesModal = document.getElementById('salesModal');
+    salesModal.classList.remove('is-editing');
+    salesModal.classList.add('active');
 }
 
 async function renderSalesQR(item) {
@@ -923,7 +927,9 @@ async function renderSalesQR(item) {
 }
 
 function closeSalesModal() {
-    document.getElementById('salesModal').classList.remove('active');
+    const salesModal = document.getElementById('salesModal');
+    salesModal.classList.remove('active');
+    salesModal.classList.remove('is-editing');
     currentSalesItemId = null;
     currentSalesImageIndex = 0;
     editingImages = [];
@@ -959,11 +965,13 @@ function openSalesEditPanel() {
 
     document.getElementById('salesViewPanel').style.display = 'none';
     document.getElementById('salesEditPanel').style.display = 'block';
+    document.getElementById('salesModal').classList.add('is-editing');
 }
 
 function closeSalesEditPanel() {
     document.getElementById('salesEditPanel').style.display = 'none';
     document.getElementById('salesViewPanel').style.display = 'block';
+    document.getElementById('salesModal').classList.remove('is-editing');
 }
 
 function renderEditImagesPreview() {
