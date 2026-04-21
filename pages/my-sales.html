@@ -282,15 +282,24 @@
                             </div>
                             <div class="form-group">
                                 <label for="editCondition">Condition</label>
-                                <select id="editCondition">
-                                    <option value="Very Poor">Very Poor</option>
-                                    <option value="Poor">Poor</option>
-                                    <option value="Fair">Fair</option>
-                                    <option value="Good">Good</option>
-                                    <option value="Like New">Like New</option>
-                                    <option value="Brand New">Brand New</option>
-                                    <option value="Used">Used</option>
-                                </select>
+                                <div class="condition-display">
+                                    <div class="condition-value">
+                                        <span id="editConditionPercentage">75</span>%
+                                        <span id="editConditionLabel" class="condition-label">Good</span>
+                                    </div>
+                                    <div class="condition-info" id="editConditionInfo">Item shows minor signs of wear but functions perfectly. Great value.</div>
+                                </div>
+                                <div class="condition-slider">
+                                    <input type="range" id="editCondition" min="0" max="100" value="75" class="slider">
+                                    <div class="slider-labels">
+                                        <span>Very Poor<br><small>0%</small></span>
+                                        <span>Poor<br><small>20%</small></span>
+                                        <span>Fair<br><small>40%</small></span>
+                                        <span>Good<br><small>60%</small></span>
+                                        <span>Like New<br><small>80%</small></span>
+                                        <span>Brand New<br><small>100%</small></span>
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label for="editQuantity">Quantity</label>
@@ -306,13 +315,13 @@
                             </div>
 
                             <div class="modal-actions">
-                                <button class="btn-order" id="salesSaveEditBtn" style="background-color: #10b981;">
-                                    <i class="fas fa-save"></i>
-                                    Save Changes
-                                </button>
-                                <button class="btn-save" id="salesCancelEditBtn" style="background-color: #6b7280; color: #fff;">
+                                <button class="btn-save" id="salesCancelEditBtn" style="background-color: #ef4444; color: #fff;">
                                     <i class="fas fa-times"></i>
                                     Cancel
+                                </button>
+                                <button class="btn-order" id="salesSaveEditBtn" style="background-color: #10b981; color: #fff;">
+                                    <i class="fas fa-check"></i>
+                                    Save Changes
                                 </button>
                             </div>
                         </div>

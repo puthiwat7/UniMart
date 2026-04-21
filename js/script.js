@@ -689,9 +689,12 @@ function setupToggleFilter() {
 // Setup refresh button
 function setupRefresh() {
     const refreshBtn = document.querySelector('.btn-refresh');
-    refreshBtn.addEventListener('click', async () => {
-        // Refresh the products
-        await refreshMarketplaceProducts();
+    refreshBtn.addEventListener('click', () => {
+        const icon = refreshBtn.querySelector('i');
+        if (icon) icon.style.animation = 'spin 0.8s linear infinite';
+        refreshBtn.disabled = true;
+        refreshBtn.childNodes[refreshBtn.childNodes.length - 1].textContent = ' Refreshing...';
+        window.location.reload();
     });
 }
 
@@ -835,7 +838,7 @@ function openProductModal(product) {
         // Color code: Green (>70%), Yellow (40-70%), Red (<40%)
         if (conditionValue >= 70) {
             conditionBar.style.backgroundColor = '#10b981'; // Green
-        } else if (conditionValue >= 40) {
+        } else if (conditionValue >= 31) {
             conditionBar.style.backgroundColor = '#f59e0b'; // Yellow/Amber
         } else {
             conditionBar.style.backgroundColor = '#ef4444'; // Red

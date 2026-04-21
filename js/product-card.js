@@ -20,6 +20,12 @@ function getConditionPercentage(product) {
     return fallbackValue;
 }
 
+function getConditionColor(percent) {
+    if (percent >= 70) return '#10b981'; // Green
+    if (percent >= 31) return '#f59e0b'; // Amber
+    return '#ef4444';                    // Red
+}
+
 function getFavoriteCount(product) {
     return Math.max(0, Math.floor(Number(product?.favoriteCount) || 0));
 }
@@ -31,7 +37,13 @@ function renderProductCard(product, options = {}) {
         onViewDetails = 'handleViewDetails',
         onFavoriteToggle = 'toggleFavorite',
         onRemove = 'removeFromFavorites',
-        isFavorited = false
+        isFavorited = false,
+        removeButtonClass = 'product-action-btn remove-btn',
+        removeButtonIconClass = '',
+        removeButtonText = 'Remove',
+        removeButtonTitle = 'Remove',
+        extraMetaHtml = '',
+        overlayHtml = null
     } = options;
 
     const normalizedProduct = product || {};
@@ -65,31 +77,36 @@ function renderProductCard(product, options = {}) {
         </div>`;
 
     const reservedOverlay = isReserved ? '<div class="reserved-overlay">RESERVED</div>' : '';
-    const collegeTag = normalizedProduct.college ? `<div class="product-college">${normalizedProduct.college}</div>` : '';
+    const resolvedOverlay = overlayHtml === null ? reservedOverlay : String(overlayHtml || '');
+    const sellerTag = `<span class="product-college product-seller-badge">by ${String(normalizedProduct.seller || 'Campus Seller')}</span>`;
     const quantityTag = Number.isFinite(Number(normalizedProduct.quantity)) ? `<span class="product-quantity">${Number(normalizedProduct.quantity)} available</span>` : '';
 
     const removeButton = showRemoveButton
-        ? `<button class="product-action-btn remove-btn" onclick="event.stopPropagation(); ${onRemove}(${productIdLiteral})">Remove</button>`
+        ? `<button class="${String(removeButtonClass)}" onclick="event.stopPropagation(); ${onRemove}(${productIdLiteral})" title="${String(removeButtonTitle)}">${removeButtonIconClass ? `<i class="${String(removeButtonIconClass)}"></i>` : ''}${String(removeButtonText)}</button>`
         : '';
 
     card.innerHTML = `
         <div class="product-image" onclick="${onViewDetails}(${productIdLiteral})" style="position: relative; cursor: pointer;">
             ${cardImage}
             ${overlayTopRight}
-            ${reservedOverlay}
+            ${resolvedOverlay}
         </div>
         <div class="product-info">
             <div class="product-meta-row">
-                <span class="product-badge">${String(normalizedProduct.badge || 'Used')}</span>
-                ${conditionPercent !== null ? `<span class="product-badge condition-badge">${conditionPercent}%</span>` : ''}
+                ${conditionPercent !== null
+                    ? `<span class="product-badge condition-badge" style="color:${getConditionColor(conditionPercent)};border-color:${getConditionColor(conditionPercent)};background:transparent;">${String(normalizedProduct.badge || 'Used')} ${conditionPercent}%</span>`
+                    : `<span class="product-badge">${String(normalizedProduct.badge || 'Used')}</span>`
+                }
+                ${String(extraMetaHtml || '')}
             </div>
-            <h3 class="product-title">${String(normalizedProduct.title || 'Untitled Item')}</h3>
-            <div class="product-price">${String(normalizedProduct.price || '¥0.00')}</div>
+            <div class="product-title-price-row">
+                <h3 class="product-title">${String(normalizedProduct.title || 'Untitled Item')}</h3>
+                <div class="product-price">${String(normalizedProduct.price || '¥0.00')}</div>
+            </div>
             <div class="product-details-row">
-                <span class="product-seller">by ${String(normalizedProduct.seller || 'Campus Seller')}</span>
+                ${sellerTag}
                 ${quantityTag}
             </div>
-            ${collegeTag}
             <div class="product-actions">
                 <button onclick="event.stopPropagation(); ${onViewDetails}(${productIdLiteral})">View Details</button>
                 ${removeButton}
@@ -102,4 +119,5 @@ function renderProductCard(product, options = {}) {
 
 window.renderProductCard = renderProductCard;
 window.getConditionPercentage = getConditionPercentage;
+window.getConditionColor = getConditionColor;
 window.getFavoriteCount = getFavoriteCount;

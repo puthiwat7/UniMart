@@ -445,6 +445,7 @@ textarea:focus {
     right: 20px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 14px;
     padding: 14px 18px;
     border-radius: 20px;
@@ -662,21 +663,20 @@ textarea:focus {
     gap: 8px;
     padding: 8px 16px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.16);
-    color: rgba(255, 255, 255, 0.92);
+    background: #ffffff;
+    color: #111827;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     font-size: 0.78rem;
     font-weight: 700;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    backdrop-filter: blur(10px);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .header-banner h1 {
-    background: linear-gradient(180deg, #ffffff 0%, #e0e7ff 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    color: #ffffff;
     text-shadow: 0 12px 34px rgba(15, 23, 42, 0.24);
     letter-spacing: 0.04em;
     font-size: clamp(4.5rem, 6vw, 6.5rem);
@@ -690,8 +690,8 @@ textarea:focus {
     margin: 0 auto;
     font-size: 1rem;
     line-height: 1.7;
-    opacity: 0.96;
-    color: rgba(255, 255, 255, 0.92);
+    opacity: 1;
+    color: #ffffff;
 }
 
 .header-banner::before,
@@ -729,6 +729,7 @@ textarea:focus {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    text-align: left;
 }
 
 .favorites-header .orders-header-content h1 {
@@ -757,18 +758,19 @@ textarea:focus {
     max-width: 560px;
     font-size: 1.02rem;
     opacity: 0.9;
+    margin: 0;
 }
 
 .favorites-header .btn-refresh {
-    background: rgba(255, 255, 255, 0.16);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    backdrop-filter: blur(14px);
+        background: #ffffff;
+        color: #000000;
+        border: 1px solid #e5e7eb;
+        backdrop-filter: none;
     box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
 }
 
 .favorites-header .btn-refresh:hover {
-    background: rgba(255, 255, 255, 0.24);
+        background: #f3f4f6;
     box-shadow: 0 16px 34px rgba(15, 23, 42, 0.16);
 }
 
@@ -902,6 +904,28 @@ textarea:focus {
 .page-hero .btn-clear-favorites,
 .page-hero .btn-action {
     min-height: 44px;
+}
+
+.page-hero .btn-refresh {
+    background: #111827;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.page-hero .btn-refresh:hover {
+    background: #374151;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+}
+
+.filters .btn-refresh {
+    background: #4a5fc1;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(74, 95, 193, 0.3);
+}
+
+.filters .btn-refresh:hover {
+    background: #3b4fa8;
+    box-shadow: 0 6px 18px rgba(74, 95, 193, 0.4);
 }
 
 .header-banner,
@@ -1350,8 +1374,9 @@ textarea:focus {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: nowrap;
     gap: 12px;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .product-seller {
@@ -1361,7 +1386,8 @@ textarea:focus {
 }
 
 .product-quantity {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     font-size: 11px;
     color: #1f2937;
     font-weight: 600;
@@ -1375,13 +1401,21 @@ textarea:focus {
     transition: all 0.2s ease;
 }
 
+.product-college-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
 .product-college {
     font-size: 12px;
     color: #3b82f6;
     background-color: #eff6ff;
     padding: 4px 8px;
     border-radius: 4px;
-    margin-bottom: 12px;
+    margin-bottom: 0;
     font-weight: 600;
     display: inline-block;
 }
@@ -1462,16 +1496,16 @@ textarea:focus {
 }
 
 .product-actions button:first-child {
-    background: linear-gradient(135deg, #fb923c 0%, #f97316 45%, #ea580c 100%);
-    box-shadow: 0 12px 26px rgba(249, 115, 22, 0.28);
+    background: linear-gradient(135deg, #60a5fa 0%, var(--primary-blue) 50%, #1e3a8a 100%);
+    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.34);
     color: #ffffff;
-    text-shadow: 0 1px 2px rgba(124, 45, 18, 0.45);
+    text-shadow: 0 1px 2px rgba(30, 64, 175, 0.35);
 }
 
 .product-actions button:first-child:hover,
 .product-actions button:first-child:active {
-    background: linear-gradient(135deg, #fdba74 0%, #fb923c 50%, #f97316 100%);
-    box-shadow: 0 14px 30px rgba(249, 115, 22, 0.34);
+    background: linear-gradient(135deg, #60a5fa 0%, var(--primary-blue) 50%, #1e3a8a 100%);
+    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.34);
     color: #ffffff;
 }
 
@@ -1479,6 +1513,27 @@ textarea:focus {
 .product-actions button:active {
     background-color: var(--primary-blue);
     color: white;
+}
+
+.product-title-price-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.product-title-price-row .product-title {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-title-price-row .product-price {
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 /* ======================== My Sales Cards ======================== */
@@ -1743,7 +1798,7 @@ textarea:focus {
 }
 
 .sale-status-badge.status-withdrawn {
-    background-color: #6b7280;
+    background-color: #ef4444;
 }
 
 .sale-meta-line {
@@ -2024,6 +2079,36 @@ textarea:focus {
     cursor: pointer;
 }
 
+.my-sales-grid .product-actions button {
+    padding: 6px 12px;
+}
+
+.my-sales-grid .product-title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.my-sales-grid .product-title-row .product-seller {
+    flex: 1;
+    min-width: 0;
+}
+
+.my-sales-grid .product-title-row .product-price {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.my-sales-grid .product-actions {
+    margin-top: 8px;
+}
+
+.my-sales-grid .btn-reserve-toggle {
+    background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 50%, #6d28d9 100%) !important;
+    box-shadow: 0 4px 14px rgba(109, 40, 217, 0.35) !important;
+}
+
 @media (max-width: 768px) {
     .my-sales-grid {
         padding: 16px;
@@ -2076,6 +2161,11 @@ textarea:focus {
         margin: 14px 14px 12px;
         border-radius: 22px;
         text-align: left;
+    }
+
+    .login-notice {
+        margin: 14px 14px 12px;
+        border-radius: 22px;
     }
 
     .header-banner {
@@ -2336,6 +2426,11 @@ textarea:focus {
 
     .header-banner {
         padding: 22px 16px;
+        margin: 10px 12px 12px;
+        border-radius: 18px;
+    }
+
+    .login-notice {
         margin: 10px 12px 12px;
         border-radius: 18px;
     }
@@ -2779,7 +2874,7 @@ textarea:focus {
 }
 
 .condition-label {
-    background: #fbbf24;
+    background: #10b981;
     color: white;
     padding: 4px 8px;
     border-radius: 4px;
@@ -3312,9 +3407,19 @@ textarea:focus {
 }
 
 .filter-btn.active {
-    background: linear-gradient(90deg, #fb923c 0%, #f97316 100%);
+    background: linear-gradient(90deg, var(--primary-blue) 0%, #3b4fd8 100%);
     color: #fff;
-    border-color: #fb923c;
+    border-color: var(--primary-blue);
+}
+
+.filter-btn[data-filter="withdrawn"].active {
+    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+    border-color: #ef4444;
+}
+
+.filter-btn[data-filter="sold"].active {
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+    border-color: #10b981;
 }
 
 /* Old Sales Filter (for backwards compatibility) */
@@ -3629,6 +3734,8 @@ textarea:focus {
     display: flex;
     align-items: center;
     justify-content: center;
+    background: rgba(203, 213, 225, 0.72);
+    cursor: pointer;
 }
 
 .modal-overlay {
@@ -3637,7 +3744,7 @@ textarea:focus {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.10);
+    background: transparent;
     cursor: pointer;
     z-index: 0;
     pointer-events: none;
@@ -3784,7 +3891,7 @@ textarea:focus {
 .modal-details-section {
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 16px;
 }
 
 .modal-view-content {
@@ -4055,6 +4162,19 @@ textarea:focus {
     box-shadow: 0 8px 20px rgba(239, 68, 68, 0.15);
 }
 
+#favoritesGrid .btn-action-withdraw {
+    background: var(--danger-red);
+    color: #ffffff;
+    border-color: var(--danger-red);
+}
+
+#favoritesGrid .btn-action-withdraw:hover {
+    background: var(--danger-red-dark);
+    color: #ffffff;
+    border-color: var(--danger-red-dark);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.28);
+}
+
 .btn-action-sold {
     background: var(--success);
     color: white;
@@ -4134,6 +4254,23 @@ textarea:focus {
 
 .btn-order:hover:not(:disabled) i {
     transform: scale(1.15);
+}
+
+#salesSaveEditBtn,
+#salesSaveEditBtn:hover:not(:disabled),
+#salesSaveEditBtn:active:not(:disabled) {
+    background: #10b981 !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 10px 28px rgba(16, 185, 129, 0.24) !important;
+}
+
+#salesSaveEditBtn::before {
+    background: rgba(255, 255, 255, 0.18) !important;
+}
+
+#salesSaveEditBtn:hover:not(:disabled) {
+    box-shadow: 0 14px 34px rgba(16, 185, 129, 0.3) !important;
 }
 
 .btn-save {
@@ -4331,7 +4468,7 @@ textarea:focus {
 .modal-actions {
     display: flex;
     gap: 16px;
-    margin-top: 20px;
+    margin-top: 6px;
     align-items: center;
     justify-content: flex-end;
     width: 100%;
@@ -4351,7 +4488,7 @@ textarea:focus {
     flex: 1;
     padding: 14px 18px;
     background: white;
-    color: #334155;
+    color: #dc2626;
     border: 1px solid #cbd5e1;
     font-size: 14px;
     font-weight: 700;
@@ -4362,9 +4499,9 @@ textarea:focus {
 }
 
 .btn-save:hover {
-    border-color: #4338ca;
-    color: #4338ca;
-    background: rgba(237, 242, 255, 0.9);
+    border-color: #fca5a5;
+    color: #dc2626;
+    background: white;
 }
 
 .btn-save.favorited {
@@ -4380,6 +4517,22 @@ textarea:focus {
 .btn-save.favorited i {
     color: #b91c1c;
     fill: #b91c1c;
+}
+
+/* Ensure popup listing Save button (non-favorited) stays black text on white background */
+#modalSaveBtn:not(.favorited),
+#modalSaveBtn:not(.favorited):hover,
+#modalSaveBtn:not(.favorited):active {
+    background: #ffffff !important;
+    color: #111827 !important;
+    border: 1px solid #111827 !important;
+}
+
+#modalSaveBtn:not(.favorited) i,
+#modalSaveBtn:not(.favorited):hover i,
+#modalSaveBtn:not(.favorited):active i {
+    color: #111827 !important;
+    fill: #111827 !important;
 }
 
 /* Modal Details Pills Row */
@@ -7608,9 +7761,9 @@ textarea:focus {
 .seller-warning-panel {
     margin: 18px 0 24px;
     padding: 18px;
-    border: 1px solid #fed7aa;
+    border: 1px solid #fecaca;
     border-radius: 16px;
-    background: linear-gradient(135deg, #fff7ed 0%, #fffbeb 100%);
+    background: linear-gradient(135deg, #fef2f2 0%, #fef2f2 100%);
 }
 
 .seller-warning-panel-header {
@@ -7624,12 +7777,12 @@ textarea:focus {
 .seller-warning-panel-header h2 {
     margin: 0 0 4px;
     font-size: 22px;
-    color: #7c2d12;
+    color: #991b1b;
 }
 
 .seller-warning-panel-header p {
     margin: 0;
-    color: #9a3412;
+    color: #dc2626;
 }
 
 .seller-warning-badge {
@@ -7639,7 +7792,7 @@ textarea:focus {
     min-width: 96px;
     padding: 6px 12px;
     border-radius: 999px;
-    background: #ea580c;
+    background: #dc2626;
     color: #fff;
     font-size: 12px;
     font-weight: 700;
@@ -7652,7 +7805,7 @@ textarea:focus {
 
 .seller-warning-card {
     background: #fff;
-    border: 1px solid #fdba74;
+    border: 1px solid #fecaca;
     border-radius: 14px;
     padding: 14px;
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
@@ -7668,20 +7821,20 @@ textarea:focus {
 .seller-warning-card-header h3 {
     margin: 0 0 4px;
     font-size: 16px;
-    color: #7c2d12;
+    color: #991b1b;
 }
 
 .seller-warning-card-header p,
 .seller-warning-message,
 .seller-warning-comment {
     margin: 0;
-    color: #78350f;
+    color: #7f1d1d;
     line-height: 1.5;
 }
 
 .seller-warning-date {
     font-size: 12px;
-    color: #9a3412;
+    color: #dc2626;
     white-space: nowrap;
 }
 
@@ -7692,7 +7845,7 @@ textarea:focus {
 .seller-warning-comment {
     margin-top: 10px;
     padding-top: 10px;
-    border-top: 1px solid #ffedd5;
+    border-top: 1px solid #fee2e2;
 }
 
 .seller-warning-actions {

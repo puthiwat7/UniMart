@@ -258,8 +258,8 @@
     border-color: var(--dark-gray);
 }
 
-.btn-save {
-    background-color: var(--primary-blue);
+.profile-edit .btn-save {
+    background-color: #10b981 !important;
     color: white;
     border: none;
     padding: 12px 24px;
@@ -270,10 +270,10 @@
     transition: all 0.3s ease;
 }
 
-.btn-save:hover {
-    background-color: var(--dark-blue);
+.profile-edit .btn-save:hover {
+    background-color: #059669 !important;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(74, 95, 193, 0.3);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.32);
 }
 
 /* Alerts */

@@ -531,6 +531,12 @@
             100: { label: 'Brand New', info: 'Item is new, unopened, and in original packaging.' }
         };
 
+        function getConditionColor(value) {
+            if (value >= 70) return '#10b981'; // Green
+            if (value >= 31) return '#f59e0b'; // Amber
+            return '#ef4444';                  // Red
+        }
+
         function updateCondition() {
             const value = parseInt(conditionSlider.value);
             let level;
@@ -544,6 +550,7 @@
 
             conditionPercentage.textContent = value;
             conditionLabel.textContent = conditionLevels[level].label;
+            conditionLabel.style.background = getConditionColor(value);
             conditionInfo.textContent = conditionLevels[level].info;
         }
 
