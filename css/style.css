@@ -3840,6 +3840,14 @@ body[data-auth-state='guest'] .main-content {
     padding: 42px;
 }
 
+.product-modal.is-editing .modal-body {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.product-modal.is-editing .modal-image-section {
+    display: none;
+}
+
 /* Image Carousel */
 .modal-image-section {
     display: flex;
@@ -3948,7 +3956,9 @@ body[data-auth-state='guest'] .main-content {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
+    width: auto;
+    min-width: 220px;
+    max-width: 360px;
     padding: 6px 14px;
     font-size: 13px;
     font-weight: 700;
