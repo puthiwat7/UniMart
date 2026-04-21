@@ -160,8 +160,22 @@ function initializeProfile() {
     // Populate college options
     populateCollegeOptions();
 
-    // Load user activity stats
-    loadUserStats(user.uid);
+    // Show reset password button for email/password users only
+    showResetPasswordButtonIfApplicable(user);
+}
+
+function showResetPasswordButtonIfApplicable(user) {
+    const section = document.getElementById('passwordResetSection');
+    if (!section) return;
+
+    // Check if user signed up with email/password (not Google)
+    const isEmailPasswordUser = user.providerData.some(provider => provider.providerId === 'password');
+    
+    if (isEmailPasswordUser) {
+        section.style.display = 'block';
+    } else {
+        section.style.display = 'none';
+    }
 }
 
 function populateCollegeOptions() {
@@ -201,38 +215,6 @@ function populateCollegeOptions() {
         option.textContent = college;
         collegeSelect.appendChild(option);
     });
-}
-
-async function loadUserStats(userId) {
-    if (!userId) return;
-
-    // Check if listings sync is available
-    if (typeof window.unimartListingsSync === 'undefined' || 
-        typeof window.unimartListingsSync.getListingsForSellerFromCloud !== 'function') {
-        console.warn('Listings sync not available yet, retrying in 1 second...');
-        setTimeout(() => loadUserStats(userId), 1000);
-        return;
-    }
-
-    try {
-        // Get listings for this seller
-        const listings = await window.unimartListingsSync.getListingsForSellerFromCloud(userId);
-        
-        // Count total listings and sold items
-        const totalListings = listings.length;
-        const soldItems = listings.filter(listing => 
-            String(listing.status || '').toLowerCase() === 'sold'
-        ).length;
-
-        // Update the display
-        document.getElementById('totalListings').textContent = totalListings;
-        document.getElementById('itemsSold').textContent = soldItems;
-    } catch (error) {
-        console.error('Error loading user stats:', error);
-        // Set defaults on error
-        document.getElementById('totalListings').textContent = '0';
-        document.getElementById('itemsSold').textContent = '0';
-    }
 }
 
 function updateProfileDisplay(profile) {
@@ -324,6 +306,9 @@ function setupEventListeners() {
             openPoliciesModal();
         }
     });
+
+    // Reset Password Button
+    document.getElementById('resetPasswordBtn').addEventListener('click', handleResetPassword);
 }
 
 function toggleEditMode() {
@@ -457,6 +442,29 @@ function closePoliciesModal() {
     
     modal.classList.remove('active');
     overlay.classList.remove('active');
+}
+
+function handleResetPassword() {
+    const user = firebase.auth().currentUser;
+    if (!user || !user.email) {
+        showNotification('Unable to send a reset email right now. Please sign in again.', 'error');
+        return;
+    }
+
+    firebaseAuthManager.sendPasswordResetEmail(user.email)
+        .then(() => {
+            showNotification(`Password reset email sent to ${user.email}. Open the link in that email to set a new password.`, 'success');
+        })
+        .catch((error) => {
+            console.error('Password reset email error:', error);
+            let errorMessage = 'Failed to send password reset email.';
+            if (error.code === 'auth/too-many-requests') {
+                errorMessage = 'Too many reset attempts. Please wait a bit and try again.';
+            } else if (error.code === 'auth/network-request-failed') {
+                errorMessage = 'Network error. Please check your connection and try again.';
+            }
+            showNotification(errorMessage, 'error');
+        });
 }
 
 function handleAgreeToPolicy() {

@@ -18,31 +18,16 @@
     <!-- Firebase Config & Auth -->
     <script src="../js/firebase-config.js"></script>
     <script src="../js/firebase-auth.js"></script>
-
-    <!-- Auth Guard -->
-    <script>
-        // Protect this page: redirect to login if not authenticated
-        setTimeout(() => {
-            try {
-                firebase.auth().onAuthStateChanged((user) => {
-                    if (!user) {
-                        window.location.href = 'login';
-                    }
-                });
-            } catch (error) {
-                console.error('Firebase not initialized:', error);
-                window.location.href = 'login';
-            }
-        }, 100);
-    </script>
+    <script src="../js/login-notice.js"></script>
+    <script src="../js/auth-guard.js"></script>
 </head>
-<body>
+<body class="sell-item-page">
     <div class="container">
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo">
                 <div class="logo-placeholder">
-                    <img src="../assets/sidebar-logo.png" alt="UniMart logo" class="logo-image">
+                    <img src="../assets/New%20Logo.PNG" alt="UniMart logo" class="logo-image">
                 </div>
                 <h1>UNIMART</h1>
             </div>
@@ -120,7 +105,7 @@
             <!-- Header -->
             <div class="sell-header">
                 <h1>List Your Item</h1>
-                <p>Share what you don't need with the CUHK-SZ community</p>
+                <p>Turn your unused items into value within the CUHK-SZ community</p>
             </div>
 
             <!-- Form Container -->
@@ -415,13 +400,15 @@
                 return file;
             }
 
+            const normalizedType = typeof file.type === 'string' ? file.type.toLowerCase() : '';
+            const preferredType = normalizedType === 'image/png' ? 'image/png' : 'image/jpeg';
             const options = {
-                maxSizeMB: 0.5, // Max 0.5MB
-                maxWidthOrHeight: 1024, // Max 1024px
+                maxSizeMB: 1.2,
+                maxWidthOrHeight: 1600,
                 useWebWorker: true, // Use web worker for performance
                 preserveExif: false, // Don't preserve EXIF data
-                fileType: 'image/jpeg', // Convert to JPEG for better compression
-                initialQuality: 0.8 // Start with 80% quality
+                fileType: preferredType,
+                initialQuality: preferredType === 'image/png' ? 1 : 0.92
             };
 
             try {
@@ -544,6 +531,12 @@
             100: { label: 'Brand New', info: 'Item is new, unopened, and in original packaging.' }
         };
 
+        function getConditionColor(value) {
+            if (value >= 70) return '#10b981'; // Green
+            if (value >= 31) return '#f59e0b'; // Amber
+            return '#ef4444';                  // Red
+        }
+
         function updateCondition() {
             const value = parseInt(conditionSlider.value);
             let level;
@@ -557,6 +550,7 @@
 
             conditionPercentage.textContent = value;
             conditionLabel.textContent = conditionLevels[level].label;
+            conditionLabel.style.background = getConditionColor(value);
             conditionInfo.textContent = conditionLevels[level].info;
         }
 

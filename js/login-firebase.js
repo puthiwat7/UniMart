@@ -53,15 +53,18 @@ function updateEmailFormMode() {
     const toggleText = document.querySelector('#toggleSignUp');
     const togglePara = document.querySelector('.toggle-auth p');
     const subtitle = document.querySelector('.subtitle');
+    const forgotPasswordEntry = document.getElementById('forgotPasswordEntry');
 
     if (isSignUpMode) {
         if (submitBtn) submitBtn.textContent = 'Sign Up with Email';
         togglePara.innerHTML = 'Already have an account? <a href="#" id="toggleSignUp">Sign in</a>';
         if (subtitle) subtitle.textContent = 'Sign up to continue';
+        if (forgotPasswordEntry) forgotPasswordEntry.style.display = 'none';
     } else {
         if (submitBtn) submitBtn.textContent = 'Sign In with Email';
         togglePara.innerHTML = 'Don\'t have an account? <a href="#" id="toggleSignUp">Sign up</a>';
         if (subtitle) subtitle.textContent = 'Sign in to continue';
+        if (forgotPasswordEntry) forgotPasswordEntry.style.display = 'flex';
     }
 
     // Re-attach event listener
@@ -276,7 +279,76 @@ function closeForgotPasswordPopup(event) {
     if (event && event.target !== document.getElementById('forgotPasswordOverlay')) return;
     const overlay = document.getElementById('forgotPasswordOverlay');
     if (overlay) overlay.style.display = 'none';
+    
+    // Reset popup to initial state
+    resetForgotPasswordPopup();
+}
+
+function resetForgotPasswordPopup() {
+    const title = document.getElementById('forgotPopupTitle');
+    const content = document.getElementById('forgotPopupContent');
+    const success = document.getElementById('forgotPopupSuccess');
+    const successText = document.getElementById('forgotPopupSuccessText');
+    const emailInput = document.getElementById('resetEmailInput');
+    
+    if (title) title.textContent = 'Reset Your Password';
+    if (content) content.style.display = 'block';
+    if (success) success.style.display = 'none';
+    if (successText) successText.textContent = 'If an account exists for this email, you will receive a password reset link shortly. Please check your inbox and spam folder.';
+    if (emailInput) emailInput.value = '';
+}
+
+async function sendPasswordReset() {
+    const emailInput = document.getElementById('resetEmailInput');
+    const email = emailInput.value.trim().toLowerCase();
+    
+    if (!email) {
+        alert('Please enter your email address.');
+        return;
+    }
+    
+    if (!email.includes('@')) {
+        alert('Please enter a valid email address.');
+        return;
+    }
+    
+    try {
+        try {
+            await firebaseAuthManager.sendPasswordResetEmail(email);
+        } catch (resetError) {
+            if (resetError.code !== 'auth/user-not-found') {
+                throw resetError;
+            }
+
+            console.info('Password reset requested for a non-existent account:', email);
+        }
+
+        const content = document.getElementById('forgotPopupContent');
+        const success = document.getElementById('forgotPopupSuccess');
+        const successText = document.getElementById('forgotPopupSuccessText');
+        if (content) content.style.display = 'none';
+        if (success) success.style.display = 'block';
+        if (successText) {
+            successText.textContent = `If an account exists for ${email}, you will receive a password reset link shortly. Please check your inbox and spam folder.`;
+        }
+
+        console.log('Password reset email flow completed for:', email);
+    } catch (error) {
+        console.error('Error sending password reset email:', error);
+
+        let errorMessage = 'Failed to send reset email. Please try again in a moment.';
+        if (error.code === 'auth/invalid-email') {
+            errorMessage = 'Please enter a valid email address.';
+        } else if (error.code === 'auth/too-many-requests') {
+            errorMessage = 'Too many reset attempts. Please wait a bit and try again.';
+        } else if (error.code === 'auth/network-request-failed') {
+            errorMessage = 'Network error. Please check your connection and try again.';
+        }
+
+        alert(errorMessage);
+    }
 }
 
 window.openForgotPasswordPopup = openForgotPasswordPopup;
 window.closeForgotPasswordPopup = closeForgotPasswordPopup;
+window.sendPasswordReset = sendPasswordReset;

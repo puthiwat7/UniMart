@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback - UniMart</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/firebase-auth.js"></script>
+    <script src="../js/login-notice.js"></script>
+    <script src="../js/auth-guard.js"></script>
+</head>
+<body class="user-guide-page feedback-page">
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-placeholder">
+                    <img src="../assets/New%20Logo.PNG" alt="UniMart logo" class="logo-image">
+                </div>
+                <h1>UNIMART</h1>
+            </div>
+
+            <nav class="navigation">
+                <h3>NAVIGATION</h3>
+                <ul>
+                    <li>
+                        <a href="../" class="nav-item">
+                            <i class="fas fa-store"></i>
+                            <span>Marketplace</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="sell-item" class="nav-item">
+                            <i class="fas fa-plus"></i>
+                            <span>Sell Item</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="my-sales" class="nav-item">
+                            <i class="fas fa-chart-line"></i>
+                            <span>My Sales</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="my-favorites" class="nav-item">
+                            <i class="fas fa-heart"></i>
+                            <span>My Favorites</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="profile" class="nav-item">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="user-guide" class="nav-item">
+                            <i class="fas fa-book-open"></i>
+                            <span>User Guide</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div id="userSection">
+                <div class="user-profile" id="userProfile" style="display: none;">
+                    <div class="user-avatar">
+                        <img id="userProfileImage" src="" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: none;">
+                        <i class="fas fa-user-circle" id="userAvatarIcon"></i>
+                    </div>
+                    <div class="user-info">
+                        <h4 id="userName">User Name</h4>
+                        <p id="userEmail">user@email.com</p>
+                    </div>
+                    <button class="btn-logout" onclick="handleSignOut()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Sign Out</span>
+                    </button>
+                </div>
+
+                <button class="btn-login" id="loginBtn" onclick="window.location.href='login.html'">
+                    <i class="fab fa-google"></i>
+                    <span>Sign in with Google</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="guide-page-header">
+                <h1>Feedback & Reports</h1>
+                <p>Submit user reports, issue reports, or general feedback directly to the UniMart admin team.</p>
+            </div>
+
+            <div class="guide-container">
+                <div class="guide-main">
+                    <section class="guide-section feedback-card active feedback-card-expanded">
+                        <div class="guide-header feedback-header">
+                            <div class="guide-header-left">
+                                <div class="section-badge"><i class="fas fa-comment-dots"></i></div>
+                                <div class="section-meta">
+                                    <span class="section-label">Feedback Center</span>
+                                    <h2>Report an issue or send feedback</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="guide-content feedback-content">
+                            <p id="reportAuthStatus" class="feedback-subtitle">Please sign in to submit feedback.</p>
+                            <form id="reportForm" class="feedback-form">
+                                <input type="hidden" id="reportListingId" value="">
+
+                                <label for="reportType">Feedback Category</label>
+                                <select id="reportType" required>
+                                    <option value="user">User Report</option>
+                                    <option value="issue">Issue Report</option>
+                                    <option value="general" selected>General Feedback</option>
+                                </select>
+
+                                <label for="reportSubject">Summary</label>
+                                <input id="reportSubject" type="text" placeholder="Short summary of your feedback" required>
+
+                                <label for="reportMessage">Details</label>
+                                <textarea id="reportMessage" rows="6" placeholder="Describe the issue or feedback in detail" required></textarea>
+
+                                <p id="reportHelpText" class="feedback-helper-text">Share general feedback about UniMart, improvements, or feature requests.</p>
+
+                                <button type="submit" class="btn-order" id="reportSubmitBtn">Submit Feedback</button>
+                                <p id="reportFormStatus" class="feedback-status"></p>
+                            </form>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/user-sidebar.js"></script>
+    <script src="../js/report.js"></script>
+</body>
+</html>

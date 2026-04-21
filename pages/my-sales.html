@@ -18,26 +18,8 @@
     <!-- Firebase Config & Auth - Defer loading -->
     <script defer src="../js/firebase-config.js"></script>
     <script defer src="../js/firebase-auth.js"></script>
-
-    <!-- Auth Guard - Wait for Firebase to load -->
-    <script>
-        // Protect this page: redirect to login if not authenticated
-        function initializeAuthGuard() {
-            if (typeof firebase !== 'undefined' && firebase.auth) {
-                firebase.auth().onAuthStateChanged((user) => {
-                    if (!user) {
-                        window.location.href = 'login';
-                    }
-                });
-            } else {
-                // Firebase not loaded yet, retry
-                setTimeout(initializeAuthGuard, 100);
-            }
-        }
-        
-        // Start auth guard initialization
-        initializeAuthGuard();
-    </script>
+    <script defer src="../js/login-notice.js"></script>
+    <script defer src="../js/auth-guard.js"></script>
 </head>
 <body>
     <div class="container">
@@ -45,7 +27,7 @@
         <aside class="sidebar">
             <div class="logo">
                 <div class="logo-placeholder">
-                    <img src="../assets/sidebar-logo.png" alt="UniMart logo" class="logo-image">
+                    <img src="../assets/New%20Logo.PNG" alt="UniMart logo" class="logo-image">
                 </div>
                 <h1>UNIMART</h1>
             </div>
@@ -157,6 +139,17 @@
             <!-- Status Banner -->
             <div id="mySalesStatusBanner" class="marketplace-warning-banner" style="display:none;"></div>
 
+            <section class="seller-warning-panel" id="sellerWarningPanel" style="display:none;">
+                <div class="seller-warning-panel-header">
+                    <div>
+                        <h2>Important Admin Notice</h2>
+                        <p>Please review these respectful policy reminders about your listings.</p>
+                    </div>
+                    <span class="seller-warning-badge" id="sellerWarningBadge">0 notices</span>
+                </div>
+                <div class="seller-warning-list" id="sellerWarningList"></div>
+            </section>
+
             <!-- Sales Grid -->
             <div class="sales-section">
                 <div class="products-grid my-sales-grid" id="salesGrid">
@@ -201,31 +194,41 @@
                                 <p id="salesModalDescription">No description available</p>
                             </div>
 
-                            <div class="modal-section">
-                                <h4>Details</h4>
-                                <div class="details-grid">
-                                    <div class="detail-item">
-                                        <span class="detail-label">Category</span>
-                                        <span class="detail-value" id="salesModalCategory">-</span>
+                            <div class="product-info-grid">
+                                <div class="info-item">
+                                    <label><i class="fas fa-tag"></i> Category</label>
+                                    <span id="salesModalCategory">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <label><i class="fas fa-user-circle"></i> Seller</label>
+                                    <span id="salesModalSeller">Campus Seller</span>
+                                </div>
+                                <div class="info-item">
+                                    <label><i class="fas fa-heartbeat"></i> Condition</label>
+                                    <div class="condition-display">
+                                        <span class="condition-percentage" id="salesModalCondition">N/A</span>
+                                        <div class="condition-bar">
+                                            <div class="condition-fill" id="salesModalConditionBar" style="width: 0%;"></div>
+                                        </div>
                                     </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Quantity</span>
-                                        <span class="detail-value" id="salesModalQuantity">1</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Status</span>
-                                        <span class="detail-value" id="salesModalStatus">ACTIVE</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Reserved</span>
-                                        <span class="detail-value" id="salesModalReserved">No</span>
-                                    </div>
+                                </div>
+                                <div class="info-item">
+                                    <label><i class="fas fa-boxes"></i> Quantity</label>
+                                    <span class="quantity-badge" id="salesModalQuantity">1</span>
+                                </div>
+                                <div class="info-item">
+                                    <label><i class="fas fa-info-circle"></i> Status</label>
+                                    <span id="salesModalStatus">ACTIVE</span>
+                                </div>
+                                <div class="info-item">
+                                    <label><i class="fas fa-bookmark"></i> Reserved</label>
+                                    <span id="salesModalReserved">No</span>
                                 </div>
                             </div>
 
                             <div class="modal-section">
                                 <h4>Seller QR Code</h4>
-                                <div id="salesQRImage" style="min-height: 160px; display: flex; align-items: center; justify-content: center; border: 1px solid #e5e7eb; border-radius: 10px; background: #f9fafb; padding: 12px;"></div>
+                                <div id="salesQRImage" style="min-height: 160px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; border: 1px solid #e5e7eb; border-radius: 10px; background: #f9fafb; padding: 14px;"></div>
                             </div>
 
                             <div class="modal-actions-footer">
@@ -279,15 +282,24 @@
                             </div>
                             <div class="form-group">
                                 <label for="editCondition">Condition</label>
-                                <select id="editCondition">
-                                    <option value="Very Poor">Very Poor</option>
-                                    <option value="Poor">Poor</option>
-                                    <option value="Fair">Fair</option>
-                                    <option value="Good">Good</option>
-                                    <option value="Like New">Like New</option>
-                                    <option value="Brand New">Brand New</option>
-                                    <option value="Used">Used</option>
-                                </select>
+                                <div class="condition-display">
+                                    <div class="condition-value">
+                                        <span id="editConditionPercentage">75</span>%
+                                        <span id="editConditionLabel" class="condition-label">Good</span>
+                                    </div>
+                                    <div class="condition-info" id="editConditionInfo">Item shows minor signs of wear but functions perfectly. Great value.</div>
+                                </div>
+                                <div class="condition-slider">
+                                    <input type="range" id="editCondition" min="0" max="100" value="75" class="slider">
+                                    <div class="slider-labels">
+                                        <span>Very Poor<br><small>0%</small></span>
+                                        <span>Poor<br><small>20%</small></span>
+                                        <span>Fair<br><small>40%</small></span>
+                                        <span>Good<br><small>60%</small></span>
+                                        <span>Like New<br><small>80%</small></span>
+                                        <span>Brand New<br><small>100%</small></span>
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label for="editQuantity">Quantity</label>
@@ -303,13 +315,13 @@
                             </div>
 
                             <div class="modal-actions">
-                                <button class="btn-order" id="salesSaveEditBtn" style="background-color: #10b981;">
-                                    <i class="fas fa-save"></i>
-                                    Save Changes
-                                </button>
-                                <button class="btn-save" id="salesCancelEditBtn" style="background-color: #6b7280; color: #fff;">
+                                <button class="btn-save" id="salesCancelEditBtn" style="background-color: #ef4444; color: #fff;">
                                     <i class="fas fa-times"></i>
                                     Cancel
+                                </button>
+                                <button class="btn-order" id="salesSaveEditBtn" style="background-color: #10b981; color: #fff;">
+                                    <i class="fas fa-check"></i>
+                                    Save Changes
                                 </button>
                             </div>
                         </div>

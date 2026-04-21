@@ -83,6 +83,47 @@ function resolveAdminPanelPath() {
     return '/pages/admin-panel';
 }
 
+function getSidebarPageKeyFromValue(value) {
+    const normalized = String(value || '').trim().toLowerCase();
+
+    if (!normalized) return 'marketplace';
+    if (normalized.includes('admin-panel')) return 'admin';
+    if (normalized.includes('feedback')) return 'feedback';
+    if (normalized.includes('sell-item')) return 'sell';
+    if (normalized.includes('my-sales')) return 'sales';
+    if (normalized.includes('my-favorites')) return 'favorites';
+    if (normalized.includes('user-guide')) return 'guide';
+    if (normalized.includes('profile')) return 'profile';
+    if (
+        normalized === '/' ||
+        normalized === '..' ||
+        normalized === '../' ||
+        normalized.endsWith('/index') ||
+        normalized.endsWith('/index.html')
+    ) {
+        return 'marketplace';
+    }
+
+    return 'marketplace';
+}
+
+function getCurrentSidebarPageKey() {
+    return getSidebarPageKeyFromValue(window.location.pathname || '/');
+}
+
+function syncActiveSidebarNav() {
+    const navItems = document.querySelectorAll('.navigation .nav-item');
+    if (!navItems.length) return;
+
+    const currentPageKey = getCurrentSidebarPageKey();
+
+    navItems.forEach((item) => {
+        const href = item.getAttribute('href') || '';
+        const itemPageKey = getSidebarPageKeyFromValue(href);
+        item.classList.toggle('active', itemPageKey === currentPageKey);
+    });
+}
+
 function ensureAdminNavItem(userLike) {
     const shouldShow = isCurrentUserAdmin(userLike);
     const navLists = document.querySelectorAll('.navigation ul');
@@ -102,9 +143,8 @@ function ensureAdminNavItem(userLike) {
         li.setAttribute('data-admin-nav-item', 'true');
 
         const adminPath = resolveAdminPanelPath();
-        const isActive = (window.location.pathname || '').includes('admin-panel');
         li.innerHTML = `
-            <a href="${adminPath}" class="nav-item ${isActive ? 'active' : ''}">
+            <a href="${adminPath}" class="nav-item">
                 <i class="fas fa-user-shield"></i>
                 <span>Admin Panel</span>
             </a>
@@ -112,6 +152,7 @@ function ensureAdminNavItem(userLike) {
         list.appendChild(li);
     });
 
+    syncActiveSidebarNav();
     ensureAdminBottomNavItem(userLike);
 }
 
@@ -148,6 +189,70 @@ function ensureAdminBottomNavItem(userLike) {
     }
 }
 
+function resolveFeedbackPath() {
+    const currentPath = window.location.pathname || '';
+    if (currentPath.startsWith('/pages/') || currentPath.startsWith('pages/')) {
+        return 'feedback.html';
+    }
+    return 'pages/feedback.html';
+}
+
+function ensureFeedbackNavItem() {
+    const navLists = document.querySelectorAll('.navigation ul');
+    const currentPath = window.location.pathname || '';
+    const isFeedbackPage = currentPath.includes('/feedback');
+
+    navLists.forEach((list) => {
+        if (!(list instanceof HTMLElement)) return;
+
+        let feedbackListItem = list.querySelector('li[data-feedback-nav-item="true"]');
+        if (!feedbackListItem) {
+            const existingLink = Array.from(list.querySelectorAll('a.nav-item')).find((anchor) => {
+                const href = String(anchor.getAttribute('href') || '').toLowerCase();
+                return href.includes('feedback');
+            });
+            if (existingLink) {
+                feedbackListItem = existingLink.closest('li');
+                if (feedbackListItem) {
+                    feedbackListItem.dataset.feedbackNavItem = 'true';
+                }
+            }
+        }
+
+        if (feedbackListItem) {
+            const link = feedbackListItem.querySelector('a.nav-item');
+            if (link) {
+                link.setAttribute('href', resolveFeedbackPath());
+                const label = link.querySelector('span');
+                if (label) {
+                    label.textContent = 'Help';
+                }
+            }
+            return;
+        }
+
+        const li = document.createElement('li');
+        li.setAttribute('data-feedback-nav-item', 'true');
+        const feedbackPath = resolveFeedbackPath();
+
+        li.innerHTML = `
+            <a href="${feedbackPath}" class="nav-item">
+                <i class="fas fa-comment"></i>
+                <span>Help</span>
+            </a>
+        `;
+
+        list.appendChild(li);
+    });
+
+    if (isFeedbackPage) {
+        syncActiveSidebarNav();
+        return;
+    }
+
+    syncActiveSidebarNav();
+}
+
 window.unimartAdminAccess = {
     normalizeEmail,
     getAdminEmails,
@@ -157,6 +262,12 @@ window.unimartAdminAccess = {
     isAdminEmail,
     isCurrentUserAdmin
 };
+
+function updateLoginNotice(isAuthenticated) {
+    if (window.unimartLoginNotice) {
+        window.unimartLoginNotice.setAuthenticated(Boolean(isAuthenticated));
+    }
+}
 
 function applyUserToSidebar(userLike) {
     const loginBtn = document.getElementById('loginBtn');
@@ -201,13 +312,17 @@ function applyUserToSidebar(userLike) {
         }
 
         ensureAdminNavItem(userLike);
+        ensureFeedbackNavItem();
     } else {
         // Not logged in: hide profile containers, show login button
         if (userProfileCard) userProfileCard.style.display = 'none';
         if (userProfile) userProfile.style.display = 'none';
         if (loginBtn) loginBtn.style.display = 'flex';
         ensureAdminNavItem(null);
+        ensureFeedbackNavItem();
     }
+
+    updateLoginNotice(Boolean(userLike && userLike.email));
 }
 
 let _loginBanWatchRef = null;
@@ -258,10 +373,14 @@ document.addEventListener('DOMContentLoaded', () => {
             applyUserToSidebar(cachedUser);
         } else {
             ensureAdminNavItem(null);
+            ensureFeedbackNavItem();
+            syncActiveSidebarNav();
         }
     } catch (e) {
         console.error('Error reading cached user info:', e);
         ensureAdminNavItem(null);
+        ensureFeedbackNavItem();
+        syncActiveSidebarNav();
     }
 
     // 2) Then wire up real-time Firebase auth listener for live updates
@@ -277,6 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             stopLoginBanWatch();
         }
+        updateLoginNotice(Boolean(user && user.email));
         await enforcePolicy(user);
     });
 

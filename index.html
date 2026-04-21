@@ -16,6 +16,7 @@
     <!-- Firebase Config & Auth - Defer loading -->
     <script defer src="js/firebase-config.js"></script>
     <script defer src="js/firebase-auth.js"></script>
+    <script defer src="js/login-notice.js"></script>
     <script defer src="js/profile-sync.js"></script>
     <script defer src="js/analytics.js"></script>
     
@@ -42,7 +43,7 @@
         <aside class="sidebar">
             <div class="logo">
                 <div class="logo-placeholder">
-                    <img src="assets/sidebar-logo.png" alt="UniMart logo" class="logo-image">
+                    <img src="assets/New%20Logo.PNG" alt="UniMart logo" class="logo-image">
                 </div>
                 <h1>UNIMART</h1>
             </div>
@@ -119,8 +120,9 @@
         <main class="main-content">
             <!-- Header Banner -->
             <div class="header-banner">
-                <h1>Campus Marketplace</h1>
-                <p>The official hub for CUHK-SZ community to buy and sell items within campus</p>
+                <h1>UniMart</h1>
+                <span class="banner-kicker">Campus Marketplace</span>
+                <p>Discover trusted deals, sell with confidence, and connect with the CUHK-SZ community.</p>
             </div>
 
             <!-- Search and Filter Section -->
@@ -132,6 +134,7 @@
                     
                 <div class="filters">
                     <select class="filter-select">
+                        <option selected>Most Liked</option>
                         <option>Newest First</option>
                         <option>Oldest First</option>
                         <option>Price Low to High</option>
@@ -141,6 +144,12 @@
                     <select class="filter-select" id="collegeSelect">
                         <!-- Options populated by JavaScript -->
                     </select>
+
+                    <label class="toggle-container">
+                        <span class="toggle-label">Hide reserved</span>
+                        <input type="checkbox" id="hideReservedToggle" class="toggle-checkbox" checked onchange="setHideReserved(this.checked)" oninput="setHideReserved(this.checked)">
+                        <span class="toggle-switch"></span>
+                    </label>
 
                     <button class="btn-refresh">
                         <i class="fas fa-redo"></i>
@@ -271,8 +280,8 @@
                     <i class="fas fa-times"></i>
                 </button>
 
-                <div class="modal-body">
-                    <!-- Image Carousel -->
+                <div class="modal-body modal-body-grid">
+                    <!-- LEFT: Image Carousel -->
                     <div class="modal-image-section">
                         <div class="image-carousel">
                             <button class="carousel-btn prev-btn" id="prevBtn">
@@ -283,40 +292,70 @@
                                 <i class="fas fa-chevron-right"></i>
                             </button>
                         </div>
+                        
+                        <!-- Details Pills Row - Under Photo -->
+                        <div class="modal-details-row" id="modalDetailsRow" style="display: none;">
+                            <span class="modal-detail-pill" id="modalCategoryPill">
+                                <i class="fas fa-tag"></i> <span id="modalCategory"></span>
+                            </span>
+                            <span class="modal-detail-pill" id="modalCollegePill">
+                                <i class="fas fa-graduation-cap"></i> <span id="modalCollege"></span>
+                            </span>
+                            <span class="modal-detail-pill" id="modalSellerPill">
+                                <i class="fas fa-user-circle"></i> <span id="modalSellerName"></span>
+                            </span>
+                        </div>
+                        
                         <div class="badge-group">
                             <span class="badge" id="modalBadge">Brand New</span>
                         </div>
                     </div>
 
-                    <!-- Product Details -->
+                    <!-- RIGHT: Product Details -->
                     <div class="modal-details-section">
-                        <h2 id="modalProductTitle">Product Title</h2>
-                        <div class="modal-price" id="modalProductPrice">$0.00</div>
+                        <!-- Title & Price -->
+                        <div class="modal-header-content">
+                            <h2 id="modalProductTitle">Product Title</h2>
+                            <div class="modal-price" id="modalProductPrice">$0.00</div>
+                        </div>
 
-                        <!-- Seller Info -->
-                        <div class="seller-info" style="display: none;">
-                            <div class="seller-item">
-                                <i class="fas fa-user-circle"></i>
-                                <span id="modalSeller">Seller Name</span>
+                        <!-- Product Info Grid -->
+                        <div class="product-info-grid">
+                            <!-- Description -->
+                            <div class="info-item info-item-description" id="descriptionItem" style="display: none; grid-column: 1 / -1; min-height: auto;">
+                                <label><i class="fas fa-align-left"></i> Description</label>
+                                <p id="modalDescription" style="margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.6; word-break: break-word; white-space: normal;"></p>
                             </div>
-                            <div class="seller-item">
-                                <i class="fas fa-check-circle" style="color: #10b981;"></i>
-                                <span>Verified</span>
+
+                            <!-- Quantity -->
+                            <div class="info-item" id="quantityItem" style="display: none;">
+                                <label><i class="fas fa-boxes"></i> Quantity</label>
+                                <span class="quantity-badge" id="modalQuantity"></span>
+                            </div>
+
+                            <!-- Condition -->
+                            <div class="info-item" id="conditionItem" style="display: none;">
+                                <label><i class="fas fa-heartbeat"></i> Condition</label>
+                                <div class="condition-display">
+                                    <span class="condition-percentage" id="modalCondition"></span>
+                                    <div class="condition-bar">
+                                        <div class="condition-fill" id="modalConditionBar"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quality -->
+                            <div class="info-item" id="qualityItem" style="display: none;">
+                                <label><i class="fas fa-star"></i> Quality</label>
+                                <span class="quality-badge" id="modalQuality"></span>
+                            </div>
+
+                            <!-- Availability -->
+                            <div class="info-item" id="availabilityItem" style="display: none;">
+                                <label><i class="fas fa-box"></i> Status</label>
+                                <span id="modalReservedStatus"></span>
                             </div>
                         </div>
-
-                        <!-- Description -->
-                        <div class="modal-section">
-                            <h4><i class="fas fa-info-circle" style="color: var(--primary-blue); margin-right: 6px;"></i>Description</h4>
-                            <p id="modalDescription">No description available</p>
-                        </div>
-
-                        <div class="modal-section">
-                            <h4><i class="fas fa-bookmark" style="color: var(--primary-blue); margin-right: 6px;"></i>Availability</h4>
-                            <p id="modalReservedStatus">Available</p>
-                        </div>
-
-                        <!-- Features/Security - Removed -->
 
                         <!-- QR Upload Warning -->
                         <div class="qr-warning" id="qrWarning" style="display: none;">
@@ -330,8 +369,8 @@
                         <!-- Action Buttons -->
                         <div class="modal-actions">
                             <button class="btn-order" id="modalOrderBtn" disabled>
-                                <i class="fas fa-check-circle"></i>
-                                Contact Seller
+                                <i class="fas fa-comment-dots"></i>
+                                <span>Contact Seller</span>
                             </button>
                             <button class="btn-save" id="modalSaveBtn">
                                 <i class="fas fa-heart"></i>

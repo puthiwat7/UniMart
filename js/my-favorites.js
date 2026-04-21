@@ -12,8 +12,34 @@ function getFavCurrentUser() {
     return (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
 }
 
+function getConditionPercentage(product) {
+    const raw = Number(product?.condition);
+
+    if (Number.isFinite(raw)) {
+        return Math.max(0, Math.min(100, Math.round(raw)));
+    }
+
+    const badge = String(product?.badge || '').toLowerCase();
+    const fallbackMap = {
+        'very poor': 0,
+        poor: 20,
+        fair: 40,
+        good: 60,
+        'like new': 80,
+        'brand new': 100,
+        used: 60
+    };
+
+    const fallbackValue = Number.isFinite(fallbackMap[badge]) ? fallbackMap[badge] : null;
+    return fallbackValue;
+}
+
 function escHtml(str) {
     return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function getFavoriteCount(listing) {
+    return Math.max(0, Math.floor(Number(listing?.favoriteCount) || 0));
 }
 
 // ======================== Auth Init ========================
@@ -27,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (user) {
                 startFavoritesListener(user.uid);
             } else {
+                // Auth guard will handle redirect, but show empty state just in case
                 stopFavoritesListener();
                 renderEmptyState('Please sign in to view your favorites.', 'sign-in');
             }
@@ -125,6 +152,7 @@ async function fetchFavoritedListings(ids) {
                     images,
                     badge: String(val.badge || 'Used'),
                     description: String(val.description || ''),
+                    favoriteCount: getFavoriteCount(val),
                     status,
                     reserved: Boolean(val.reserved),
                     sellerPaymentQR: val.sellerPaymentQR || ''
@@ -141,6 +169,7 @@ async function fetchFavoritedListings(ids) {
                 college: '',
                 category: '—',
                 description: '',
+                favoriteCount: 0,
                 image: '📦',
                 imageUrl: '',
                 images: [],
@@ -218,18 +247,9 @@ function renderFavoritesGrid() {
 
 function createFavCard(listing) {
     const productId = String(listing.id);
-    const productIdLiteral = `'${productId}'`;
     const status = String(listing.status || 'active').toLowerCase();
     const isActive = status === 'active';
     const isReserved = Boolean(listing.reserved) && isActive;
-    const imageUrl = listing.imageUrl || (Array.isArray(listing.images) && listing.images[0]) || '';
-
-    let cardImage;
-    if (imageUrl) {
-        cardImage = `<img src="${imageUrl}" alt="${escHtml(listing.title)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">`;
-    } else {
-        cardImage = `<span style="font-size:64px;line-height:1;">${listing.image || '📦'}</span>`;
-    }
 
     const overlayBg = status === 'sold' ? '#dc2626cc' : status === 'withdrawn' ? '#6b7280cc' : '#374151cc';
     const statusOverlay = !isActive
@@ -247,32 +267,29 @@ function createFavCard(listing) {
         ? `<span class="product-badge" style="background:#ffedd5;color:#c2410c;border-color:#fecaca;">Reserved</span>`
         : '';
 
-    const card = document.createElement('div');
-    card.className = 'product-card' + (!isActive ? ' fav-unavailable-card' : isReserved ? ' reserved-card' : '');
-    card.innerHTML = `
-        <div class="product-image" onclick="openFavModal(${productIdLiteral})" style="position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;">
-            ${cardImage}
-            <button class="favorite-btn" onclick="event.stopPropagation(); handleFavRemove(${productIdLiteral})"
-                style="position:absolute;top:8px;right:8px;background:transparent;border:none;color:#ef4444;font-size:20px;cursor:pointer;z-index:10;" title="Remove from favorites">
-                <i class="fas fa-heart"></i>
-            </button>
-            ${overlay}
-        </div>
-        <div class="product-info">
-            <div class="product-meta-row">
-                <span class="product-badge">${escHtml(listing.badge || 'Used')}</span>
-                ${reservedBadge}
-                ${unavailBadge}
-            </div>
-            <h3 class="product-title" onclick="openFavModal(${productIdLiteral})" style="cursor:pointer;">${escHtml(listing.title)}</h3>
-            <div class="product-price">${escHtml(listing.price)}</div>
-            <div class="product-details-row">
-                <span class="product-seller">by ${escHtml(listing.seller || 'Campus Seller')}</span>
-            </div>
-            <div class="product-actions">
-                <button onclick="openFavModal(${productIdLiteral})">View Details</button>
-            </div>
-        </div>`;
+    const card = renderProductCard(listing, {
+        showRemoveButton: true,
+        showFavoriteIcon: true,
+        onViewDetails: 'openFavModal',
+        onFavoriteToggle: 'handleFavRemove',
+        onRemove: 'handleFavRemove',
+        isFavorited: true,
+        removeButtonClass: 'btn-action btn-action-withdraw',
+        removeButtonIconClass: 'fas fa-heart-broken',
+        removeButtonText: 'Remove',
+        removeButtonTitle: 'Remove from favorites',
+        overlayHtml: overlay,
+        extraMetaHtml: `${reservedBadge}${unavailBadge}`
+    });
+
+    if (!isActive) {
+        card.classList.add('fav-unavailable-card');
+    }
+
+    if (isReserved) {
+        card.classList.add('reserved-card');
+    }
+
     return card;
 }
 
@@ -280,14 +297,22 @@ function renderEmptyState(message, type) {
     const grid = document.getElementById('favoritesGrid');
     if (!grid) return;
     const icon = type === 'sign-in' ? 'fa-sign-in-alt' : 'fa-heart';
+    const title = type === 'sign-in'
+        ? 'Sign in to view favorites'
+        : type === 'browse'
+        ? 'Your favorites list is empty'
+        : 'No favorites yet';
     const linkHtml = type === 'browse'
-        ? `<a href="../" class="my-sales-start-selling-btn"><i class="fas fa-store"></i> Browse Marketplace</a>`
+        ? `<a href="../" class="my-sales-start-selling-btn"><i class="fas fa-store"></i><span>Browse Marketplace</span></a>`
         : type === 'sign-in'
-        ? `<a href="login" class="my-sales-start-selling-btn"><i class="fas fa-sign-in-alt"></i> Sign In</a>`
+        ? `<a href="login" class="my-sales-start-selling-btn"><i class="fas fa-sign-in-alt"></i><span>Sign In</span></a>`
         : '';
     grid.innerHTML = `
-        <div class="my-sales-empty-state">
-            <i class="fas ${icon}"></i>
+        <div class="favorites-empty-state${type === 'error' ? ' favorites-error-state' : ''}">
+            <div class="favorites-empty-icon">
+                <i class="fas ${icon}"></i>
+            </div>
+            <h3>${title}</h3>
             <p>${message}</p>
             ${linkHtml}
         </div>`;
@@ -297,26 +322,74 @@ function renderErrorState(message) {
     const grid = document.getElementById('favoritesGrid');
     if (!grid) return;
     grid.innerHTML = `
-        <div class="my-sales-empty-state">
-            <i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i>
+        <div class="favorites-empty-state favorites-error-state">
+            <div class="favorites-empty-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>Something went wrong</h3>
             <p>${message}</p>
         </div>`;
 }
 
 // ======================== Remove from Favorites ========================
-function handleFavRemove(productId) {
+async function handleFavRemove(productId) {
     const user = getFavCurrentUser();
     if (!user) return;
-    firebase.database().ref(`favorites/${user.uid}/${String(productId)}`).remove()
-        .catch(err => console.error('Error removing favorite:', err));
+    const normalizedId = String(productId);
+    const favoritesRef = firebase.database().ref(`favorites/${user.uid}/${normalizedId}`);
+
+    try {
+        await favoritesRef.remove();
+        if (window.unimartListingsSync && typeof window.unimartListingsSync.updateListingFavoriteCountInCloud === 'function') {
+            const ok = await window.unimartListingsSync.updateListingFavoriteCountInCloud(normalizedId, -1);
+            if (!ok) {
+                throw new Error('Failed to update favorite count');
+            }
+        }
+    } catch (err) {
+        console.error('Error removing favorite:', err);
+        favoritesRef.set({ id: normalizedId, addedAt: firebase.database.ServerValue.TIMESTAMP }).catch(() => {});
+    }
     // Firebase listener auto re-renders grid
 }
 
 // ======================== Modal ========================
+function ensureFavDescriptionItem() {
+    const infoGrid = document.querySelector('#favModal .product-info-grid');
+    if (!infoGrid) return null;
+
+    let descriptionItem = document.getElementById('favDescriptionItem');
+    if (!descriptionItem) {
+        descriptionItem = document.createElement('div');
+        descriptionItem.id = 'favDescriptionItem';
+        descriptionItem.className = 'info-item info-item-description';
+        descriptionItem.style.display = 'none';
+        descriptionItem.style.gridColumn = '1 / -1';
+        descriptionItem.style.minHeight = 'auto';
+        descriptionItem.innerHTML = `
+            <label><i class="fas fa-align-left"></i> Description</label>
+            <p id="favModalDescription" style="margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.6; word-break: break-word; white-space: normal;">No description available</p>
+        `;
+    }
+
+    if (descriptionItem.parentElement !== infoGrid) {
+        infoGrid.insertBefore(descriptionItem, infoGrid.firstChild);
+    }
+
+    const legacySection = document.getElementById('favDescriptionSection');
+    if (legacySection) {
+        legacySection.style.display = 'none';
+    }
+
+    return descriptionItem;
+}
+
 function openFavModal(productId) {
     const id = String(productId);
     const product = favoritedListings.find(l => String(l.id) === id);
     if (!product) return;
+
+    console.log('[DEBUG] openFavModal product:', product);
 
     currentFavProduct = product;
     currentFavImages = Array.isArray(product.images) && product.images.length > 0
@@ -325,29 +398,110 @@ function openFavModal(productId) {
     currentFavImageIndex = 0;
 
     const status = String(product.status || 'active').toLowerCase();
-    const isActive = status === 'active';
+    const isActive = status !== 'sold' && status !== 'withdrawn';
+    const conditionValue = getConditionPercentage ? getConditionPercentage(product) : null;
+    const quantityValue = Number.isFinite(Number(product.quantity)) ? Number(product.quantity) : null;
 
-    document.getElementById('favModalTitle').textContent = product.title;
-    document.getElementById('favModalPrice').textContent = product.price;
+    document.getElementById('favModalTitle').textContent = product.title || 'Product';
+    document.getElementById('favModalPrice').textContent = product.price || '¥0.00';
     document.getElementById('favModalBadge').textContent = product.badge || 'Used';
-    document.getElementById('favModalDescription').textContent =
-        product.description || `A ${(product.badge || '').toLowerCase()} item.`;
-    document.getElementById('favModalCategory').textContent = product.category || '—';
-    document.getElementById('favModalSeller').textContent = product.seller || '—';
-    document.getElementById('favModalStatus').textContent = status.toUpperCase();
-    document.getElementById('favModalCollege').textContent = product.college || '—';
 
-    // Carousel
+    const descriptionItem = ensureFavDescriptionItem();
+    const descriptionText = document.getElementById('favModalDescription');
+    if (product.description && descriptionItem && descriptionText) {
+        descriptionText.textContent = product.description;
+        descriptionItem.style.display = 'flex';
+    } else {
+        if (descriptionText) {
+            descriptionText.textContent = 'No description available';
+        }
+        if (descriptionItem) {
+            descriptionItem.style.display = 'none';
+        }
+    }
+    
+    // ===== DETAILS PILLS ROW =====
+    const detailsRow = document.getElementById('favModalDetailsRow');
+    let hasDetails = false;
+
+    // Category pill
+    const categoryPill = document.getElementById('favModalCategoryPill');
+    if (product.category) {
+        document.getElementById('favModalCategory').textContent = product.category;
+        categoryPill.style.display = 'inline-flex';
+        hasDetails = true;
+    } else {
+        categoryPill.style.display = 'none';
+    }
+
+    // College pill
+    const collegePill = document.getElementById('favModalCollegePill');
+    if (product.college) {
+        document.getElementById('favModalCollege').textContent = product.college;
+        collegePill.style.display = 'inline-flex';
+        hasDetails = true;
+    } else {
+        collegePill.style.display = 'none';
+    }
+
+    // Seller pill
+    const sellerPill = document.getElementById('favModalSellerPill');
+    if (product.seller) {
+        document.getElementById('favModalSeller').textContent = product.seller;
+        sellerPill.style.display = 'inline-flex';
+        hasDetails = true;
+    } else {
+        sellerPill.style.display = 'none';
+    }
+
+    // Show/hide the entire details row
+    detailsRow.style.display = hasDetails ? 'flex' : 'none';
+    
+    const availabilityItem = document.getElementById('favAvailabilityItem');
+    const statusSpan = document.getElementById('favModalStatus');
+    const statusText = product.reserved ? 'Reserved' : (isActive ? 'Available' : 'Unavailable');
+    const statusClass = product.reserved ? 'status-reserved' : (isActive ? 'status-available' : 'status-reserved');
+    statusSpan.textContent = statusText;
+    statusSpan.className = statusClass;
+    availabilityItem.style.display = 'flex';
+
+    const conditionItem = document.getElementById('favConditionItem');
+    const conditionPercent = document.getElementById('favModalCondition');
+    const conditionBar = document.getElementById('favModalConditionBar');
+    if (conditionValue !== null && conditionValue !== undefined) {
+        conditionPercent.textContent = `${conditionValue}%`;
+        conditionBar.style.width = `${conditionValue}%`;
+        if (conditionValue >= 70) {
+            conditionBar.style.backgroundColor = '#10b981';
+        } else if (conditionValue >= 40) {
+            conditionBar.style.backgroundColor = '#f59e0b';
+        } else {
+            conditionBar.style.backgroundColor = '#ef4444';
+        }
+        conditionItem.style.display = 'flex';
+    } else {
+        conditionPercent.textContent = 'N/A';
+        conditionBar.style.width = '0%';
+        conditionBar.style.backgroundColor = '#d1d5db';
+        conditionItem.style.display = 'none';
+    }
+
+    const quantityItem = document.getElementById('favQuantityItem');
+    const quantityBadge = document.getElementById('favModalQuantity');
+    if (quantityValue !== null) {
+        quantityBadge.textContent = `${quantityValue} available`;
+        quantityItem.style.display = 'flex';
+    } else {
+        quantityBadge.textContent = 'N/A';
+        quantityItem.style.display = 'none';
+    }
+
     renderFavModalImage();
 
-    // Availability notice
-    const availSection = document.getElementById('favAvailabilitySection');
     const availText = document.getElementById('favAvailabilityText');
     const availNotice = document.getElementById('favAvailabilityNotice');
     if (!isActive) {
-        availSection.style.display = 'block';
-        availNotice.style.cssText =
-            'padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;display:flex;align-items:center;gap:8px;color:#dc2626;';
+        availNotice.style.display = 'flex';
         if (status === 'sold') {
             availText.textContent = 'This item has been sold.';
         } else if (status === 'withdrawn') {
@@ -356,11 +510,47 @@ function openFavModal(productId) {
             availText.textContent = 'This item is no longer available.';
         }
     } else {
-        availSection.style.display = 'none';
+        availNotice.style.display = 'none';
     }
 
-    // QR Code
-    renderFavQR(product);
+    // Enable contact seller button for active items
+    const favModalOrderBtn = document.getElementById('favModalOrderBtn');
+    console.log('Setting button state, isActive:', isActive, 'button:', favModalOrderBtn);
+    if (favModalOrderBtn) {
+        if (isActive) {
+            favModalOrderBtn.disabled = false;
+            favModalOrderBtn.style.opacity = '1';
+            favModalOrderBtn.style.cursor = 'pointer';
+            favModalOrderBtn.title = '';
+            console.log('Button enabled');
+            
+            // Re-attach event listener to ensure it's working
+            favModalOrderBtn.onclick = async () => {
+                console.log('Contact Seller button clicked via onclick!');
+                if (currentFavProduct) {
+                    // Prepare order data
+                    const orderData = {
+                        itemName: currentFavProduct.title,
+                        price: currentFavProduct.price,
+                        seller: currentFavProduct.seller,
+                        sellerPaymentQR: currentFavProduct.sellerPaymentQR,
+                        productId: currentFavProduct.id
+                    };
+
+                    // Close product modal and open payment modal
+                    closeFavModal();
+                    openFavPaymentModal(orderData);
+                }
+            };
+        } else {
+            favModalOrderBtn.disabled = true;
+            favModalOrderBtn.style.opacity = '0.5';
+            favModalOrderBtn.style.cursor = 'not-allowed';
+            favModalOrderBtn.title = 'This item is no longer available';
+            console.log('Button disabled');
+            favModalOrderBtn.onclick = null;
+        }
+    }
 
     document.getElementById('favModal').classList.add('active');
 }
@@ -379,37 +569,76 @@ function renderFavModalImage() {
     }
 }
 
-async function renderFavQR(product) {
-    const qrBox = document.getElementById('favQRImage');
-    if (!qrBox) return;
-    qrBox.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:32px;color:#d1d5db;"></i>';
+function closeFavModal() {
+    document.getElementById('favModal').classList.remove('active');
+    currentFavProduct = null;
+}
 
-    let qrSrc = product.sellerPaymentQR || '';
+// ======================== Payment Modal Functions ========================
+function openFavPaymentModal(orderData) {
+    // Set order details
+    document.getElementById('favPaymentItemName').textContent = orderData.itemName || 'Product';
 
-    // Fetch seller profile from cloud using their UID
-    if (!qrSrc && product.sellerUid &&
+    // Load QR code
+    const qrContainer = document.getElementById('favPaymentQRCode');
+    qrContainer.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:32px;color:#d1d5db;"></i>';
+
+    let qrSrc = orderData.sellerPaymentQR || '';
+
+    // Fetch seller profile from cloud using their UID if needed
+    if (!qrSrc && currentFavProduct && currentFavProduct.sellerUid &&
         window.unimartProfileSync &&
         typeof window.unimartProfileSync.getProfileFromCloud === 'function') {
-        try {
-            const sellerProfile = await window.unimartProfileSync.getProfileFromCloud(product.sellerUid);
-            if (sellerProfile && sellerProfile.paymentQR) {
-                qrSrc = sellerProfile.paymentQR;
-            }
-        } catch (_) {}
+        (async () => {
+            try {
+                const sellerProfile = await window.unimartProfileSync.getProfileFromCloud(currentFavProduct.sellerUid);
+                if (sellerProfile && sellerProfile.paymentQR) {
+                    qrSrc = sellerProfile.paymentQR;
+                }
+            } catch (_) {}
+            renderFavPaymentQR(qrSrc);
+        })();
+    } else {
+        renderFavPaymentQR(qrSrc);
     }
 
+    // Setup modal event listeners
+    setupFavPaymentModal();
+
+    // Show modal
+    document.getElementById('favPaymentModal').classList.add('active');
+}
+
+function renderFavPaymentQR(qrSrc) {
+    const qrContainer = document.getElementById('favPaymentQRCode');
     if (qrSrc) {
-        qrBox.innerHTML = `<img src="${qrSrc}" alt="Seller Payment QR" style="max-width:100%;max-height:220px;object-fit:contain;border-radius:8px;">`;
+        qrContainer.innerHTML = `<img src="${qrSrc}" alt="Seller Payment QR" style="max-width:100%;max-height:220px;object-fit:contain;border-radius:8px;">`;
     } else {
-        qrBox.innerHTML = `
+        qrContainer.innerHTML = `
             <i class="fas fa-qrcode" style="font-size:64px;color:#d1d5db;"></i>
             <p style="color:#9ca3af;font-size:12px;margin-top:8px;text-align:center;">Seller has not uploaded a QR code</p>`;
     }
 }
 
-function closeFavModal() {
-    document.getElementById('favModal').classList.remove('active');
-    currentFavProduct = null;
+function setupFavPaymentModal() {
+    const modal = document.getElementById('favPaymentModal');
+    const overlay = document.getElementById('favPaymentModalOverlay');
+    const closeBtn = document.getElementById('favPaymentModalClose');
+    const cancelBtn = document.getElementById('favBtnCancelOrder');
+    const contactBtn = document.getElementById('favBtnPaymentMade');
+
+    const closeModal = () => {
+        modal.classList.remove('active');
+    };
+
+    overlay.addEventListener('click', closeModal);
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    contactBtn.addEventListener('click', () => {
+        alert('Contact initiated! You can now communicate with the seller using the QR code.');
+        closeModal();
+    });
 }
 
 function setupFavModal() {
@@ -429,6 +658,9 @@ function setupFavModal() {
             renderFavModalImage();
         }
     });
+
+    // Contact Seller button - event listener attached when modal opens
+    // Event listener is attached in openFavModal when button is enabled
 
     document.getElementById('favRemoveBtn').addEventListener('click', () => {
         if (currentFavProduct) {

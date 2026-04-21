@@ -15,24 +15,9 @@
     <!-- Firebase Config & Auth - Defer loading -->
     <script defer src="../js/firebase-config.js"></script>
     <script defer src="../js/firebase-auth.js"></script>
+    <script defer src="../js/login-notice.js"></script>
+    <script defer src="../js/auth-guard.js"></script>
     <script defer src="../js/profile-sync.js"></script>
-
-    <!-- Auth state watcher - keep favorites available while auth restores -->
-    <script>
-        // Passive auth watcher that allows page to load
-        // Hard redirect is handled by DOMContentLoaded in my-favorites.js
-        function initializeAuthWatcher() {
-            if (typeof firebase !== 'undefined' && firebase.auth) {
-                firebase.auth().onAuthStateChanged((user) => {
-                    console.log('My Favorites auth state:', user ? 'signed in' : 'signed out');
-                    // Auth state is handled by DOMContentLoaded in my-favorites.js
-                });
-            } else {
-                setTimeout(initializeAuthWatcher, 100);
-            }
-        }
-
-        initializeAuthWatcher();
     </script>
 </head>
 <body>
@@ -41,7 +26,7 @@
         <aside class="sidebar">
             <div class="logo">
                 <div class="logo-placeholder">
-                    <img src="../assets/sidebar-logo.png" alt="UniMart logo" class="logo-image">
+                    <img src="../assets/New%20Logo.PNG" alt="UniMart logo" class="logo-image">
                 </div>
                 <h1>UNIMART</h1>
             </div>
@@ -148,7 +133,7 @@
                     <i class="fas fa-times"></i>
                 </button>
 
-                <div class="modal-body">
+                <div class="modal-body modal-body-grid">
                     <div class="modal-image-section">
                         <div class="image-carousel">
                             <button class="carousel-btn prev-btn" id="favPrevBtn">
@@ -159,6 +144,20 @@
                                 <i class="fas fa-chevron-right"></i>
                             </button>
                         </div>
+                        
+                        <!-- Details Pills Row - Under Photo -->
+                        <div class="modal-details-row" id="favModalDetailsRow" style="display: none;">
+                            <span class="modal-detail-pill" id="favModalCategoryPill">
+                                <i class="fas fa-tag"></i> <span id="favModalCategory"></span>
+                            </span>
+                            <span class="modal-detail-pill" id="favModalCollegePill">
+                                <i class="fas fa-graduation-cap"></i> <span id="favModalCollege"></span>
+                            </span>
+                            <span class="modal-detail-pill" id="favModalSellerPill">
+                                <i class="fas fa-user-circle"></i> <span id="favModalSeller"></span>
+                            </span>
+                        </div>
+                        
                         <div class="badge-group">
                             <span class="badge" id="favModalBadge">Used</span>
                         </div>
@@ -170,46 +169,46 @@
                             <div class="modal-price" id="favModalPrice">¥0.00</div>
                         </div>
 
-                        <div class="modal-section" id="favAvailabilitySection" style="display:none;">
-                            <div id="favAvailabilityNotice">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <span id="favAvailabilityText">This item is no longer available</span>
+                        <div class="product-info-grid">
+                            <div class="info-item info-item-description" id="favDescriptionItem" style="display: none; grid-column: 1 / -1; min-height: auto;">
+                                <label><i class="fas fa-align-left"></i> Description</label>
+                                <p id="favModalDescription" style="margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.6; word-break: break-word; white-space: normal;">No description available</p>
+                            </div>
+
+                            <div class="info-item" id="favQuantityItem" style="display: none;">
+                                <label><i class="fas fa-boxes"></i> Quantity</label>
+                                <span class="quantity-badge" id="favModalQuantity">N/A</span>
+                            </div>
+
+                            <div class="info-item" id="favConditionItem" style="display: none;">
+                                <label><i class="fas fa-heartbeat"></i> Condition</label>
+                                <div class="condition-display">
+                                    <span class="condition-percentage" id="favModalCondition">N/A</span>
+                                    <div class="condition-bar">
+                                        <div class="condition-fill" id="favModalConditionBar" style="width:0%;background:#d1d5db;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="info-item" id="favAvailabilityItem" style="display: none;">
+                                <label><i class="fas fa-box"></i> Status</label>
+                                <span id="favModalStatus">N/A</span>
                             </div>
                         </div>
 
-                        <div class="modal-section">
-                            <h4>Description</h4>
-                            <p id="favModalDescription">No description available</p>
-                        </div>
-
-                        <div class="modal-section">
-                            <h4>Details</h4>
-                            <div class="details-grid">
-                                <div class="detail-item">
-                                    <span class="detail-label">Category</span>
-                                    <span class="detail-value" id="favModalCategory">-</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Seller</span>
-                                    <span class="detail-value" id="favModalSeller">-</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Status</span>
-                                    <span class="detail-value" id="favModalStatus">ACTIVE</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">College</span>
-                                    <span class="detail-value" id="favModalCollege">-</span>
-                                </div>
+                        <div class="qr-warning" id="favAvailabilityNotice" style="display: none; background: #fef2f2; border-color: #fecaca; color: #dc2626;">
+                            <i class="fas fa-exclamation-circle" style="color: #dc2626;"></i>
+                            <div>
+                                <strong>Unavailable item</strong>
+                                <p id="favAvailabilityText">This item is no longer available.</p>
                             </div>
                         </div>
 
-                        <div class="modal-section">
-                            <h4>Seller QR Code</h4>
-                            <div id="favQRImage" style="min-height:160px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb;padding:12px;"></div>
-                        </div>
-
-                        <div class="modal-actions-footer">
+                        <div class="modal-actions">
+                            <button class="btn-order" id="favModalOrderBtn">
+                                <i class="fas fa-comment-dots"></i>
+                                <span>Contact Seller</span>
+                            </button>
                             <button class="btn-action btn-action-withdraw" id="favRemoveBtn">
                                 <i class="fas fa-heart-broken"></i>
                                 <span>Remove Favorite</span>
@@ -223,7 +222,53 @@
 
     <script defer src="../js/user-sidebar.js"></script>
     <script defer src="../js/listings-sync.js"></script>
+    <script defer src="../js/product-card.js"></script>
     <script defer src="../js/my-favorites.js"></script>
+
+    <!-- Payment Modal -->
+    <div class="payment-modal" id="favPaymentModal">
+        <div class="payment-modal-overlay" id="favPaymentModalOverlay"></div>
+        <div class="payment-modal-content">
+            <button class="payment-modal-close" id="favPaymentModalClose">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="payment-header">
+                <div class="payment-title">
+                    <i class="fas fa-qrcode"></i>
+                    <span>Seller Profile QR</span>
+                </div>
+            </div>
+
+            <div class="payment-body">
+                <!-- Order Summary -->
+                <div class="payment-order-summary">
+                    <h3 id="favPaymentItemName">Product Name</h3>
+                </div>
+
+                <!-- QR Code Display -->
+                <div class="payment-qr-section">
+                    <div class="qr-code-container">
+                        <div class="qr-code-title">Seller Profile QR Code</div>
+                        <div class="qr-code-image" id="favPaymentQRCode">
+                            <i class="fas fa-qrcode" style="font-size: 120px; color: #ddd;"></i>
+                        </div>
+                        <div class="wechat-pay-logo">
+                            <i class="fab fa-weixin"></i>
+                            <span>微信支付</span>
+                        </div>
+                    </div>
+                    <div class="payment-official-text">Use this QR to communicate with the seller directly.</div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="payment-actions">
+                    <button class="btn-cancel-order" id="favBtnCancelOrder">Cancel</button>
+                    <button class="btn-payment-made" id="favBtnPaymentMade">Contact Seller</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Mobile Bottom Navigation -->
     <nav class="bottom-nav" id="bottomNav">

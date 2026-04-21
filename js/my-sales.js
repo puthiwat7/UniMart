@@ -20,10 +20,107 @@ let currentSalesImageIndex = 0;
 let editingImages = [];
 let originalEditData = null;
 let mySalesRealtimeUnsubscribe = null;
+let sellerWarningsUnsubscribe = null;
 let isMySalesLoading = false;
 let mySalesLoadError = null;
 let mySalesLoadWarning = null;
 let cachedAllListings = null;
+
+function mapSellerWarnings(value) {
+    if (!value || typeof value !== 'object') return [];
+
+    return Object.entries(value).map(([id, warning]) => ({
+        id,
+        ...(warning || {})
+    })).filter((warning) => {
+        return String(warning.status || 'unread').toLowerCase() !== 'acknowledged';
+    }).sort((a, b) => {
+        const dateA = Date.parse(a.createdAt || '') || 0;
+        const dateB = Date.parse(b.createdAt || '') || 0;
+        return dateB - dateA;
+    });
+}
+
+function formatWarningDate(value) {
+    const date = new Date(value || '');
+    if (Number.isNaN(date.getTime())) return 'Unknown date';
+    return date.toLocaleString();
+}
+
+function renderSellerWarnings(warnings) {
+    const panel = document.getElementById('sellerWarningPanel');
+    const list = document.getElementById('sellerWarningList');
+    const badge = document.getElementById('sellerWarningBadge');
+    if (!panel || !list || !badge) return;
+
+    const warningItems = Array.isArray(warnings) ? warnings : [];
+    if (!warningItems.length) {
+        panel.style.display = 'none';
+        list.innerHTML = '';
+        badge.textContent = '0 notices';
+        return;
+    }
+
+    badge.textContent = `${warningItems.length} ${warningItems.length === 1 ? 'notice' : 'notices'}`;
+    panel.style.display = 'block';
+    list.innerHTML = warningItems.map((warning) => `
+        <article class="seller-warning-card seller-warning-card-${String(warning.status || 'unread').toLowerCase()}">
+            <div class="seller-warning-card-header">
+                <div>
+                    <h3>${String(warning.reason || 'Policy Reminder')}</h3>
+                    <p>${warning.listingTitle ? `Listing: ${String(warning.listingTitle)}` : 'Listing requires attention'}</p>
+                </div>
+                <span class="seller-warning-date">${formatWarningDate(warning.createdAt)}</span>
+            </div>
+            <p class="seller-warning-message">${String(warning.noticeMessage || 'Please review the latest admin notice for your listing.')}</p>
+            ${warning.adminComment ? `<div class="seller-warning-comment"><strong>Admin comment:</strong> ${String(warning.adminComment)}</div>` : ''}
+            <div class="seller-warning-actions">
+                <button type="button" class="seller-warning-ack-btn" data-warning-id="${String(warning.id)}">Got it</button>
+            </div>
+        </article>
+    `).join('');
+}
+
+async function acknowledgeSellerWarning(warningId) {
+    const currentUser = getCurrentUserIdentity();
+    if (!currentUser.uid || !warningId) return;
+    if (typeof firebase === 'undefined' || typeof firebase.database !== 'function') return;
+
+    await firebase.database().ref(`unimartSellerWarnings/${currentUser.uid}/${String(warningId)}`).update({
+        status: 'acknowledged',
+        acknowledgedAt: new Date().toISOString()
+    });
+}
+
+function subscribeToSellerWarnings() {
+    if (sellerWarningsUnsubscribe) {
+        sellerWarningsUnsubscribe();
+        sellerWarningsUnsubscribe = null;
+    }
+
+    if (typeof firebase === 'undefined' || typeof firebase.database !== 'function') {
+        renderSellerWarnings([]);
+        return;
+    }
+
+    const currentUser = getCurrentUserIdentity();
+    if (!currentUser.uid) {
+        renderSellerWarnings([]);
+        return;
+    }
+
+    const ref = firebase.database().ref(`unimartSellerWarnings/${currentUser.uid}`);
+    const handler = (snapshot) => {
+        renderSellerWarnings(mapSellerWarnings(snapshot.val()));
+    };
+    const errorHandler = (error) => {
+        console.warn('Failed to load seller warnings:', error);
+        renderSellerWarnings([]);
+    };
+
+    ref.on('value', handler, errorHandler);
+    sellerWarningsUnsubscribe = () => ref.off('value', handler);
+}
 
 // Image compression utility
 async function compressImage(file) {
@@ -32,13 +129,15 @@ async function compressImage(file) {
         return file;
     }
 
+    const normalizedType = typeof file.type === 'string' ? file.type.toLowerCase() : '';
+    const preferredType = normalizedType === 'image/png' ? 'image/png' : 'image/jpeg';
     const options = {
-        maxSizeMB: 0.5, // Max 0.5MB
-        maxWidthOrHeight: 1024, // Max 1024px
+        maxSizeMB: 1.2,
+        maxWidthOrHeight: 1600,
         useWebWorker: true, // Use web worker for performance
         preserveExif: false, // Don't preserve EXIF data
-        fileType: 'image/jpeg', // Convert to JPEG for better compression
-        initialQuality: 0.8 // Start with 80% quality
+        fileType: preferredType,
+        initialQuality: preferredType === 'image/png' ? 1 : 0.92
     };
 
     try {
@@ -142,9 +241,10 @@ function normalizeListing(item, index = 0) {
         imageUrl: item.imageUrl || (Array.isArray(item.images) && item.images[0]) || '',
         images: Array.isArray(item.images) ? item.images.filter(Boolean) : [],
         badge: String(item.badge || 'Used'),
-        condition: Number.isFinite(Number(item.condition)) ? Number(item.condition) : (Number.isFinite(Number(item.conditionPercentage)) ? Number(item.conditionPercentage) : null),
+        condition: getConditionPercentage(item),
         description: String(item.description || ''),
         quantity: Number(item.quantity) || 1,
+        favoriteCount: Math.max(0, Math.floor(Number(item.favoriteCount) || 0)),
         seller: String(item.seller || 'Campus Seller'),
         sellerUid: item.sellerUid || null,
         sellerEmail: item.sellerEmail ? String(item.sellerEmail).toLowerCase() : '',
@@ -153,6 +253,80 @@ function normalizeListing(item, index = 0) {
         listedDate: item.listedDate || item.listedAt || new Date().toISOString().split('T')[0],
         soldDate: item.soldDate || null
     };
+}
+
+function getConditionPercentage(item) {
+    if (!item) return null;
+
+    const numericCondition = Number(item.condition);
+    if (Number.isFinite(numericCondition)) {
+        return Math.max(0, Math.min(100, numericCondition));
+    }
+
+    const label = String(item.condition || item.badge || item.conditionPercentage || '').trim().toLowerCase();
+    const conditionMap = {
+        'very poor': 0,
+        'poor': 20,
+        'fair': 40,
+        'used': 60,
+        'good': 60,
+        'like new': 80,
+        'brand new': 100
+    };
+    if (conditionMap[label] !== undefined) {
+        return conditionMap[label];
+    }
+
+    const numericPercentage = Number(item.conditionPercentage);
+    if (Number.isFinite(numericPercentage)) {
+        return Math.max(0, Math.min(100, numericPercentage));
+    }
+
+    return null;
+}
+
+const SALES_EDIT_CONDITION_LEVELS = {
+    0: { label: 'Very Poor', info: 'Item has significant damage and may not function properly.' },
+    20: { label: 'Poor', info: 'Item has major wear and tear. Limited functionality.' },
+    40: { label: 'Fair', info: 'Item has moderate wear. Functions with some limitations.' },
+    60: { label: 'Good', info: 'Item shows minor signs of wear but functions perfectly. Great value.' },
+    80: { label: 'Like New', info: 'Item is in excellent condition with minimal wear. Rarely used.' },
+    100: { label: 'Brand New', info: 'Item is new, unopened, and in original packaging.' }
+};
+
+function getConditionLabelFromValue(value) {
+    const numericValue = Math.max(0, Math.min(100, Number(value) || 0));
+    if (numericValue <= 10) return SALES_EDIT_CONDITION_LEVELS[0].label;
+    if (numericValue <= 30) return SALES_EDIT_CONDITION_LEVELS[20].label;
+    if (numericValue <= 50) return SALES_EDIT_CONDITION_LEVELS[40].label;
+    if (numericValue <= 70) return SALES_EDIT_CONDITION_LEVELS[60].label;
+    if (numericValue <= 90) return SALES_EDIT_CONDITION_LEVELS[80].label;
+    return SALES_EDIT_CONDITION_LEVELS[100].label;
+}
+
+function updateSalesEditConditionUI() {
+    const conditionInput = document.getElementById('editCondition');
+    const percentageEl = document.getElementById('editConditionPercentage');
+    const labelEl = document.getElementById('editConditionLabel');
+    const infoEl = document.getElementById('editConditionInfo');
+    if (!conditionInput || !percentageEl || !labelEl || !infoEl) return;
+
+    const value = Math.max(0, Math.min(100, Number(conditionInput.value) || 0));
+    conditionInput.value = String(value);
+
+    let levelKey;
+    if (value <= 10) levelKey = 0;
+    else if (value <= 30) levelKey = 20;
+    else if (value <= 50) levelKey = 40;
+    else if (value <= 70) levelKey = 60;
+    else if (value <= 90) levelKey = 80;
+    else levelKey = 100;
+
+    const level = SALES_EDIT_CONDITION_LEVELS[levelKey];
+    percentageEl.textContent = String(value);
+    labelEl.textContent = level.label;
+    labelEl.style.background = (typeof window.getConditionColor === 'function') ? window.getConditionColor(value) : (value >= 70 ? '#10b981' : value >= 31 ? '#f59e0b' : '#ef4444');
+    infoEl.textContent = level.info;
 }
 
 function listingBelongsToCurrentUser(listing, currentUser) {
@@ -194,7 +368,7 @@ function removeSampleItemsFromStorage() {
     });
 }
 
-async function loadAllListingsForStorage() {
+async function loadAllListingsForStorage(forceRefresh = false) {
     mySalesLoadError = null;
     mySalesLoadWarning = null;
     const currentUser = getCurrentUserIdentity();
@@ -205,10 +379,12 @@ async function loadAllListingsForStorage() {
         return [];
     }
 
+    const cacheTtlMs = forceRefresh ? 0 : 45000;
+
     try {
         const all = (currentUser.uid && typeof window.unimartListingsSync.getListingsForSellerFromCloud === 'function')
-            ? await window.unimartListingsSync.getListingsForSellerFromCloud(currentUser.uid, { limit: 300, cacheTtlMs: 45000 })
-            : await window.unimartListingsSync.getAllListingsFromCloud({ limit: 300, cacheTtlMs: 45000 });
+            ? await window.unimartListingsSync.getListingsForSellerFromCloud(currentUser.uid, { limit: 300, cacheTtlMs })
+            : await window.unimartListingsSync.getAllListingsFromCloud({ limit: 300, cacheTtlMs });
         const normalized = all.map((item, index) => normalizeListing(item, index)).filter(Boolean);
         const readState = window.unimartListingsSyncLastReadState || null;
 
@@ -231,10 +407,10 @@ async function loadAllListingsForStorage() {
     }
 }
 
-async function loadMySalesData() {
+async function loadMySalesData(forceRefresh = false) {
     const currentUser = getCurrentUserIdentity();
     console.log('My Sales - Current User:', currentUser);
-    const allListings = await loadAllListingsForStorage();
+    const allListings = await loadAllListingsForStorage(forceRefresh);
     console.log('My Sales - All Listings:', allListings.length);
     mySalesData = allListings.filter((item) => listingBelongsToCurrentUser(item, currentUser));
     console.log('My Sales - User\'s Listings:', mySalesData.length, mySalesData);
@@ -286,12 +462,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     await refreshMySalesView();
+    subscribeToSellerWarnings();
     setupSalesFilters();
 
     const refreshSalesBtn = document.getElementById('refreshSalesBtn');
     if (refreshSalesBtn) {
         refreshSalesBtn.addEventListener('click', async () => {
-            await refreshMySalesView();
+            refreshSalesBtn.disabled = true;
+            const icon = refreshSalesBtn.querySelector('i');
+            const label = refreshSalesBtn.querySelector('span');
+            if (icon) icon.style.animation = 'spin 0.8s linear infinite';
+            if (label) label.textContent = 'Refreshing...';
+            window.location.reload();
+        });
+    }
+
+    const sellerWarningList = document.getElementById('sellerWarningList');
+    if (sellerWarningList) {
+        sellerWarningList.addEventListener('click', async (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) return;
+
+            const acknowledgeButton = target.closest('button[data-warning-id]');
+            if (!acknowledgeButton) return;
+
+            const warningId = acknowledgeButton.dataset.warningId;
+            if (!warningId) return;
+
+            try {
+                acknowledgeButton.disabled = true;
+                await acknowledgeSellerWarning(warningId);
+            } catch (error) {
+                console.error('Failed to acknowledge seller warning:', error);
+                alert('Could not clear the warning right now. Please try again.');
+                acknowledgeButton.disabled = false;
+            }
         });
     }
 
@@ -318,12 +523,17 @@ window.addEventListener('beforeunload', () => {
         mySalesRealtimeUnsubscribe();
         mySalesRealtimeUnsubscribe = null;
     }
+
+    if (sellerWarningsUnsubscribe) {
+        sellerWarningsUnsubscribe();
+        sellerWarningsUnsubscribe = null;
+    }
 });
 
 async function refreshMySalesView() {
     cachedAllListings = null; // Force fresh fetch on refresh
     renderMySalesLoadingState();
-    await loadMySalesData();
+    await loadMySalesData(true); // forceRefresh bypasses cloud service cache
     filterSales();
     updateSalesStats();
     setupMySalesRealtimeSync();
@@ -543,15 +753,22 @@ function createSaleCard(item) {
     const reservedAction = (item.status === 'active')
         ? `<button class="btn-reserve-toggle" onclick='event.stopPropagation(); toggleSaleReserved(${JSON.stringify(item.id)})'>${item.reserved ? 'Unreserve' : 'Mark as Reserved'}</button>`
         : '';
+    const favoriteCount = Math.max(0, Math.floor(Number(item.favoriteCount) || 0));
 
     card.innerHTML = `
-        <div class="product-image" onclick='openSalesModal(${JSON.stringify(item.id)})'>${cardImage}</div>
+        <div class="product-image" onclick='openSalesModal(${JSON.stringify(item.id)})' style="position:relative;">
+            ${cardImage}
+            <div class="product-card-top-right">
+                <span class="product-like-count"><i class="fas fa-heart"></i>${favoriteCount}</span>
+            </div>
+        </div>
         ${reservedOverlay}
         <div class="product-info">
-            <span class="product-badge sale-status-badge ${statusClass}">${statusText}</span>
             <h3 class="product-title" onclick='openSalesModal(${JSON.stringify(item.id)})'>${item.title}</h3>
-            <div class="product-price">${item.price}</div>
-            <div class="product-seller">${item.category}</div>
+            <div class="product-title-row">
+                <div class="product-seller">${item.category}</div>
+                <div class="product-price">${item.price}</div>
+            </div>
             ${extraInfo}
             <div class="product-actions">
                 <button onclick='openSalesModal(${JSON.stringify(item.id)})'>View Details</button>
@@ -646,6 +863,10 @@ function openSalesModal(itemId) {
     document.getElementById('salesModalBadge').textContent = item.badge;
     document.getElementById('salesModalDescription').textContent = item.description || 'No description available.';
     document.getElementById('salesModalCategory').textContent = item.category;
+    document.getElementById('salesModalSeller').textContent = item.seller || 'Campus Seller';
+    const conditionValue = getConditionPercentage(item);
+    document.getElementById('salesModalCondition').textContent = conditionValue !== null ? `${conditionValue}%` : (item.condition ? String(item.condition) : 'N/A');
+    document.getElementById('salesModalConditionBar').style.width = conditionValue !== null ? `${conditionValue}%` : '0%';
     document.getElementById('salesModalQuantity').textContent = String(item.quantity || 1);
     document.getElementById('salesModalStatus').textContent = String(item.status || 'active').toUpperCase();
     document.getElementById('salesModalReserved').textContent = item.reserved ? 'Yes' : 'No';
@@ -717,16 +938,10 @@ function openSalesEditPanel() {
     document.getElementById('editDescription').value = item.description || '';
     document.getElementById('editCategory').value = item.category || 'Other';
 
-    const conditionValue = Number(item.condition) || Number(item.conditionPercentage) || 75;
-    const conditionMap = {
-        0: 'Very Poor',
-        20: 'Poor',
-        40: 'Fair',
-        60: 'Good',
-        80: 'Like New',
-        100: 'Brand New'
-    };
-    document.getElementById('editCondition').value = conditionMap[conditionValue] || 'Used';
+    const conditionValue = getConditionPercentage(item);
+    const normalizedConditionValue = Number.isFinite(Number(conditionValue)) ? Math.max(0, Math.min(100, Math.round(Number(conditionValue)))) : 75;
+    document.getElementById('editCondition').value = String(normalizedConditionValue);
+    updateSalesEditConditionUI();
     document.getElementById('editQuantity').value = item.quantity || 1;
 
     editingImages = [...getSalesItemImages(item)];
@@ -737,7 +952,7 @@ function openSalesEditPanel() {
         price: String(item.price).replace(/[^\d.]/g, ''),
         description: item.description || '',
         category: item.category || 'Other',
-        condition: conditionMap[conditionValue] || 'Used',
+        condition: String(normalizedConditionValue),
         quantity: item.quantity || 1,
         images: [...editingImages]
     };
@@ -791,20 +1006,10 @@ async function saveSalesEdit() {
     const priceValue = Number(document.getElementById('editPrice').value);
     const description = document.getElementById('editDescription').value.trim();
     const category = document.getElementById('editCategory').value;
-    const conditionSelect = document.getElementById('editCondition').value;
+    const conditionInputValue = Number(document.getElementById('editCondition').value);
     const quantityValue = Number(document.getElementById('editQuantity').value);
-
-    // Map select value to number
-    const conditionMap = {
-        'Very Poor': 0,
-        'Poor': 20,
-        'Fair': 40,
-        'Used': 60,
-        'Good': 60,
-        'Like New': 80,
-        'Brand New': 100
-    };
-    const condition = conditionMap[conditionSelect] || 60;
+    const condition = Math.max(0, Math.min(100, Math.round(conditionInputValue)));
+    const conditionLabel = getConditionLabelFromValue(condition);
 
     if (!title) {
         alert('Title is required.');
@@ -822,6 +1027,10 @@ async function saveSalesEdit() {
         alert('Quantity must be at least 1.');
         return;
     }
+    if (!Number.isFinite(conditionInputValue)) {
+        alert('Please set a valid condition.');
+        return;
+    }
     if (!editingImages.length) {
         alert('At least 1 image is required.');
         return;
@@ -833,7 +1042,7 @@ async function saveSalesEdit() {
         price: priceValue.toString(),
         description,
         category,
-        condition: conditionSelect, // Use select value for comparison
+        condition: String(condition),
         quantity: quantityValue,
         images: editingImages
     };
@@ -866,7 +1075,7 @@ async function saveSalesEdit() {
             price: `¥${priceValue.toFixed(2)}`,
             description,
             category,
-            badge: conditionSelect, // Keep badge as string for display
+            badge: conditionLabel,
             condition: condition, // Save condition as number
             quantity: Math.floor(quantityValue),
             images: [...editingImages],
@@ -996,6 +1205,7 @@ function setupSalesModal() {
     const cancelEditBtn = document.getElementById('salesCancelEditBtn');
     const saveEditBtn = document.getElementById('salesSaveEditBtn');
     const editImagesInput = document.getElementById('editImages');
+    const editConditionInput = document.getElementById('editCondition');
 
     if (closeBtn) closeBtn.addEventListener('click', closeSalesModal);
     if (overlay) overlay.addEventListener('click', closeSalesModal);
@@ -1028,6 +1238,7 @@ function setupSalesModal() {
     if (reservedToggleBtn) reservedToggleBtn.addEventListener('click', () => toggleSaleReserved(currentSalesItemId));
     if (cancelEditBtn) cancelEditBtn.addEventListener('click', closeSalesEditPanel);
     if (saveEditBtn) saveEditBtn.addEventListener('click', saveSalesEdit);
+    if (editConditionInput) editConditionInput.addEventListener('input', updateSalesEditConditionUI);
 
     if (editImagesInput) {
         editImagesInput.addEventListener('change', async (e) => {

@@ -2,7 +2,8 @@ const COLLECTIONS = {
     users: 'unimartProfiles',
     listings: 'unimartListingsV1',
     reports: 'unimartAdminV1/reports',
-    bans: 'unimartBans'
+    bans: 'unimartBans',
+    sellerWarnings: 'unimartSellerWarnings'
 };
 
 function getFirebaseAuth() {
@@ -130,6 +131,35 @@ async function createReport({ listingId, reason, reporterId }) {
     });
 }
 
+async function createSellerWarning({
+    sellerUid,
+    listingId,
+    listingTitle,
+    sellerEmail,
+    reason,
+    adminComment,
+    noticeMessage,
+    issuedBy
+}) {
+    if (!sellerUid) throw new Error('sellerUid is required');
+    if (!listingId) throw new Error('listingId is required');
+    if (!reason) throw new Error('reason is required');
+
+    const db = getRealtimeDb();
+    await db.ref(`${COLLECTIONS.sellerWarnings}/${String(sellerUid)}`).push({
+        listingId: String(listingId),
+        listingTitle: String(listingTitle || ''),
+        sellerUid: String(sellerUid),
+        sellerEmail: String(sellerEmail || ''),
+        reason: String(reason),
+        adminComment: String(adminComment || ''),
+        noticeMessage: String(noticeMessage || ''),
+        issuedBy: String(issuedBy || 'admin'),
+        status: 'unread',
+        createdAt: new Date().toISOString()
+    });
+}
+
 async function deleteReport(id) {
     if (!id) throw new Error('Report id is required');
     const db = getRealtimeDb();
@@ -195,6 +225,7 @@ export {
     deleteListing,
     updateListingStatus,
     createReport,
+    createSellerWarning,
     deleteReport,
     banUser,
     banUserFromSelling,

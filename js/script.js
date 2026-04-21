@@ -15,6 +15,13 @@ let isMarketplaceLoading = false;
 let realtimeUnsubscribe = null;
 let policyProfile = null;
 let policyProfileLoaded = false;
+let hideReserved = true;
+const DEFAULT_MARKETPLACE_SORT = 'Most Liked';
+
+// Tracks how many like/unfavorite actions are currently in flight.
+// While > 0, realtime updates will refresh the data but skip re-sorting/re-rendering
+// so listings don't jump around when the user clicks the like button.
+let likeActionsInFlight = 0;
 
 function isPolicyAgreed(profile) {
     if (!profile || typeof profile !== 'object') return false;
@@ -104,6 +111,7 @@ function normalizeListing(listing, fallbackIndex = 0) {
 
     const imageList = Array.isArray(listing.images) ? listing.images.filter(Boolean) : [];
     const primaryImageUrl = listing.imageUrl || imageList[0] || '';
+    const favoriteCount = Math.max(0, Math.floor(Number(listing.favoriteCount) || 0));
 
     const normalizedCondition = Number.isFinite(Number(listing.condition)) ? Number(listing.condition) : (Number.isFinite(Number(listing.conditionPercentage)) ? Number(listing.conditionPercentage) : null);
     
@@ -130,6 +138,7 @@ function normalizeListing(listing, fallbackIndex = 0) {
         condition: normalizedCondition,
         quantity: Number.isFinite(Number(listing.quantity)) ? Number(listing.quantity) : 1,
         description: String(listing.description || ''),
+        favoriteCount,
         status: String(listing.status || 'active').toLowerCase(),
         reserved: Boolean(listing.reserved)
     };
@@ -239,6 +248,52 @@ function parsePrice(price) {
     return parseFloat(numericPrice) || 0;
 }
 
+function getProductListedTimestamp(product) {
+    return Date.parse(product?.listedAt || product?.listedDate || '') || 0;
+}
+
+function getProductFavoriteCount(product) {
+    return Math.max(0, Math.floor(Number(product?.favoriteCount) || 0));
+}
+
+function getSelectedSortOption() {
+    const select = document.querySelector('.filter-select');
+    return select ? String(select.value || DEFAULT_MARKETPLACE_SORT) : DEFAULT_MARKETPLACE_SORT;
+}
+
+function sortProductsList(items, sortBy = DEFAULT_MARKETPLACE_SORT) {
+    const activeSort = String(sortBy || DEFAULT_MARKETPLACE_SORT);
+
+    items.sort((a, b) => {
+        if (activeSort === 'Price Low to High') {
+            const priceDiff = parsePrice(a.price) - parsePrice(b.price);
+            return priceDiff !== 0 ? priceDiff : getProductListedTimestamp(b) - getProductListedTimestamp(a);
+        }
+
+        if (activeSort === 'Price High to Low') {
+            const priceDiff = parsePrice(b.price) - parsePrice(a.price);
+            return priceDiff !== 0 ? priceDiff : getProductListedTimestamp(b) - getProductListedTimestamp(a);
+        }
+
+        if (activeSort === 'Oldest First') {
+            const timeDiff = getProductListedTimestamp(a) - getProductListedTimestamp(b);
+            return timeDiff !== 0 ? timeDiff : getProductFavoriteCount(b) - getProductFavoriteCount(a);
+        }
+
+        if (activeSort === 'Newest First') {
+            const timeDiff = getProductListedTimestamp(b) - getProductListedTimestamp(a);
+            return timeDiff !== 0 ? timeDiff : getProductFavoriteCount(b) - getProductFavoriteCount(a);
+        }
+
+        const favoriteDiff = getProductFavoriteCount(b) - getProductFavoriteCount(a);
+        if (favoriteDiff !== 0) return favoriteDiff;
+
+        return getProductListedTimestamp(b) - getProductListedTimestamp(a);
+    });
+
+    return items;
+}
+
 async function initializeMarketplaceData() {
     renderMarketplaceLoadingState();
     await loadMarketplaceProducts();
@@ -264,18 +319,41 @@ function setupRealtimeMarketplaceSync() {
     realtimeUnsubscribe = window.unimartListingsSync.setupRealtimeListingsListener((allListings) => {
         try {
             const normalized = allListings.map((listing, index) => normalizeListing(listing, index)).filter(Boolean);
-            
-            // Update products array
+
+            if (likeActionsInFlight > 0) {
+                // A like action is in flight — update in-memory data silently so the
+                // updated counts are available, but DO NOT re-sort or re-render the
+                // list (which would cause items to jump position).
+                const updatedMap = new Map(normalized.map(p => [String(p.id), p]));
+
+                // Patch favoriteCount in the current products / filteredProducts arrays
+                products = products.map(p => {
+                    const fresh = updatedMap.get(String(p.id));
+                    return fresh ? { ...p, favoriteCount: fresh.favoriteCount } : p;
+                });
+                filteredProducts = filteredProducts.map(p => {
+                    const fresh = updatedMap.get(String(p.id));
+                    return fresh ? { ...p, favoriteCount: fresh.favoriteCount } : p;
+                });
+
+                // Patch the visible count label in each card without re-rendering
+                patchCardFavoriteCounts(updatedMap);
+
+                saveToCache(products);
+                return;
+            }
+
+            // Normal update — refresh everything including sort order
             products = [...DEFAULT_PRODUCTS, ...normalized];
             filteredProducts = [...products];
-            
+
             // Update UI
             updateCategoryCounts();
             filterProducts();
-            
+
             // Cache the updated data
             saveToCache(products);
-            
+
             console.log('Marketplace updated with realtime data:', products.length, 'items');
         } catch (error) {
             console.warn('Error processing realtime marketplace update:', error);
@@ -298,6 +376,7 @@ async function initializeApp() {
     setupCategoryFilters();
     setupCategoryDropdown();
     setupSearch();
+    setupToggleFilter();
     setupRefresh();
     setupScrollToTop();
     setupProductModal();
@@ -565,8 +644,11 @@ function filterProducts() {
         const matchSearch = product.title.toLowerCase().includes(searchInput) || 
                           product.seller.toLowerCase().includes(searchInput);
         const matchCollege = selectedCollege === 'All Colleges' || product.college === selectedCollege;
-        return matchCategory && matchSearch && matchCollege;
+        const matchReserved = !hideReserved || !product.reserved;
+        return matchCategory && matchSearch && matchCollege && matchReserved;
     });
+
+    sortProductsList(filteredProducts, getSelectedSortOption());
 
     renderProducts(filteredProducts, 1);
     updateCategoryCounts();
@@ -587,8 +669,9 @@ function updateCategoryCounts() {
             product.title.toLowerCase().includes(searchInput) || 
             product.seller.toLowerCase().includes(searchInput);
         const matchesCollege = selectedCollege === 'All Colleges' || product.college === selectedCollege;
+        const matchesReserved = !hideReserved || !product.reserved;
         
-        if (matchesSearch && matchesCollege) {
+        if (matchesSearch && matchesCollege && matchesReserved) {
             const category = product.category;
             categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1);
             totalCount++;
@@ -620,12 +703,26 @@ function setupSearch() {
     });
 }
 
+// Setup toggle filter for hiding reserved items
+function setupToggleFilter() {
+    const toggleCheckbox = document.getElementById('hideReservedToggle');
+    if (toggleCheckbox) {
+        toggleCheckbox.addEventListener('change', () => {
+            hideReserved = toggleCheckbox.checked;
+            filterProducts();
+        });
+    }
+}
+
 // Setup refresh button
 function setupRefresh() {
     const refreshBtn = document.querySelector('.btn-refresh');
-    refreshBtn.addEventListener('click', async () => {
-        // Refresh the products
-        await refreshMarketplaceProducts();
+    refreshBtn.addEventListener('click', () => {
+        const icon = refreshBtn.querySelector('i');
+        if (icon) icon.style.animation = 'spin 0.8s linear infinite';
+        refreshBtn.disabled = true;
+        refreshBtn.childNodes[refreshBtn.childNodes.length - 1].textContent = ' Refreshing...';
+        window.location.reload();
     });
 }
 
@@ -691,22 +788,128 @@ function openProductModal(product) {
     currentProduct = product;
     currentImageIndex = 0;
 
-    // Update modal content
-    document.getElementById('modalProductTitle').textContent = product.title;
-    document.getElementById('modalProductPrice').textContent = product.price;
-    document.getElementById('modalBadge').textContent = product.badge;
+    // ===== TITLE & PRICE =====
+    document.getElementById('modalProductTitle').textContent = product.title || 'Product';
+    document.getElementById('modalProductPrice').textContent = product.price || '$0.00';
+    document.getElementById('modalBadge').textContent = product.badge || 'Used';
     
-    // Display uploaded image(s)
+    // ===== DISPLAY IMAGE =====
     renderCurrentModalImage();
     
-    // Use seller-provided description
-    document.getElementById('modalDescription').textContent = product.description || 'No description available.';
-    const modalReservedElem = document.getElementById('modalReservedStatus');
-    if (modalReservedElem) {
-        modalReservedElem.textContent = product.reserved ? 'Reserved' : 'Available';
+    // ===== DESCRIPTION =====
+    const descriptionItem = document.getElementById('descriptionItem');
+    if (product.description) {
+        document.getElementById('modalDescription').textContent = product.description;
+        descriptionItem.style.display = 'flex';
+    } else {
+        descriptionItem.style.display = 'none';
     }
 
-    // Update favorite button state
+    // ===== DETAILS PILLS ROW =====
+    const detailsRow = document.getElementById('modalDetailsRow');
+    let hasDetails = false;
+
+    // Category pill
+    const categoryPill = document.getElementById('modalCategoryPill');
+    if (product.category) {
+        document.getElementById('modalCategory').textContent = product.category;
+        categoryPill.style.display = 'inline-flex';
+        hasDetails = true;
+    } else {
+        categoryPill.style.display = 'none';
+    }
+
+    // College pill
+    const collegePill = document.getElementById('modalCollegePill');
+    if (product.college) {
+        document.getElementById('modalCollege').textContent = product.college;
+        collegePill.style.display = 'inline-flex';
+        hasDetails = true;
+    } else {
+        collegePill.style.display = 'none';
+    }
+
+    // Seller pill
+    const sellerPill = document.getElementById('modalSellerPill');
+    if (product.seller) {
+        document.getElementById('modalSellerName').textContent = product.seller;
+        sellerPill.style.display = 'inline-flex';
+        hasDetails = true;
+    } else {
+        sellerPill.style.display = 'none';
+    }
+
+    // Show/hide the entire details row
+    detailsRow.style.display = hasDetails ? 'flex' : 'none';
+
+    // ===== QUANTITY =====
+    const quantityItem = document.getElementById('quantityItem');
+    const quantityValue = Number.isFinite(Number(product.quantity)) ? Number(product.quantity) : null;
+    if (quantityValue !== null) {
+        const quantityBadge = document.getElementById('modalQuantity');
+        quantityBadge.textContent = `${quantityValue} available`;
+        quantityItem.style.display = 'flex';
+    } else {
+        quantityItem.style.display = 'none';
+    }
+
+    // ===== CONDITION (Percentage & Color Code) =====
+    const conditionItem = document.getElementById('conditionItem');
+    const conditionValue = getConditionPercentage(product);
+    if (conditionValue !== null) {
+        const conditionPercent = document.getElementById('modalCondition');
+        const conditionBar = document.getElementById('modalConditionBar');
+        
+        conditionPercent.textContent = `${conditionValue}%`;
+        conditionBar.style.width = `${conditionValue}%`;
+        
+        // Color code: Green (>70%), Yellow (40-70%), Red (<40%)
+        if (conditionValue >= 70) {
+            conditionBar.style.backgroundColor = '#10b981'; // Green
+        } else if (conditionValue >= 31) {
+            conditionBar.style.backgroundColor = '#f59e0b'; // Yellow/Amber
+        } else {
+            conditionBar.style.backgroundColor = '#ef4444'; // Red
+        }
+        
+        conditionItem.style.display = 'flex';
+    } else {
+        conditionItem.style.display = 'none';
+    }
+
+    // ===== QUALITY (New / Like New / Used) =====
+    const qualityItem = document.getElementById('qualityItem');
+    if (product.quality) {
+        const qualityBadge = document.getElementById('modalQuality');
+        qualityBadge.textContent = product.quality;
+        
+        // Color quality badges
+        qualityBadge.className = 'quality-badge';
+        const quality = String(product.quality).toLowerCase();
+        if (quality === 'new' || quality === 'brand new') {
+            qualityBadge.classList.add('quality-new');
+        } else if (quality === 'like new') {
+            qualityBadge.classList.add('quality-like-new');
+        } else {
+            qualityBadge.classList.add('quality-used');
+        }
+        
+        qualityItem.style.display = 'flex';
+    } else {
+        qualityItem.style.display = 'none';
+    }
+
+    // ===== AVAILABILITY =====
+    const availabilityItem = document.getElementById('availabilityItem');
+    const statusText = product.reserved ? 'Reserved' : 'Available';
+    const statusClass = product.reserved ? 'status-reserved' : 'status-available';
+    
+    const statusSpan = document.getElementById('modalReservedStatus');
+    statusSpan.textContent = statusText;
+    statusSpan.className = statusClass;
+    availabilityItem.style.display = 'flex';
+
+    // ===== FAVORITE BUTTON =====
     const saveBtn = document.getElementById('modalSaveBtn');
     if (checkIfFavorited(product.id)) {
         saveBtn.classList.add('favorited');
@@ -752,13 +955,20 @@ function resetModalForm() {
 
 // Setup modal event listeners
 function setupProductModal() {
+    const productModal = document.getElementById('productModal');
+    const modalContent = productModal ? productModal.querySelector('.modal-content') : null;
+
     // Modal close button
     const modalCloseBtn = document.getElementById('modalCloseBtn');
     if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeProductModal);
 
-    // Modal overlay click to close
-    const modalOverlay = document.getElementById('modalOverlay');
-    if (modalOverlay) modalOverlay.addEventListener('click', closeProductModal);
+    if (productModal && modalContent) {
+        productModal.addEventListener('click', (event) => {
+            if (!modalContent.contains(event.target)) {
+                closeProductModal();
+            }
+        });
+    }
 
     // Carousel navigation
     const prevBtn = document.getElementById('prevBtn');
@@ -867,24 +1077,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
 document.querySelectorAll('.filter-select').forEach((select, index) => {
     select.addEventListener('change', (e) => {
         if (index === 0) {
-            // Sort by option
-            const sortBy = e.target.value;
-            if (sortBy === 'Newest First') {
-                filteredProducts.reverse();
-            } else if (sortBy === 'Price Low to High') {
-                filteredProducts.sort((a, b) => {
-                    const priceA = parsePrice(a.price);
-                    const priceB = parsePrice(b.price);
-                    return priceA - priceB;
-                });
-            } else if (sortBy === 'Price High to Low') {
-                filteredProducts.sort((a, b) => {
-                    const priceA = parsePrice(a.price);
-                    const priceB = parsePrice(b.price);
-                    return priceB - priceA;
-                });
-            }
-            renderProducts(filteredProducts);
+            filterProducts();
         }
     });
 });
@@ -975,10 +1168,76 @@ function startFavoritesListener(uid) {
     favoritesDbUnsubscribe = () => ref.off('value', handler);
 }
 
-function updateAllHeartButtons() {
-    document.querySelectorAll('.favorite-btn').forEach((btn) => {
+/**
+ * Silently patches the displayed favorite/like count on each visible card
+ * without triggering a full re-render. Called when a like action is in flight.
+ * @param {Map<string, object>} updatedMap - map of productId → fresh product data
+ */
+function patchCardFavoriteCounts(updatedMap) {
+    document.querySelectorAll('.product-like-button').forEach((btn) => {
         const onclick = btn.getAttribute('onclick') || '';
         const match = onclick.match(/toggleFavorite\('([^']+)'\)/);
+        if (!match) return;
+        const id = match[1];
+        const fresh = updatedMap.get(id);
+        if (!fresh) return;
+        const countSpan = btn.querySelector('span');
+        if (countSpan) {
+            countSpan.textContent = Math.max(0, Math.floor(Number(fresh.favoriteCount) || 0));
+        }
+    });
+}
+
+/**
+ * Updates the visual state (color, active class, title) of a single card's like button.
+ * Optionally adjusts the displayed count by `countDelta` (+1 or -1) for optimistic updates.
+ * @param {string} productId
+ * @param {boolean} isFavorited
+ * @param {number|null} countDelta - if provided, adds this to the current displayed count
+ */
+function updateSingleCardLikeButton(productId, isFavorited, countDelta = null) {
+    const id = String(productId);
+    // Find the button on the visible card
+    const btn = findLikeButtonById(id);
+    if (btn) {
+        applyLikeButtonState(btn, isFavorited, countDelta);
+    }
+}
+
+/** Locates the .product-like-button element for a given product id. */
+function findLikeButtonById(id) {
+    // Buttons have onclick="event.stopPropagation(); toggleFavorite('<id>')"
+    return Array.from(document.querySelectorAll('.product-like-button')).find((btn) => {
+        const match = (btn.getAttribute('onclick') || '').match(/toggleFavorite\('([^']+)'\)/);
+        return match && match[1] === id;
+    }) || null;
+}
+
+/** Applies liked/unliked visual state to a .product-like-button element. */
+function applyLikeButtonState(btn, isFavorited, countDelta = null) {
+    btn.style.color = isFavorited ? '#ef4444' : '#9ca3af';
+    btn.classList.toggle('is-active', isFavorited);
+    btn.title = isFavorited ? 'Remove from favorites' : 'Add to favorites';
+    if (countDelta !== null) {
+        const countSpan = btn.querySelector('span');
+        if (countSpan) {
+            const current = parseInt(countSpan.textContent, 10) || 0;
+            countSpan.textContent = Math.max(0, current + countDelta);
+        }
+    }
+}
+
+function updateAllHeartButtons() {
+    // Update all product card like buttons
+    document.querySelectorAll('.product-like-button').forEach((btn) => {
+        const match = (btn.getAttribute('onclick') || '').match(/toggleFavorite\('([^']+)'\)/);
+        if (!match) return;
+        const id = match[1];
+        applyLikeButtonState(btn, userFavoriteIds.has(id));
+    });
+    // Legacy .favorite-btn support (other pages)
+    document.querySelectorAll('.favorite-btn').forEach((btn) => {
+        const match = (btn.getAttribute('onclick') || '').match(/toggleFavorite\('([^']+)'\)/);
         if (!match) return;
         const id = match[1];
         btn.style.color = userFavoriteIds.has(id) ? '#ef4444' : '#9ca3af';
@@ -994,13 +1253,21 @@ function updateAllHeartButtons() {
     }
 }
 
+async function updateListingFavoriteCount(listingId, delta) {
+    if (!window.unimartListingsSync || typeof window.unimartListingsSync.updateListingFavoriteCountInCloud !== 'function') {
+        return true;
+    }
+
+    return window.unimartListingsSync.updateListingFavoriteCountInCloud(String(listingId), delta);
+}
+
 // Check if item is favorited
 function checkIfFavorited(productId) {
     return userFavoriteIds.has(String(productId));
 }
 
 // Toggle favorite
-function toggleFavorite(productId, product) {
+async function toggleFavorite(productId, product) {
     const user = firebase.auth().currentUser;
     if (!user) {
         console.log('Cannot toggle favorite: no authenticated user');
@@ -1016,24 +1283,55 @@ function toggleFavorite(productId, product) {
     } else {
         userFavoriteIds.add(normalizedId);
     }
-    updateAllHeartButtons();
+    // Update only the clicked card's button (color + active class + count) instantly,
+    // without touching the rest of the list.
+    updateSingleCardLikeButton(normalizedId, !isFav, isFav ? -1 : 1);
+    // Also sync modal button if open for this product
+    if (currentProduct && String(currentProduct.id) === normalizedId) {
+        const saveBtn = document.getElementById('modalSaveBtn');
+        if (saveBtn) {
+            const fav = !isFav;
+            saveBtn.classList.toggle('favorited', fav);
+            saveBtn.innerHTML = fav ? '<i class="fas fa-heart"></i>Saved' : '<i class="fas fa-heart"></i>Save';
+        }
+    }
 
     const favoritesRef = firebase.database().ref(`favorites/${user.uid}/${normalizedId}`);
+
+    // Signal that a like action is in flight so the realtime listener will not
+    // re-sort/re-render the list while the user is interacting with the like button.
+    likeActionsInFlight++;
+
     if (isFav) {
-        favoritesRef.remove().catch((error) => {
+        try {
+            await favoritesRef.remove();
+            const countUpdated = await updateListingFavoriteCount(normalizedId, -1);
+            if (!countUpdated) {
+                throw new Error('Failed to update favorite count');
+            }
+        } catch (error) {
             console.error('Error removing from favorites:', error);
-            // Roll back
             userFavoriteIds.add(normalizedId);
             updateAllHeartButtons();
-        });
+            favoritesRef.set({ id: normalizedId, addedAt: firebase.database.ServerValue.TIMESTAMP }).catch(() => {});
+        } finally {
+            likeActionsInFlight = Math.max(0, likeActionsInFlight - 1);
+        }
     } else {
-        favoritesRef.set({ id: normalizedId, addedAt: firebase.database.ServerValue.TIMESTAMP })
-            .catch((error) => {
-                console.error('Error adding to favorites:', error);
-                // Roll back
-                userFavoriteIds.delete(normalizedId);
-                updateAllHeartButtons();
-            });
+        try {
+            await favoritesRef.set({ id: normalizedId, addedAt: firebase.database.ServerValue.TIMESTAMP });
+            const countUpdated = await updateListingFavoriteCount(normalizedId, 1);
+            if (!countUpdated) {
+                throw new Error('Failed to update favorite count');
+            }
+        } catch (error) {
+            console.error('Error adding to favorites:', error);
+            userFavoriteIds.delete(normalizedId);
+            updateAllHeartButtons();
+            favoritesRef.remove().catch(() => {});
+        } finally {
+            likeActionsInFlight = Math.max(0, likeActionsInFlight - 1);
+        }
     }
 }
 
@@ -1077,7 +1375,7 @@ function showLoginButton() {
 const loginBtn = document.getElementById('loginBtn');
 if (loginBtn) {
     loginBtn.addEventListener('click', () => {
-        alert('Login button clicked! (Placeholder for future Google Sign-In integration)');
+        alert('Redirecting to login page...');
     });
 }
 
@@ -1141,8 +1439,9 @@ function handlePaymentMade() {
 
 // Setup payment modal event listeners
 function setupPaymentModal() {
+    const paymentModal = document.getElementById('paymentModal');
+    const paymentModalContent = paymentModal ? paymentModal.querySelector('.payment-modal-content') : null;
     const paymentModalClose = document.getElementById('paymentModalClose');
-    const paymentModalOverlay = document.getElementById('paymentModalOverlay');
     const btnCancelOrder = document.getElementById('btnCancelOrder');
     const btnPaymentMade = document.getElementById('btnPaymentMade');
     
@@ -1150,8 +1449,12 @@ function setupPaymentModal() {
         paymentModalClose.addEventListener('click', closePaymentModal);
     }
     
-    if (paymentModalOverlay) {
-        paymentModalOverlay.addEventListener('click', closePaymentModal);
+    if (paymentModal && paymentModalContent) {
+        paymentModal.addEventListener('click', (event) => {
+            if (!paymentModalContent.contains(event.target)) {
+                closePaymentModal();
+            }
+        });
     }
     
     if (btnCancelOrder) {

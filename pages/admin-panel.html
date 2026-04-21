@@ -9,17 +9,18 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="/js/firebase-config.js"></script>
     <script src="/js/firebase-auth.js"></script>
+    <script src="/js/login-notice.js"></script>
+    <script src="/js/auth-guard.js"></script>
 </head>
 <body>
     <div class="container">
         <aside class="sidebar">
             <div class="logo">
                 <div class="logo-placeholder">
-                    <img src="/assets/sidebar-logo.png" alt="UniMart logo" class="logo-image">
+                    <img src="/assets/New%20Logo.PNG" alt="UniMart logo" class="logo-image">
                 </div>
                 <h1>UNIMART</h1>
             </div>
@@ -146,7 +147,36 @@
 
     </div>
 
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="../" class="bottom-nav-item" data-page="marketplace">
+            <i class="fas fa-store"></i>
+            <span>Marketplace</span>
+        </a>
+        <a href="sell-item" class="bottom-nav-item" data-page="sell">
+            <i class="fas fa-plus"></i>
+            <span>Sell</span>
+        </a>
+        <a href="my-sales" class="bottom-nav-item" data-page="sales">
+            <i class="fas fa-chart-line"></i>
+            <span>Sales</span>
+        </a>
+        <a href="my-favorites" class="bottom-nav-item" data-page="favorites">
+            <i class="fas fa-heart"></i>
+            <span>Favorites</span>
+        </a>
+        <a href="profile" class="bottom-nav-item" data-page="profile">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+        <a href="user-guide" class="bottom-nav-item" data-page="guide">
+            <i class="fas fa-book-open"></i>
+            <span>Guide</span>
+        </a>
+    </nav>
+
     <script src="/js/user-sidebar.js"></script>
+    <script defer src="/js/bottom-nav.js"></script>
     <script type="module" src="/admin/AdminPage.js"></script>
 </body>
 </html>
