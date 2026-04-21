@@ -2,15 +2,12 @@
     const state = {
         authenticated: null,
         banner: null,
+        hideTimer: null,
     };
 
     function getLoginPath() {
         const currentPath = window.location.pathname || '';
         return currentPath.includes('/pages/') ? 'login' : 'pages/login';
-    }
-
-    function getHostElement() {
-        return document.querySelector('.main-content') || document.body;
     }
 
     function createBanner() {
@@ -26,8 +23,8 @@
                 <i class="fas fa-user-lock"></i>
             </div>
             <div class="login-notice__content">
-                <h2>Guest mode</h2>
-                <p>Sign in to create listings, save favorites, and manage your profile across UniMart.</p>
+                <h2>Login required</h2>
+                <p>Log in to view listings and unlock other UniMart features.</p>
             </div>
             <button type="button" class="login-notice__button" data-login-notice-action>
                 <i class="fas fa-sign-in-alt"></i>
@@ -47,19 +44,41 @@
     }
 
     function show() {
-        const host = getHostElement();
         const banner = createBanner();
 
-        if (banner.parentElement !== host) {
-            host.prepend(banner);
+        if (state.hideTimer) {
+            clearTimeout(state.hideTimer);
+            state.hideTimer = null;
         }
+
+        if (banner.parentElement !== document.body) {
+            document.body.appendChild(banner);
+            requestAnimationFrame(() => {
+                banner.classList.add('is-visible');
+            });
+            return;
+        }
+
+        banner.classList.add('is-visible');
     }
 
     function hide() {
-        if (state.banner) {
-            state.banner.remove();
-            state.banner = null;
+        if (!state.banner) {
+            return;
         }
+
+        const banner = state.banner;
+        banner.classList.remove('is-visible');
+
+        state.hideTimer = setTimeout(() => {
+            if (banner.parentElement) {
+                banner.remove();
+            }
+            if (state.banner === banner) {
+                state.banner = null;
+            }
+            state.hideTimer = null;
+        }, 240);
     }
 
     function setAuthenticated(isAuthenticated) {
@@ -73,25 +92,19 @@
         }
     }
 
-    function initialize() {
-        let hasCachedUser = false;
-
-        try {
-            hasCachedUser = Boolean(localStorage.getItem('unimart_last_user'));
-        } catch (error) {
-            hasCachedUser = false;
-        }
-
-        if (!hasCachedUser) {
-            show();
-        }
-    }
-
     window.unimartLoginNotice = {
         setAuthenticated,
-        show,
-        hide,
+        showGuestNotice: show,
+        hideGuestNotice: hide,
     };
 
-    document.addEventListener('DOMContentLoaded', initialize);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (state.authenticated === false) {
+                show();
+            }
+        });
+    } else if (state.authenticated === false) {
+        show();
+    }
 })();

@@ -567,65 +567,109 @@ body {
     }
 }
 
-@media (max-width: 1280px) and (max-height: 860px) {
+@media (min-width: 1041px) and (max-width: 1440px) and (max-height: 920px) {
     body {
-        padding: 14px;
+        padding: 10px 14px;
     }
 
     .login-shell {
-        gap: 18px;
+        gap: 16px;
+        align-items: center;
     }
 
     .login-showcase {
-        min-height: 520px;
-        padding: 28px 28px;
+        min-height: 0;
+        padding: 26px 26px;
     }
 
     .showcase-copy {
-        margin-top: 18px;
+        margin-top: 14px;
     }
 
     .showcase-copy h1 {
-        font-size: clamp(3rem, 5vw, 4.4rem);
+        font-size: clamp(2.8rem, 4.5vw, 4rem);
         margin-bottom: 0;
     }
 
     .showcase-accent {
-        margin-top: 22px;
+        margin-top: 16px;
     }
 
     .login-card {
-        padding: 24px;
+        padding: 20px 20px 18px;
     }
 
     .logo-section {
-        margin-bottom: 14px;
+        margin-bottom: 10px;
     }
 
     .login-logo-image {
-        width: min(210px, 100%);
+        width: min(168px, 100%);
     }
 
     .auth-form {
-        margin-bottom: 14px;
+        margin-bottom: 10px;
     }
 
     .form-group {
-        margin-bottom: 14px;
+        margin-bottom: 10px;
+    }
+
+    .form-group label {
+        margin-bottom: 6px;
+        font-size: 11px;
     }
 
     .form-group input {
-        padding: 14px 0;
+        padding: 12px 0;
+        font-size: 14px;
+    }
+
+    .input-shell {
+        gap: 10px;
+        padding: 0 12px;
+        border-radius: 14px;
+    }
+
+    .forgot-password-row {
+        margin: -2px 0 12px;
     }
 
     .btn-primary,
     .btn-google {
-        padding: 14px 18px;
+        padding: 12px 16px;
+        border-radius: 14px;
+        font-size: 13px;
+    }
+
+    .toggle-auth {
+        margin-top: 12px;
+    }
+
+    .toggle-auth p {
+        font-size: 13px;
+    }
+
+    .divider {
+        margin: 14px 0;
+    }
+
+    .trust-row {
+        margin-top: 12px;
+    }
+
+    .trust-row span {
+        font-size: 10px;
+        padding: 7px 12px;
     }
 
     .help-text {
-        margin-top: 18px;
-        padding-top: 18px;
+        margin-top: 12px;
+        padding-top: 12px;
+    }
+
+    .help-text p {
+        font-size: 11px;
     }
 }
 
