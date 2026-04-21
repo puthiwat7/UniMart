@@ -18,6 +18,11 @@ let policyProfileLoaded = false;
 let hideReserved = true;
 const DEFAULT_MARKETPLACE_SORT = 'Most Liked';
 
+// Tracks how many like/unfavorite actions are currently in flight.
+// While > 0, realtime updates will refresh the data but skip re-sorting/re-rendering
+// so listings don't jump around when the user clicks the like button.
+let likeActionsInFlight = 0;
+
 function isPolicyAgreed(profile) {
     if (!profile || typeof profile !== 'object') return false;
     return profile.hasAgreedPolicy === true || profile.agreedToPolicies === true;
@@ -314,18 +319,41 @@ function setupRealtimeMarketplaceSync() {
     realtimeUnsubscribe = window.unimartListingsSync.setupRealtimeListingsListener((allListings) => {
         try {
             const normalized = allListings.map((listing, index) => normalizeListing(listing, index)).filter(Boolean);
-            
-            // Update products array
+
+            if (likeActionsInFlight > 0) {
+                // A like action is in flight — update in-memory data silently so the
+                // updated counts are available, but DO NOT re-sort or re-render the
+                // list (which would cause items to jump position).
+                const updatedMap = new Map(normalized.map(p => [String(p.id), p]));
+
+                // Patch favoriteCount in the current products / filteredProducts arrays
+                products = products.map(p => {
+                    const fresh = updatedMap.get(String(p.id));
+                    return fresh ? { ...p, favoriteCount: fresh.favoriteCount } : p;
+                });
+                filteredProducts = filteredProducts.map(p => {
+                    const fresh = updatedMap.get(String(p.id));
+                    return fresh ? { ...p, favoriteCount: fresh.favoriteCount } : p;
+                });
+
+                // Patch the visible count label in each card without re-rendering
+                patchCardFavoriteCounts(updatedMap);
+
+                saveToCache(products);
+                return;
+            }
+
+            // Normal update — refresh everything including sort order
             products = [...DEFAULT_PRODUCTS, ...normalized];
             filteredProducts = [...products];
-            
+
             // Update UI
             updateCategoryCounts();
             filterProducts();
-            
+
             // Cache the updated data
             saveToCache(products);
-            
+
             console.log('Marketplace updated with realtime data:', products.length, 'items');
         } catch (error) {
             console.warn('Error processing realtime marketplace update:', error);
@@ -1140,10 +1168,76 @@ function startFavoritesListener(uid) {
     favoritesDbUnsubscribe = () => ref.off('value', handler);
 }
 
-function updateAllHeartButtons() {
-    document.querySelectorAll('.favorite-btn').forEach((btn) => {
+/**
+ * Silently patches the displayed favorite/like count on each visible card
+ * without triggering a full re-render. Called when a like action is in flight.
+ * @param {Map<string, object>} updatedMap - map of productId → fresh product data
+ */
+function patchCardFavoriteCounts(updatedMap) {
+    document.querySelectorAll('.product-like-button').forEach((btn) => {
         const onclick = btn.getAttribute('onclick') || '';
         const match = onclick.match(/toggleFavorite\('([^']+)'\)/);
+        if (!match) return;
+        const id = match[1];
+        const fresh = updatedMap.get(id);
+        if (!fresh) return;
+        const countSpan = btn.querySelector('span');
+        if (countSpan) {
+            countSpan.textContent = Math.max(0, Math.floor(Number(fresh.favoriteCount) || 0));
+        }
+    });
+}
+
+/**
+ * Updates the visual state (color, active class, title) of a single card's like button.
+ * Optionally adjusts the displayed count by `countDelta` (+1 or -1) for optimistic updates.
+ * @param {string} productId
+ * @param {boolean} isFavorited
+ * @param {number|null} countDelta - if provided, adds this to the current displayed count
+ */
+function updateSingleCardLikeButton(productId, isFavorited, countDelta = null) {
+    const id = String(productId);
+    // Find the button on the visible card
+    const btn = findLikeButtonById(id);
+    if (btn) {
+        applyLikeButtonState(btn, isFavorited, countDelta);
+    }
+}
+
+/** Locates the .product-like-button element for a given product id. */
+function findLikeButtonById(id) {
+    // Buttons have onclick="event.stopPropagation(); toggleFavorite('<id>')"
+    return Array.from(document.querySelectorAll('.product-like-button')).find((btn) => {
+        const match = (btn.getAttribute('onclick') || '').match(/toggleFavorite\('([^']+)'\)/);
+        return match && match[1] === id;
+    }) || null;
+}
+
+/** Applies liked/unliked visual state to a .product-like-button element. */
+function applyLikeButtonState(btn, isFavorited, countDelta = null) {
+    btn.style.color = isFavorited ? '#ef4444' : '#9ca3af';
+    btn.classList.toggle('is-active', isFavorited);
+    btn.title = isFavorited ? 'Remove from favorites' : 'Add to favorites';
+    if (countDelta !== null) {
+        const countSpan = btn.querySelector('span');
+        if (countSpan) {
+            const current = parseInt(countSpan.textContent, 10) || 0;
+            countSpan.textContent = Math.max(0, current + countDelta);
+        }
+    }
+}
+
+function updateAllHeartButtons() {
+    // Update all product card like buttons
+    document.querySelectorAll('.product-like-button').forEach((btn) => {
+        const match = (btn.getAttribute('onclick') || '').match(/toggleFavorite\('([^']+)'\)/);
+        if (!match) return;
+        const id = match[1];
+        applyLikeButtonState(btn, userFavoriteIds.has(id));
+    });
+    // Legacy .favorite-btn support (other pages)
+    document.querySelectorAll('.favorite-btn').forEach((btn) => {
+        const match = (btn.getAttribute('onclick') || '').match(/toggleFavorite\('([^']+)'\)/);
         if (!match) return;
         const id = match[1];
         btn.style.color = userFavoriteIds.has(id) ? '#ef4444' : '#9ca3af';
@@ -1189,9 +1283,25 @@ async function toggleFavorite(productId, product) {
     } else {
         userFavoriteIds.add(normalizedId);
     }
-    updateAllHeartButtons();
+    // Update only the clicked card's button (color + active class + count) instantly,
+    // without touching the rest of the list.
+    updateSingleCardLikeButton(normalizedId, !isFav, isFav ? -1 : 1);
+    // Also sync modal button if open for this product
+    if (currentProduct && String(currentProduct.id) === normalizedId) {
+        const saveBtn = document.getElementById('modalSaveBtn');
+        if (saveBtn) {
+            const fav = !isFav;
+            saveBtn.classList.toggle('favorited', fav);
+            saveBtn.innerHTML = fav ? '<i class="fas fa-heart"></i>Saved' : '<i class="fas fa-heart"></i>Save';
+        }
+    }
 
     const favoritesRef = firebase.database().ref(`favorites/${user.uid}/${normalizedId}`);
+
+    // Signal that a like action is in flight so the realtime listener will not
+    // re-sort/re-render the list while the user is interacting with the like button.
+    likeActionsInFlight++;
+
     if (isFav) {
         try {
             await favoritesRef.remove();
@@ -1204,6 +1314,8 @@ async function toggleFavorite(productId, product) {
             userFavoriteIds.add(normalizedId);
             updateAllHeartButtons();
             favoritesRef.set({ id: normalizedId, addedAt: firebase.database.ServerValue.TIMESTAMP }).catch(() => {});
+        } finally {
+            likeActionsInFlight = Math.max(0, likeActionsInFlight - 1);
         }
     } else {
         try {
@@ -1217,6 +1329,8 @@ async function toggleFavorite(productId, product) {
             userFavoriteIds.delete(normalizedId);
             updateAllHeartButtons();
             favoritesRef.remove().catch(() => {});
+        } finally {
+            likeActionsInFlight = Math.max(0, likeActionsInFlight - 1);
         }
     }
 }
