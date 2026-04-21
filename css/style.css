@@ -3932,6 +3932,17 @@ body[data-auth-state='guest'] .main-content {
     padding: 24px 0 0;
 }
 
+.sales-edit-badge-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.sales-edit-badge {
+    display: inline-flex;
+    align-items: center;
+}
+
 .modal-header-content {
     display: flex;
     justify-content: space-between;
