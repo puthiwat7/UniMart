@@ -966,6 +966,12 @@ function openSalesEditPanel() {
     document.getElementById('salesViewPanel').style.display = 'none';
     document.getElementById('salesEditPanel').style.display = 'block';
     document.getElementById('salesModal').classList.add('is-editing');
+
+    // Start Edit mode from the top so users don't need to manually scroll up.
+    const modalContent = document.querySelector('#salesModal .modal-content');
+    if (modalContent) {
+        modalContent.scrollTop = 0;
+    }
 }
 
 function closeSalesEditPanel() {
