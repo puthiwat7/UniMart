@@ -469,8 +469,8 @@ body[data-auth-state='guest'] .main-content {
 .login-notice {
     position: fixed;
     top: 14px;
-    left: calc(240px + 20px);
-    right: 20px;
+    left: calc(240px + 36px);
+    right: 36px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2196,7 +2196,8 @@ body[data-auth-state='guest'] .main-content {
     }
 
     .login-notice {
-        margin: 14px 14px 12px;
+        left: 14px;
+        right: 14px;
         border-radius: 22px;
     }
 
@@ -2467,7 +2468,8 @@ body[data-auth-state='guest'] .main-content {
     }
 
     .login-notice {
-        margin: 10px 12px 12px;
+        left: 12px;
+        right: 12px;
         border-radius: 18px;
     }
 
