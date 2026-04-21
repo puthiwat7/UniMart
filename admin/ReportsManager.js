@@ -32,10 +32,10 @@ function renderReportsManager(container, state) {
     container.innerHTML = `
         <section class="admin-section">
             <div class="admin-section-header-row">
-                <h2>Feedback & Reports</h2>
-                <button class="admin-table-btn" data-action="reports-refresh">Refresh Reports</button>
+                <h2>User Feedback</h2>
+                <button class="admin-table-btn" data-action="reports-refresh">Refresh Feedback</button>
             </div>
-            <p class="admin-helper-text">Collection: unimartAdminV1/reports</p>
+            <p class="admin-helper-text">Gather and review feedback submitted from the feedback page. Source: unimartAdminV1/reports</p>
             <div class="admin-table-wrap">
                 <table class="admin-table">
                     <thead>
@@ -50,7 +50,7 @@ function renderReportsManager(container, state) {
                         </tr>
                     </thead>
                     <tbody>
-                        ${rows || '<tr><td colspan="7">No reports found.</td></tr>'}
+                        ${rows || '<tr><td colspan="7">No feedback submissions found.</td></tr>'}
                     </tbody>
                 </table>
             </div>
