@@ -168,6 +168,12 @@ function showResetPasswordButtonIfApplicable(user) {
     const section = document.getElementById('passwordResetSection');
     if (!section) return;
 
+    // Populate the email display
+    const emailSpan = document.getElementById('resetEmailAddress');
+    if (emailSpan) {
+        emailSpan.textContent = user && user.email ? user.email : '—';
+    }
+
     // Check if user signed up with email/password (not Google)
     const isEmailPasswordUser = user.providerData.some(provider => provider.providerId === 'password');
     

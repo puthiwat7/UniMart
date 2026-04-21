@@ -300,13 +300,32 @@
                     </div>
 
                     <!-- Password Reset Section (for email/password users only) -->
-                    <div class="profile-section" id="passwordResetSection" style="display: none;">
-                        <h2><i class="fas fa-key"></i> Account Security</h2>
-                        <p>Need to change your password? We'll send a secure reset link to your email address.</p>
-                        <button type="button" class="btn-secondary" id="resetPasswordBtn">
-                            <i class="fas fa-envelope"></i>
-                            Email Reset Link
-                        </button>
+                    <div class="profile-section pwd-section" id="passwordResetSection" style="display: none;">
+                        <div class="pwd-inner">
+                            <div class="pwd-left">
+                                <div class="pwd-icon-wrap">
+                                    <i class="fas fa-shield-halved"></i>
+                                </div>
+                                <div class="pwd-text">
+                                    <p class="pwd-label">Security</p>
+                                    <h2 class="pwd-title">Account Password</h2>
+                                    <p class="pwd-desc">We'll email a secure reset link to your registered address. Follow the instructions to set a new password.</p>
+                                </div>
+                            </div>
+                            <div class="pwd-right">
+                                <div class="pwd-email-field">
+                                    <label class="pwd-email-label">Reset link will be sent to</label>
+                                    <div class="pwd-email-pill" id="resetEmailDisplay">
+                                        <i class="fas fa-envelope"></i>
+                                        <span id="resetEmailAddress">—</span>
+                                    </div>
+                                </div>
+                                <button type="button" class="pwd-btn" id="resetPasswordBtn">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Send Reset Link
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Terms of Use & Marketplace Policy Section -->
