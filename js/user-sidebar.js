@@ -83,6 +83,47 @@ function resolveAdminPanelPath() {
     return '/pages/admin-panel';
 }
 
+function getSidebarPageKeyFromValue(value) {
+    const normalized = String(value || '').trim().toLowerCase();
+
+    if (!normalized) return 'marketplace';
+    if (normalized.includes('admin-panel')) return 'admin';
+    if (normalized.includes('feedback')) return 'feedback';
+    if (normalized.includes('sell-item')) return 'sell';
+    if (normalized.includes('my-sales')) return 'sales';
+    if (normalized.includes('my-favorites')) return 'favorites';
+    if (normalized.includes('user-guide')) return 'guide';
+    if (normalized.includes('profile')) return 'profile';
+    if (
+        normalized === '/' ||
+        normalized === '..' ||
+        normalized === '../' ||
+        normalized.endsWith('/index') ||
+        normalized.endsWith('/index.html')
+    ) {
+        return 'marketplace';
+    }
+
+    return 'marketplace';
+}
+
+function getCurrentSidebarPageKey() {
+    return getSidebarPageKeyFromValue(window.location.pathname || '/');
+}
+
+function syncActiveSidebarNav() {
+    const navItems = document.querySelectorAll('.navigation .nav-item');
+    if (!navItems.length) return;
+
+    const currentPageKey = getCurrentSidebarPageKey();
+
+    navItems.forEach((item) => {
+        const href = item.getAttribute('href') || '';
+        const itemPageKey = getSidebarPageKeyFromValue(href);
+        item.classList.toggle('active', itemPageKey === currentPageKey);
+    });
+}
+
 function ensureAdminNavItem(userLike) {
     const shouldShow = isCurrentUserAdmin(userLike);
     const navLists = document.querySelectorAll('.navigation ul');
@@ -102,9 +143,8 @@ function ensureAdminNavItem(userLike) {
         li.setAttribute('data-admin-nav-item', 'true');
 
         const adminPath = resolveAdminPanelPath();
-        const isActive = (window.location.pathname || '').includes('admin-panel');
         li.innerHTML = `
-            <a href="${adminPath}" class="nav-item ${isActive ? 'active' : ''}">
+            <a href="${adminPath}" class="nav-item">
                 <i class="fas fa-user-shield"></i>
                 <span>Admin Panel</span>
             </a>
@@ -112,6 +152,7 @@ function ensureAdminNavItem(userLike) {
         list.appendChild(li);
     });
 
+    syncActiveSidebarNav();
     ensureAdminBottomNavItem(userLike);
 }
 
@@ -186,11 +227,6 @@ function ensureFeedbackNavItem() {
                 if (label) {
                     label.textContent = 'Help';
                 }
-                if (isFeedbackPage) {
-                    link.classList.add('active');
-                } else {
-                    link.classList.remove('active');
-                }
             }
             return;
         }
@@ -198,10 +234,9 @@ function ensureFeedbackNavItem() {
         const li = document.createElement('li');
         li.setAttribute('data-feedback-nav-item', 'true');
         const feedbackPath = resolveFeedbackPath();
-        const feedbackActive = isFeedbackPage ? 'active' : '';
 
         li.innerHTML = `
-            <a href="${feedbackPath}" class="nav-item ${feedbackActive}">
+            <a href="${feedbackPath}" class="nav-item">
                 <i class="fas fa-comment"></i>
                 <span>Help</span>
             </a>
@@ -209,6 +244,13 @@ function ensureFeedbackNavItem() {
 
         list.appendChild(li);
     });
+
+    if (isFeedbackPage) {
+        syncActiveSidebarNav();
+        return;
+    }
+
+    syncActiveSidebarNav();
 }
 
 window.unimartAdminAccess = {
@@ -332,11 +374,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             ensureAdminNavItem(null);
             ensureFeedbackNavItem();
+            syncActiveSidebarNav();
         }
     } catch (e) {
         console.error('Error reading cached user info:', e);
         ensureAdminNavItem(null);
         ensureFeedbackNavItem();
+        syncActiveSidebarNav();
     }
 
     // 2) Then wire up real-time Firebase auth listener for live updates
