@@ -462,6 +462,10 @@ textarea:focus {
     padding: 20px;
 }
 
+body[data-auth-state='guest'] .main-content {
+    padding-top: 112px;
+}
+
 .login-notice {
     position: fixed;
     top: 14px;
@@ -473,9 +477,9 @@ textarea:focus {
     gap: 14px;
     padding: 14px 18px;
     border-radius: 20px;
-    background: linear-gradient(135deg, #fb923c 0%, #f97316 55%, #ea580c 100%);
+    background: linear-gradient(135deg, #111827 0%, #030712 55%, #1f2937 100%);
     color: #ffffff;
-    box-shadow: 0 18px 50px rgba(249, 115, 22, 0.22);
+    box-shadow: 0 18px 50px rgba(3, 7, 18, 0.28);
     z-index: 1100;
     overflow: hidden;
     transform: translateY(-18px);
@@ -533,7 +537,7 @@ textarea:focus {
     border: none;
     border-radius: 999px;
     background: rgba(255,255,255,0.95);
-    color: #c2410c;
+    color: #111827;
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
@@ -2178,6 +2182,10 @@ textarea:focus {
         padding: 0 0 92px;
     }
 
+    body[data-auth-state='guest'] .main-content {
+        padding-top: 134px;
+    }
+
     /* Header adjustments */
     .header-banner,
     .profile-header {
@@ -2446,6 +2454,10 @@ textarea:focus {
     .main-content {
         margin-left: 0;
         padding-bottom: 84px;
+    }
+
+    body[data-auth-state='guest'] .main-content {
+        padding-top: 146px;
     }
 
     .header-banner {
