@@ -3935,12 +3935,21 @@ body[data-auth-state='guest'] .main-content {
 .sales-edit-badge-row {
     display: flex;
     align-items: center;
+    justify-content: center;
+    width: 100%;
     margin-bottom: 10px;
 }
 
 .sales-edit-badge {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    border-radius: 999px;
 }
 
 .modal-header-content {
